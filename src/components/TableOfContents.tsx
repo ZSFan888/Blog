@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { ChevronDown, List, X } from 'lucide-react';
 
 import { siteConfig } from '@config/site.config';
@@ -16,6 +17,9 @@ const MOBILE_TOC_SHEET_STYLE = {
   right: 'max(0.6rem, calc(env(safe-area-inset-right) + 0.6rem))',
   bottom: 'max(0.45rem, env(safe-area-inset-bottom))'
 } as const;
+const MOBILE_SCROLL_STYLE = {
+  WebkitOverflowScrolling: 'touch' as const
+};
 
 
 type TocNode = MarkdownHeading & {
@@ -124,6 +128,9 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(headings[0]?.id ?? null);
+  const [isClient, setIsClient] = useState(false);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const touchStartYRef = useRef<number | null>(null);
   const headingTree = useMemo(() => buildHeadingTree(headings), [headings]);
   const parentMap = useMemo(() => buildParentMap(headingTree), [headingTree]);
   const navRef = useRef<HTMLElement | null>(null);
@@ -131,31 +138,35 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
   const collapseInactiveRootBranches = siteConfig.toc?.collapseInactiveRootBranches ?? false;
 
+
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
       return;
     }
 
-    const mediaQuery = window.matchMedia('(max-width: 1023px)');
-    const updateViewport = (event?: MediaQueryListEvent) => {
-      const matches = event?.matches ?? mediaQuery.matches;
-      setIsMobileViewport(matches);
-
-      if (!matches) {
-        setIsOpen(false);
-      }
-    };
-
-    updateViewport();
-
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', updateViewport);
-      return () => mediaQuery.removeEventListener('change', updateViewport);
+    if (!(isOpen && isMobileViewport)) {
+      document.body.style.removeProperty('overflow');
+      return;
     }
 
-    mediaQuery.addListener(updateViewport);
-    return () => mediaQuery.removeListener(updateViewport);
-  }, []);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, isMobileViewport]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setDragOffsetY(0);
+      touchStartYRef.current = null;
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     setExpandedMap(collectInitialExpandedState(headingTree));
@@ -400,6 +411,36 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
     );
   };
 
+
+  const handleSheetTouchStart = (event: React.TouchEvent<HTMLElement>) => {
+    if (navRef.current?.contains(event.target as Node)) {
+      touchStartYRef.current = null;
+      return;
+    }
+
+    touchStartYRef.current = event.touches[0]?.clientY ?? null;
+  };
+
+  const handleSheetTouchMove = (event: React.TouchEvent<HTMLElement>) => {
+    const startY = touchStartYRef.current;
+
+    if (startY === null) {
+      return;
+    }
+
+    const currentY = event.touches[0]?.clientY ?? startY;
+    const nextOffset = Math.max(0, currentY - startY);
+    setDragOffsetY(nextOffset);
+  };
+
+  const handleSheetTouchEnd = () => {
+    if (dragOffsetY > 96) {
+      setIsOpen(false);
+    }
+
+    setDragOffsetY(0);
+    touchStartYRef.current = null;
+  };
   const rootHeadingsCount = headingTree.length;
   const panelContent = (
     <div className="relative flex h-full flex-col overflow-hidden rounded-[26px] border border-zinc-200/80 bg-white/96 p-4 shadow-[0_28px_68px_-42px_rgba(24,24,27,0.34)] backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/94 dark:shadow-none sm:p-4.5">
@@ -426,11 +467,55 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
         </button>
       </div>
 
-      <nav ref={navRef} aria-label="目录" className="min-h-0 flex-1 overflow-y-auto pr-1 no-scrollbar">
+      <nav
+        ref={navRef}
+        aria-label="目录"
+        style={MOBILE_SCROLL_STYLE}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 no-scrollbar"
+      >
         {renderNodes(headingTree)}
       </nav>
     </div>
   );
+
+  const mobileSheet =
+    isClient && isOpen && isMobileViewport
+      ? createPortal(
+          <AnimatePresence>
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm lg:hidden"
+                onClick={() => setIsOpen(false)}
+              />
+
+              <motion.aside
+                initial={{ opacity: 0, y: 28, scale: 0.98 }}
+                animate={{ opacity: 1, y: dragOffsetY, scale: 1 }}
+                exit={{ opacity: 0, y: 28, scale: 0.98 }}
+                transition={{ duration: dragOffsetY > 0 ? 0 : 0.24, ease: 'easeOut' }}
+                style={{
+                  ...MOBILE_TOC_SHEET_STYLE,
+                  touchAction: 'pan-y'
+                }}
+                onTouchStart={handleSheetTouchStart}
+                onTouchMove={handleSheetTouchMove}
+                onTouchEnd={handleSheetTouchEnd}
+                onTouchCancel={handleSheetTouchEnd}
+                className="fixed z-[80] h-[min(72vh,38rem)] lg:hidden"
+              >
+                <div className="mb-3 flex justify-center">
+                  <span className="h-1.5 w-14 rounded-full bg-white/65 shadow-[0_6px_20px_rgba(0,0,0,0.12)] dark:bg-zinc-700/80" />
+                </div>
+                {panelContent}
+              </motion.aside>
+            </>
+          </AnimatePresence>,
+          document.body
+        )
+      : null;
 
   return (
     <>
@@ -438,7 +523,7 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
         type="button"
         onClick={() => setIsOpen((value) => !value)}
         style={MOBILE_TOC_TRIGGER_STYLE}
-        className="fixed z-40 inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/96 px-4 py-2.5 text-sm font-medium text-ink shadow-[0_16px_42px_-26px_rgba(28,25,23,0.36)] backdrop-blur-xl transition-all duration-300 hover:border-accent/20 hover:text-accent dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 lg:hidden"
+        className="fixed z-[60] inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/96 px-4 py-2.5 text-sm font-medium text-ink shadow-[0_16px_42px_-26px_rgba(28,25,23,0.36)] backdrop-blur-xl transition-all duration-300 hover:border-accent/20 hover:text-accent dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 lg:hidden"
         aria-label={isOpen ? '关闭目录' : '打开目录'}
         aria-expanded={isOpen}
       >
@@ -449,33 +534,7 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
         </span>
       </button>
 
-      <AnimatePresence>
-        {isOpen && isMobileViewport && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
-              onClick={() => setIsOpen(false)}
-            />
-
-            <motion.aside
-              initial={{ opacity: 0, y: 28, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 28, scale: 0.98 }}
-              transition={{ duration: 0.24, ease: 'easeOut' }}
-              style={MOBILE_TOC_SHEET_STYLE}
-              className="fixed z-40 h-[min(68vh,36rem)] lg:hidden"
-            >
-              <div className="mb-3 flex justify-center">
-                <span className="h-1.5 w-14 rounded-full bg-white/65 shadow-[0_6px_20px_rgba(0,0,0,0.12)] dark:bg-zinc-700/80" />
-              </div>
-              {panelContent}
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+      {mobileSheet}
 
       <aside className="hidden w-72 lg:block xl:w-80">
         {panelContent}
