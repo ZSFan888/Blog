@@ -9,7 +9,7 @@ tags:
   - 腾讯元宝
   - 腾讯
   - 微信
-coverImage: /posts-img/8a73d96b60029d8ace3a29c367639ae0.png
+coverImage: /posts-img/weixin-vs-yuanbao-cover.png
 author: 跑路的duck
 ---
 
@@ -18,16 +18,16 @@ author: 跑路的duck
 ## 前情提要  
 **这两天 腾讯元宝推出了送10亿的活动**  
 **于是微信 QQ等各大平台全都被元宝的红包邀请广告刷屏**  
-![元宝广告](/posts-img/fb0be011f36279c9aff272a14ad6c1d4.jpg)  
+![weixin-vs-yuanbao-ad](/posts-img/weixin-vs-yuanbao-ad.jpg)  
 
 ## 主要事件  
 **结果......微信出手了**  
 **直接反手给元宝封了**  
-![元宝被封1](/posts-img/f83d0aa0f5345d2f9f66f8d31e79b57f.jpg)  
-![元宝被封2](/posts-img/7d61147c4d76198515d5b59babf0a0f1.jpg)  
+![weixin-vs-yuanbao-ban-01](/posts-img/weixin-vs-yuanbao-ban-01.jpg)  
+![weixin-vs-yuanbao-ban-02](/posts-img/weixin-vs-yuanbao-ban-02.jpg)  
 
 **很快 元宝也在微博发出了回应**  
-![元宝回应](/posts-img/5dda253088d1512b81c3b018e1db9c85.jpg)  
+![weixin-vs-yuanbao-response](/posts-img/weixin-vs-yuanbao-response.jpg)  
 
 ## 观点看法  
 **有的人认为这是腾讯内斗**  

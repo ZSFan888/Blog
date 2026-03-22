@@ -7,9 +7,9 @@ updatedAt: 2026-02-21
 category: 随笔
 tags:
   - 吊图
-coverImage: /posts-img/c851e7b4034b21e209ba53d22654d7b5.jpg
+coverImage: /posts-img/rangchumangdao-cover.jpg
 author: 跑路的duck
 ---
 
 # **记录一张吊图**  
-![1000013657](/posts-img/c851e7b4034b21e209ba53d22654d7b5.jpg)
+![rangchumangdao-cover](/posts-img/rangchumangdao-cover.jpg)

@@ -11,7 +11,7 @@ tags:
   - 权限异常
   - 0x80070005
   - C盘拒绝访问
-coverImage: /posts-img/1033012711.png
+coverImage: /posts-img/fix-c-drive-access-denied-cover.png
 author: 跑路的duck
 ---
 
@@ -21,25 +21,25 @@ author: 跑路的duck
 
 ### 1. 开机按shift进入界面，然后选择疑难解答
 
-![1.png](/posts-img/1033012711.png)
+![fix-c-drive-access-denied-cover](/posts-img/fix-c-drive-access-denied-cover.png)
 
 ### 2. 点击高级选项
 
-![2.png](/posts-img/3860053228.png)
+![fix-c-drive-access-denied-step-02](/posts-img/fix-c-drive-access-denied-step-02.png)
 
 ### 3. 点击启动设置
 
-![3.png](/posts-img/1048792524.png)
+![fix-c-drive-access-denied-step-03](/posts-img/fix-c-drive-access-denied-step-03.png)
 
 ### 4. 点击重启，然后按F4进入安全模式
 
-![4.png](/posts-img/3326977194.png)
+![fix-c-drive-access-denied-step-04](/posts-img/fix-c-drive-access-denied-step-04.png)
 
-![4.1.png](/posts-img/1364159765.png)
+![fix-c-drive-access-denied-step-04-1](/posts-img/fix-c-drive-access-denied-step-04-1.png)
 
 ### 5. 调出cmd，输入regedit然后回车，打开注册表编辑器
 
-![5.png](/posts-img/3380821141.png)
+![fix-c-drive-access-denied-step-05](/posts-img/fix-c-drive-access-denied-step-05.png)
 
 ### 6. 依次来到Policies/system
 
@@ -49,45 +49,45 @@ author: 跑路的duck
 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 ```
 
-![6.png](/posts-img/2365001702.png)
+![fix-c-drive-access-denied-step-06](/posts-img/fix-c-drive-access-denied-step-06.png)
 
 ### 7. 右侧修改consentPromptBehaviorAdmin和EnableLUA的值，都改成0
 
-![7.png](/posts-img/3727143403.png)
+![fix-c-drive-access-denied-step-07](/posts-img/fix-c-drive-access-denied-step-07.png)
 
-![7.1.png](/posts-img/2692220662.png)
+![fix-c-drive-access-denied-step-07-1](/posts-img/fix-c-drive-access-denied-step-07-1.png)
 
 ### 8. 重启进入电脑，选中C盘，右键属性-安全
 
-![8.png](/posts-img/4092789719.png)
+![fix-c-drive-access-denied-step-08](/posts-img/fix-c-drive-access-denied-step-08.png)
 
 ### 9. 点击高级-更改所有者
 
-![9.png](/posts-img/3345193941.png)
+![fix-c-drive-access-denied-step-09](/posts-img/fix-c-drive-access-denied-step-09.png)
 
 ### 10. 输入administrators，确定，然后保存退出
 
-![10.png](/posts-img/1752829548.png)
+![fix-c-drive-access-denied-step-10](/posts-img/fix-c-drive-access-denied-step-10.png)
 
 ### 11. 继续选中C盘右键属性-安全
 
-![11.png](/posts-img/1988645623.png)
+![fix-c-drive-access-denied-step-11](/posts-img/fix-c-drive-access-denied-step-11.png)
 
 ### 12. 点击编辑-添加
 
-![12.png](/posts-img/3504424723.png)
+![fix-c-drive-access-denied-step-12](/posts-img/fix-c-drive-access-denied-step-12.png)
 
 ### 13. 输入administrators，确定
 
-![13.png](/posts-img/1887065490.png)
+![fix-c-drive-access-denied-step-13](/posts-img/fix-c-drive-access-denied-step-13.png)
 
 ### 14. 输入Users，确定
 
-![14.png](/posts-img/2344304557.png)
+![fix-c-drive-access-denied-step-14](/posts-img/fix-c-drive-access-denied-step-14.png)
 
 ### 15. 最后然后一路无视错误提示一直点继续即可
 
-![15.png](/posts-img/914644453.png)
+![fix-c-drive-access-denied-step-15](/posts-img/fix-c-drive-access-denied-step-15.png)
 
 ---
 
