@@ -93,17 +93,15 @@ export const Tags = () => {
   };
 
   const updateTagParam = (nextTag?: string) => {
-    setSearchParams((previous) => {
-      const nextParams = new URLSearchParams(previous);
+    const nextParams = new URLSearchParams(searchParams);
 
-      if (nextTag) {
-        nextParams.set('tag', nextTag);
-      } else {
-        nextParams.delete('tag');
-      }
+    if (nextTag) {
+      nextParams.set('tag', nextTag);
+    } else {
+      nextParams.delete('tag');
+    }
 
-      return nextParams;
-    });
+    setSearchParams(nextParams);
   };
 
   return (
@@ -160,24 +158,30 @@ export const Tags = () => {
           </div>
 
           {!selectedTag ? (
-            <div className="rounded-2xl border border-zinc-200 bg-white/80 p-8 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/50 md:p-12">
-              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-                {tags.map((tag, index) => (
-                  <motion.button
-                    key={tag.name}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.03 }}
-                    onClick={() => updateTagParam(tag.name)}
-                    className={`${getTagSize(tag.count)} group relative rounded-full border-2 border-zinc-200 bg-white px-5 py-2.5 font-bold text-zinc-700 transition-all hover:scale-110 hover:border-accent hover:text-accent dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-accent dark:hover:text-accent`}
-                    aria-label={`查看标签 ${tag.name}，共 ${tag.count} 篇文章`}
-                  >
-                    {tag.name}
-                    <span className="ml-2 text-xs opacity-60">({tag.count})</span>
-                  </motion.button>
-                ))}
+            allTags.length > 0 ? (
+              <div className="rounded-2xl border border-zinc-200 bg-white/80 p-8 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/50 md:p-12">
+                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+                  {tags.map((tag, index) => (
+                    <motion.button
+                      key={tag.name}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.03 }}
+                      onClick={() => updateTagParam(tag.name)}
+                      className={`${getTagSize(tag.count)} group relative rounded-full border-2 border-zinc-200 bg-white px-5 py-2.5 font-bold text-zinc-700 transition-all hover:scale-110 hover:border-accent hover:text-accent dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-accent dark:hover:text-accent`}
+                      aria-label={`查看标签 ${tag.name}，共 ${tag.count} 篇文章`}
+                    >
+                      {tag.name}
+                      <span className="ml-2 text-xs opacity-60">({tag.count})</span>
+                    </motion.button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white/80 p-8 text-center text-sm text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400">
+                当前还没有可展示的标签内容。
+              </div>
+            )
           ) : (
             <div>
               <div className="mb-8 flex items-center justify-between">
@@ -239,4 +243,5 @@ export const Tags = () => {
     </motion.div>
   );
 };
+
 
