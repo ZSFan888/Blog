@@ -4,7 +4,7 @@ title: Claude Code 使用教程：从上手到高效使用的完整实践
 excerpt: 这篇文章从 Claude Code 是什么、如何安装和基础使用讲起，再到如何理解工作流、项目上下文、CLAUDE.md 与日常协作方式，适合想把 Claude Code 真正用进开发流程的人。
 date: 2026-03-21
 updatedAt: 2026-03-21
-category: 技术
+category: 教程
 tags:
   - Claude Code
   - CLAUDE.md

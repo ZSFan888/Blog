@@ -5,23 +5,30 @@ import {
   Clock3,
   Database,
   Eye,
+  FileImage,
+  FileText,
+  FolderTree,
   HardDrive,
+  Hash,
   Loader2,
   RefreshCw,
   ShieldCheck,
   TrendingUp,
+  Type,
   Users
 } from 'lucide-react';
 
 import { Seo } from '../components/Seo';
 import { getCloudflareSnapshot } from '../services/cloudflare';
+import { getSiteStats, SiteStats } from '../services/siteStats';
 import { CloudflareSnapshot } from '../types';
 
-const EMPTY_SNAPSHOT: CloudflareSnapshot = {
-  enabled: false,
-  fetchedAt: null,
-  domain: '',
-  timeWindows: []
+const EMPTY_SITE_STATS: SiteStats = {
+  totalPosts: 0,
+  totalWords: 0,
+  totalCategories: 0,
+  totalTags: 0,
+  totalImages: 0
 };
 
 const formatDateTime = (dateText: string | null) => {
@@ -93,49 +100,67 @@ const InfoCard = ({
 
 export const Stats = () => {
   const shouldReduceMotion = useReducedMotion();
-  const hasLoadedRef = useRef(false);
+  const siteStatsLoadedRef = useRef(false);
+  const cloudflareLoadedRef = useRef(false);
   const requestIdRef = useRef(0);
-  const [snapshot, setSnapshot] = useState<CloudflareSnapshot>(EMPTY_SNAPSHOT);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [siteStats, setSiteStats] = useState<SiteStats>(EMPTY_SITE_STATS);
+  const [snapshot, setSnapshot] = useState<CloudflareSnapshot>({
+    enabled: false,
+    fetchedAt: null,
+    domain: '',
+    timeWindows: []
+  });
+  const [siteStatsLoading, setSiteStatsLoading] = useState(true);
+  const [cloudflareLoading, setCloudflareLoading] = useState(false);
+  const [cloudflareRequested, setCloudflareRequested] = useState(false);
   const [selectedDays, setSelectedDays] = useState(7);
 
-  const loadData = async (forceRefresh = false) => {
-    const requestId = ++requestIdRef.current;
-
-    if (forceRefresh) {
-      setRefreshing(true);
-    } else if (!hasLoadedRef.current) {
-      setLoading(true);
+  const loadSiteStats = async () => {
+    if (siteStatsLoadedRef.current) {
+      return;
     }
 
+    setSiteStatsLoading(true);
+
     try {
-      const data = await getCloudflareSnapshot(forceRefresh);
+      const statsData = await getSiteStats();
+      setSiteStats(statsData);
+      siteStatsLoadedRef.current = true;
+    } catch (error) {
+      console.error('Failed to load site stats:', error);
+    } finally {
+      setSiteStatsLoading(false);
+    }
+  };
+
+  const loadCloudflareData = async (forceRefresh = false) => {
+    const requestId = ++requestIdRef.current;
+
+    setCloudflareRequested(true);
+    setCloudflareLoading(true);
+
+    try {
+      const cloudflareData = await getCloudflareSnapshot(forceRefresh);
 
       if (requestId !== requestIdRef.current) {
         return;
       }
 
-      setSnapshot(data);
-      hasLoadedRef.current = true;
+      setSnapshot(cloudflareData);
+      cloudflareLoadedRef.current = true;
     } catch (error) {
       if (requestId === requestIdRef.current) {
-        console.error('Failed to load Cloudflare data:', error);
+        console.error('Failed to load Cloudflare stats:', error);
       }
     } finally {
       if (requestId === requestIdRef.current) {
-        setLoading(false);
-        setRefreshing(false);
+        setCloudflareLoading(false);
       }
     }
   };
 
   useEffect(() => {
-    if (hasLoadedRef.current) {
-      return;
-    }
-
-    void loadData();
+    void loadSiteStats();
   }, []);
 
   useEffect(() => {
@@ -156,7 +181,6 @@ export const Stats = () => {
     null;
 
   const hasData = snapshot.enabled && Boolean(currentTimeWindow);
-  const isInitialLoading = loading && !hasLoadedRef.current;
 
   return (
     <motion.div
@@ -185,18 +209,26 @@ export const Stats = () => {
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
             <button
               type="button"
-              onClick={() => void loadData(true)}
-              disabled={refreshing}
+              onClick={() => void loadCloudflareData(cloudflareLoadedRef.current)}
+              disabled={cloudflareLoading}
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-3 text-sm font-semibold text-accent transition-all hover:bg-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
-              title="刷新统计数据"
+              title={cloudflareRequested ? '刷新 Cloudflare 统计数据' : '获取 Cloudflare 统计数据'}
             >
-              <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-              <span>{refreshing ? '刷新中...' : '刷新统计'}</span>
+              <RefreshCw size={18} className={cloudflareLoading ? 'animate-spin' : ''} />
+              <span>
+                {cloudflareLoading ? '获取中...' : cloudflareRequested ? '刷新 Cloudflare 数据' : '获取 Cloudflare 访问数据'}
+              </span>
             </button>
 
             <div className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-zinc-200/80 bg-white/92 px-4 py-3 text-sm font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300">
               <BarChart3 size={18} className="text-accent" />
-              <span>{currentTimeWindow ? `最近 ${currentTimeWindow.days} 天` : '等待数据'}</span>
+              <span>
+                {cloudflareRequested
+                  ? currentTimeWindow
+                    ? `最近 ${currentTimeWindow.days} 天`
+                    : '暂无 Cloudflare 数据'
+                  : '按需加载'}
+              </span>
             </div>
           </div>
         </div>
@@ -208,26 +240,32 @@ export const Stats = () => {
           </div>
           <div className="rounded-[1.4rem] border border-zinc-200/80 bg-white/92 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/72">
             <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-zinc-400">最近更新</div>
-            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">{formatDateTime(snapshot.fetchedAt)}</div>
+            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">
+              {cloudflareRequested ? formatDateTime(snapshot.fetchedAt) : '尚未请求'}
+            </div>
           </div>
           <div className="rounded-[1.4rem] border border-zinc-200/80 bg-white/92 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/72">
             <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-zinc-400">时间窗口</div>
-            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">{snapshot.timeWindows.length} 个可选区间</div>
+            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">
+              {cloudflareRequested ? `${snapshot.timeWindows.length} 个可选区间` : '点击后加载'}
+            </div>
           </div>
           <div className="rounded-[1.4rem] border border-zinc-200/80 bg-white/92 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/72">
             <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-zinc-400">访问状态</div>
-            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">{snapshot.enabled ? '数据可用' : '等待配置'}</div>
+            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">
+              {cloudflareRequested ? (snapshot.enabled ? '数据可用' : '等待配置') : '未请求'}
+            </div>
           </div>
         </div>
 
-        {isInitialLoading && (
+        {cloudflareLoading && (
           <div className="mt-10 flex min-h-52 flex-col items-center justify-center rounded-[1.75rem] border border-zinc-200/70 bg-white/92 py-14 dark:border-zinc-800 dark:bg-zinc-950/72">
             <Loader2 size={44} className="animate-spin text-accent" />
-            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">加载统计数据中...</p>
+            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">获取 Cloudflare 统计数据中...</p>
           </div>
         )}
 
-        {!isInitialLoading && snapshot.enabled && snapshot.timeWindows.length > 0 && (
+        {!cloudflareLoading && cloudflareRequested && snapshot.enabled && snapshot.timeWindows.length > 0 && (
           <>
             <div className="-mx-1 mt-8 flex gap-2 overflow-x-auto px-1 pb-2 no-scrollbar">
               {snapshot.timeWindows.map((timeWindow) => (
@@ -265,7 +303,7 @@ export const Stats = () => {
           </>
         )}
 
-        {!isInitialLoading && !snapshot.enabled && (
+        {!cloudflareLoading && cloudflareRequested && !snapshot.enabled && (
           <div className="mt-10 rounded-[1.75rem] border border-zinc-200/70 bg-white/92 p-8 text-center dark:border-zinc-800 dark:bg-zinc-950/72">
             <ShieldCheck size={44} className="mx-auto mb-4 text-zinc-400" />
             <h3 className="mb-2 font-serif text-xl font-bold text-ink dark:text-white">未配置 Cloudflare API</h3>
@@ -274,15 +312,44 @@ export const Stats = () => {
             </p>
           </div>
         )}
+
+        {!cloudflareRequested && (
+          <div className="mt-10 flex justify-center">
+            <button
+              type="button"
+              onClick={() => void loadCloudflareData(false)}
+              className="group inline-flex min-h-16 w-full max-w-xl items-center justify-center gap-3 rounded-[1.5rem] border border-accent/30 bg-gradient-to-r from-accent to-accent/85 px-6 py-5 text-base font-bold text-white shadow-[0_24px_60px_-24px_rgba(192,57,43,0.65)] transition-all hover:-translate-y-0.5 hover:shadow-[0_28px_70px_-24px_rgba(192,57,43,0.78)] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-2 focus:ring-offset-white dark:ring-offset-zinc-950 sm:text-lg"
+              title="获取 Cloudflare 访问数据"
+            >
+              <RefreshCw size={22} className="transition-transform duration-300 group-hover:rotate-90" />
+              <span>获取 Cloudflare 访问数据</span>
+            </button>
+          </div>
+        )}
+      </section>
+
+      <section className="mt-10 rounded-[1.75rem] border border-zinc-200 bg-white/92 p-5 shadow-[0_20px_52px_-30px_rgba(24,24,27,0.22)] dark:border-zinc-800 dark:bg-zinc-950/72 dark:shadow-none md:mt-14 md:p-6">
+        <div className="mb-5 flex items-center gap-2">
+          <Database size={18} className="text-accent" />
+          <h2 className="font-serif text-xl font-bold text-ink dark:text-white">站点概览</h2>
+        </div>
+
+        <div className="grid gap-4 min-[480px]:grid-cols-2 xl:grid-cols-5">
+          <SummaryCard icon={FileText} title="当前文章数" value={formatValue(siteStats.totalPosts)} detail="已公开发布的文章总数" />
+          <SummaryCard icon={Type} title="总字数" value={formatValue(siteStats.totalWords)} detail="按正文内容累计的总阅读字数" />
+          <SummaryCard icon={FolderTree} title="总分类数" value={formatValue(siteStats.totalCategories)} detail="当前启用的文章分类数量" />
+          <SummaryCard icon={Hash} title="总标签数" value={formatValue(siteStats.totalTags)} detail="去重后的标签总数量" />
+          <SummaryCard icon={FileImage} title="总图片数" value={formatValue(siteStats.totalImages)} detail="正文内 Markdown 图片累计数量" />
+        </div>
       </section>
 
       <section className="mt-10 space-y-6 md:mt-14">
-        {!isInitialLoading && hasData && currentTimeWindow && (
+        {!cloudflareLoading && cloudflareRequested && hasData && currentTimeWindow && (
           <div className="rounded-[1.75rem] border border-zinc-200 bg-white/92 p-5 shadow-[0_20px_52px_-30px_rgba(24,24,27,0.22)] dark:border-zinc-800 dark:bg-zinc-950/72 dark:shadow-none md:p-6">
             <div className="mb-5 flex items-center gap-2">
               <Database size={18} className="text-accent" />
               <h2 className="font-serif text-xl font-bold text-ink dark:text-white">数据说明</h2>
-              {refreshing && (
+              {cloudflareLoading && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-700 dark:text-sky-300">
                   <Loader2 size={12} className="animate-spin" />
                   同步中
@@ -299,7 +366,7 @@ export const Stats = () => {
           </div>
         )}
 
-        {!isInitialLoading && !snapshot.enabled && (
+        {!cloudflareLoading && cloudflareRequested && !snapshot.enabled && (
           <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white/72 px-6 py-16 text-center text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-400">
             暂无 Cloudflare 统计数据。请配置环境变量后重新执行 `npm run build`。
           </div>

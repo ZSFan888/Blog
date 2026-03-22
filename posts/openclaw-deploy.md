@@ -4,7 +4,7 @@ title: OpenClaw 部署教程：用 Docker 快速搭建你的私人 AI 助手
 excerpt: 从 OpenClaw 是什么，到如何使用 Docker 完成部署、初始化、访问控制台与常见问题排查，这篇文章带你快速上手。
 date: 2026-03-21
 updatedAt: 2026-03-21
-category: 技术
+category: 教程
 tags:
   - OpenClaw
   - Docker 部署

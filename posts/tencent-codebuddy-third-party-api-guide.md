@@ -4,7 +4,7 @@ title: 腾讯 CodeBuddy 使用教程：从上手到高效使用的完整实践
 excerpt: 这篇文章从腾讯 CodeBuddy 的基本使用讲起，再到如何理解任务模式、上下文补充、MCP 基础配置与日常使用思路，适合想把 CodeBuddy 真正用进开发与办公流程的人。
 date: 2026-03-21
 updatedAt: 2026-03-21
-category: 技术
+category: 教程
 tags:
   - CodeBuddy
   - 腾讯云代码助手

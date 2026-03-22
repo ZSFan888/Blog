@@ -70,7 +70,7 @@
       <guid isPermaLink="true">https://blog.pldduck.com/post/claude-code-third-party-api-guide</guid>
       <description><![CDATA[这篇文章从 Claude Code 是什么、如何安装和基础使用讲起，再到如何理解工作流、项目上下文、CLAUDE.md 与日常协作方式，适合想把 Claude Code 真正用进开发流程的人。]]></description>
       <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>技术</category>
+      <category>教程</category>
     </item>
     <item>
       <title><![CDATA[域名接入 Cloudflare DNS FREE 计划教程：从添加站点到切换 NS 全流程]]></title>
@@ -78,7 +78,7 @@
       <guid isPermaLink="true">https://blog.pldduck.com/post/cloudflare-dns-free-plan-domain-setup</guid>
       <description><![CDATA[这篇文章从准备工作、添加域名、选择 Cloudflare Free 套餐、检查 DNS 记录、切换 Nameserver、验证生效，到 DNSSEC 与常见坑整理，带你完整走一遍域名接入 Cloudflare DNS 免费计划的流程。]]></description>
       <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>技术</category>
+      <category>教程</category>
     </item>
     <item>
       <title><![CDATA[Cloudflare Pages 和 Workers 详解：怎么选、能做什么、适合哪些项目]]></title>
@@ -190,7 +190,7 @@
       <guid isPermaLink="true">https://blog.pldduck.com/post/openclaw-deploy</guid>
       <description><![CDATA[从 OpenClaw 是什么，到如何使用 Docker 完成部署、初始化、访问控制台与常见问题排查，这篇文章带你快速上手。]]></description>
       <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>技术</category>
+      <category>教程</category>
     </item>
     <item>
       <title><![CDATA[千问负责人离职这件事，真正让人担心的不是一个人走了]]></title>
@@ -206,7 +206,7 @@
       <guid isPermaLink="true">https://blog.pldduck.com/post/tencent-codebuddy-third-party-api-guide</guid>
       <description><![CDATA[这篇文章从腾讯 CodeBuddy 的基本使用讲起，再到如何理解任务模式、上下文补充、MCP 基础配置与日常使用思路，适合想把 CodeBuddy 真正用进开发与办公流程的人。]]></description>
       <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>技术</category>
+      <category>教程</category>
     </item>
     <item>
       <title><![CDATA[WorkBuddy 是什么？一篇讲清楚产品定位、核心能力和上手方法]]></title>
@@ -222,7 +222,7 @@
       <guid isPermaLink="true">https://blog.pldduck.com/post/centos-bt-install-swoole5</guid>
       <description><![CDATA[教你解决CentOS 宝塔面板无法安装 Swoole5 的问题]]></description>
       <pubDate>Tue, 24 Feb 2026 00:00:00 GMT</pubDate>
-      <category>技术</category>
+      <category>教程</category>
     </item>
     <item>
       <title><![CDATA[D-pxxdns-index]]></title>
@@ -254,7 +254,7 @@
       <guid isPermaLink="true">https://blog.pldduck.com/post/fix-c-drive-access-denied</guid>
       <description><![CDATA[解决Windows C盘权限异常、0x80070005错误、拒绝访问等问题的完整教程]]></description>
       <pubDate>Fri, 30 Jan 2026 00:00:00 GMT</pubDate>
-      <category>技术</category>
+      <category>教程</category>
     </item>
     <item>
       <title><![CDATA[Cloudflare Tunnel内网穿透]]></title>
@@ -262,7 +262,7 @@
       <guid isPermaLink="true">https://blog.pldduck.com/post/cf-tunnel</guid>
       <description><![CDATA[教你使用Cloudflare Tunnel轻松实现内网穿透]]></description>
       <pubDate>Sun, 25 Jan 2026 00:00:00 GMT</pubDate>
-      <category>技术</category>
+      <category>教程</category>
     </item>
     <item>
       <title><![CDATA[关于D-blog]]></title>

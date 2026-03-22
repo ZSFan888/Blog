@@ -142,14 +142,43 @@ interface SearchResult extends PostMetadata {
   dateTimestamp: number;
 }
 
-export const searchPosts = async (query: string): Promise<PostMetadata[]> => {
+export type PostSearchScope = 'all' | 'category' | 'content' | 'title';
+
+const getSearchableFields = (entry: SearchIndexEntry, scope: PostSearchScope) => {
+  switch (scope) {
+    case 'category':
+      return [{ key: 'category', value: entry.category, weight: 6 }] as const;
+    case 'content':
+      return [
+        { key: 'excerpt', value: entry.excerpt, weight: 2 },
+        { key: 'content', value: entry.content, weight: 1 }
+      ] as const;
+    case 'title':
+      return [{ key: 'title', value: entry.title, weight: 8 }] as const;
+    case 'all':
+    default:
+      return [
+        { key: 'title', value: entry.title, weight: 8 },
+        { key: 'category', value: entry.category, weight: 4 },
+        { key: 'excerpt', value: entry.excerpt, weight: 2 },
+        { key: 'content', value: entry.content, weight: 1 }
+      ] as const;
+  }
+};
+
+export const searchPosts = async (
+  query: string,
+  options: { scope?: PostSearchScope } = {}
+): Promise<PostMetadata[]> => {
   const normalizedQuery = normalizeSearchText(query);
+  const scope = options.scope ?? 'all';
 
   if (!normalizedQuery) {
     return [];
   }
 
-  const cachedResult = searchResultsCache.get(normalizedQuery);
+  const cacheKey = `${scope}::${normalizedQuery}`;
+  const cachedResult = searchResultsCache.get(cacheKey);
   if (cachedResult) {
     return cachedResult;
   }
@@ -161,12 +190,7 @@ export const searchPosts = async (query: string): Promise<PostMetadata[]> => {
   allPosts.forEach((entry) => {
     let score = 0;
     const matchedTerms = new Set<string>();
-    const searchableFields = [
-      { key: 'title', value: entry.title, weight: 8 },
-      { key: 'category', value: entry.category, weight: 4 },
-      { key: 'excerpt', value: entry.excerpt, weight: 2 },
-      { key: 'content', value: entry.content, weight: 1 }
-    ] as const;
+    const searchableFields = getSearchableFields(entry, scope);
 
     searchableFields.forEach(({ value, weight }) => {
       const fieldScore = getFieldMatchScore(value, searchTerms, normalizedQuery, weight);
@@ -181,22 +205,24 @@ export const searchPosts = async (query: string): Promise<PostMetadata[]> => {
       });
     });
 
-    entry.tags.forEach((tag) => {
-      const fieldScore = getFieldMatchScore(tag, searchTerms, normalizedQuery, 5);
-      if (fieldScore > 0) {
-        score += fieldScore;
-      }
-
-      searchTerms.forEach((term) => {
-        if (tag.includes(term)) {
-          matchedTerms.add(term);
+    if (scope === 'all') {
+      entry.tags.forEach((tag) => {
+        const fieldScore = getFieldMatchScore(tag, searchTerms, normalizedQuery, 5);
+        if (fieldScore > 0) {
+          score += fieldScore;
         }
+
+        searchTerms.forEach((term) => {
+          if (tag.includes(term)) {
+            matchedTerms.add(term);
+          }
+        });
       });
-    });
+    }
 
     const matchesFullQuery =
       searchableFields.some(({ value }) => value.includes(normalizedQuery)) ||
-      entry.tags.some((tag) => tag.includes(normalizedQuery));
+      (scope === 'all' && entry.tags.some((tag) => tag.includes(normalizedQuery)));
 
     if (score > 0 && (matchesFullQuery || matchedTerms.size === searchTerms.length)) {
       results.push({
@@ -211,7 +237,7 @@ export const searchPosts = async (query: string): Promise<PostMetadata[]> => {
     .sort((a, b) => b.score - a.score || b.dateTimestamp - a.dateTimestamp)
     .map(({ score, dateTimestamp, ...post }) => post);
 
-  searchResultsCache.set(normalizedQuery, resolvedResults);
+  searchResultsCache.set(cacheKey, resolvedResults);
   return resolvedResults;
 };
 

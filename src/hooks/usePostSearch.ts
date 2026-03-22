@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { searchPosts } from '@/services/posts';
+import { searchPosts, type PostSearchScope } from '@/services/posts';
 import type { PostMetadata } from '@/types';
 
 interface UsePostSearchOptions {
   emptyResults?: PostMetadata[];
   debounceMs?: number;
+  scope?: PostSearchScope;
 }
 
 const DEFAULT_EMPTY_RESULTS: PostMetadata[] = [];
 
 export const usePostSearch = ({
   emptyResults = DEFAULT_EMPTY_RESULTS,
-  debounceMs = 300
+  debounceMs = 300,
+  scope = 'all'
 }: UsePostSearchOptions = {}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<PostMetadata[]>(emptyResults);
@@ -44,7 +46,7 @@ export const usePostSearch = ({
 
     const timeoutId = window.setTimeout(async () => {
       try {
-        const searchedPosts = await searchPosts(normalizedQuery);
+        const searchedPosts = await searchPosts(normalizedQuery, { scope });
 
         if (requestId !== searchRequestIdRef.current) {
           return;
@@ -68,7 +70,7 @@ export const usePostSearch = ({
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [debounceMs, searchQuery]);
+  }, [debounceMs, scope, searchQuery]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -90,3 +92,4 @@ export const usePostSearch = ({
     hasSearchQuery: searchQuery.trim().length > 0
   };
 };
+

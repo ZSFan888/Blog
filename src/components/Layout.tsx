@@ -6,11 +6,13 @@ import { siteConfig } from '@config/site.config';
 import { BackToTop } from './BackToTop';
 import { usePostSearch } from '@/hooks/usePostSearch';
 import { ProgressiveImage } from './ProgressiveImage';
+import type { PostSearchScope } from '@/services/posts';
 
 const TEXT = {
   searchPlaceholder: '\u641c\u7d22\u6587\u7ae0...',
   searchEmpty: '\u8f93\u5165\u5173\u952e\u8bcd\u5f00\u59cb\u641c\u7d22',
   searchHint: '\u652f\u6301\u6309\u6807\u9898\u3001\u6807\u7b7e\u3001\u5206\u7c7b\u641c\u7d22',
+  searchScopeLabel: '\u641c\u7d22\u8303\u56f4',
   close: '\u5173\u95ed',
   theme: '\u5916\u89c2',
   notFoundPrefix: '\u6ca1\u6709\u627e\u5230\u4e0e',
@@ -39,18 +41,37 @@ const isEditableTarget = (target: EventTarget | null) => {
   return target.isContentEditable || tagName === 'input' || tagName === 'textarea' || tagName === 'select';
 };
 
+const SEARCH_SCOPE_OPTIONS: Array<{ value: PostSearchScope; label: string }> = [
+  { value: 'category', label: '分类' },
+  { value: 'content', label: '正文内容' },
+  { value: 'title', label: '仅标题' }
+];
+
+const SEARCH_SCOPE_HINTS: Record<PostSearchScope, string> = {
+  all: '支持按标题、标签、分类、摘要与正文搜索',
+  category: '仅搜索文章分类名称，适合快速缩小到专题目录',
+  content: '只在摘要和正文内容中搜索，不匹配标题和分类',
+  title: '只匹配文章标题，适合按标题关键字快速定位'
+};
+
 const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
-  const { searchQuery, isSearching, results, handleSearch, clearSearch, hasSearchQuery } = usePostSearch();
+  const [searchScope, setSearchScope] = useState<PostSearchScope>('content');
+  const { searchQuery, isSearching, results, handleSearch, clearSearch, hasSearchQuery } = usePostSearch({
+    scope: searchScope
+  });
   const visibleResults = results.slice(0, 8);
+  const activeScopeHint = SEARCH_SCOPE_HINTS[searchScope];
+  const modalEase = [0.16, 1, 0.3, 1] as const;
 
   useEffect(() => {
     if (!isOpen) {
       clearSearch();
+      setSearchScope('content');
       previousActiveElementRef.current?.focus?.();
       previousActiveElementRef.current = null;
       return;
@@ -122,10 +143,12 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-24">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-void/60 backdrop-blur-sm" />
-          <motion.div initial={{ opacity: 0, scale: 0.95, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -20 }} transition={{ type: 'spring', duration: 0.5 }} className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900" role="dialog" aria-modal="true" aria-labelledby="site-search-title" aria-describedby="site-search-desc">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.26, ease: modalEase }} onClick={onClose} className="absolute inset-0 bg-void/60 backdrop-blur-sm" />
+          <motion.div initial={{ opacity: 0, scale: 0.975, y: -12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.982, y: -8 }} transition={{ duration: 0.34, ease: modalEase }} className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900" role="dialog" aria-modal="true" aria-labelledby="site-search-title" aria-describedby="site-search-desc">
             <div className="flex items-center border-b border-zinc-100 p-4 dark:border-zinc-800">
-              <Search className="mr-3 text-zinc-400" size={20} />
+              <motion.div animate={searchQuery ? { opacity: 1, scale: 1.03 } : { opacity: 0.82, scale: 1 }} transition={{ duration: 0.24, ease: modalEase }}>
+                <Search className="mr-3 text-zinc-400" size={20} />
+              </motion.div>
               <input
                 ref={inputRef}
                 type="text"
@@ -141,18 +164,43 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
               </button>
             </div>
 
+            <div className="border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
+              <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">{TEXT.searchScopeLabel}</div>
+              <div className="flex flex-wrap gap-2">
+                {SEARCH_SCOPE_OPTIONS.map((option) => (
+                  <motion.button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setSearchScope(option.value)}
+                    aria-pressed={searchScope === option.value}
+                    whileHover={{ y: -1 }}
+                    whileTap={{ scale: 0.992 }}
+                    transition={{ duration: 0.22, ease: modalEase }}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      searchScope === option.value
+                        ? 'border-accent bg-accent text-white shadow-sm shadow-accent/30'
+                        : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300 hover:text-ink dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-white'
+                    }`}
+                  >
+                    {option.label}
+                  </motion.button>
+                ))}
+              </div>
+              <motion.p key={searchScope} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.24, ease: modalEase }} className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">{activeScopeHint}</motion.p>
+            </div>
+
             <div className="max-h-[60vh] overflow-y-auto">
               {isSearching ? (
                 <div className="p-12 text-center text-zinc-400">
                   <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-accent border-t-transparent" />
                 </div>
               ) : visibleResults.length > 0 ? (
-                <div className="p-2">
+                <motion.div layout className="p-2">
                   <div id="site-search-title" className="px-3 pt-3 text-xs font-medium uppercase tracking-[0.2em] text-zinc-400">
                     {results.length} {TEXT.resultsSuffix}
                   </div>
-                  {visibleResults.map((post) => (
-                    <button key={post.id} onClick={() => handleSelect(post.id)} className="group block w-full rounded-xl p-4 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50" aria-label={`打开文章：${post.title}`}>
+                  {visibleResults.map((post, index) => (
+                    <motion.button key={post.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.26, delay: index * 0.03, ease: modalEase }} onClick={() => handleSelect(post.id)} className="group block w-full rounded-xl p-4 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50" aria-label={`打开文章：${post.title}`}>
                       <div className="mb-1 flex items-center gap-2">
                         <span className="rounded-md border border-accent/20 bg-accent/5 px-1.5 py-0.5 text-xs font-bold text-accent">{post.category}</span>
                       </div>
@@ -160,22 +208,22 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                         {post.title}
                       </h4>
                       <p className="mt-1 line-clamp-1 text-sm text-zinc-500 dark:text-zinc-400">{post.excerpt}</p>
-                    </button>
+                    </motion.button>
                   ))}
-                </div>
+                </motion.div>
               ) : hasSearchQuery ? (
-                <div className="p-12 text-center text-zinc-400">
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, ease: modalEase }} className="p-12 text-center text-zinc-400">
                   <p>{`${TEXT.notFoundPrefix} “${searchQuery}” ${TEXT.notFoundSuffix}`}</p>
-                </div>
+                </motion.div>
               ) : (
-                <div className="p-12 text-center text-zinc-400">
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, ease: modalEase }} className="p-12 text-center text-zinc-400">
                   <p className="text-sm font-medium">{TEXT.searchEmpty}</p>
-                </div>
+                </motion.div>
               )}
             </div>
 
             <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50 p-3 text-xs text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950/50">
-              <span id="site-search-desc">{TEXT.searchHint}</span>
+              <span id="site-search-desc">{activeScopeHint}</span>
               <div className="flex items-center gap-2">
                 <kbd className="rounded border border-zinc-200 bg-white px-2 py-0.5 font-mono dark:border-zinc-700 dark:bg-zinc-800">esc</kbd>
                 <span>{TEXT.close}</span>
@@ -281,6 +329,26 @@ const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
     { path: '/friends', label: TEXT.navFriends },
     { path: '/about', label: TEXT.navAbout }
   ];
+  const navListVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.06,
+        delayChildren: 0.08
+      }
+    }
+  };
+  const navItemVariants = {
+    hidden: { opacity: 0, y: -8 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.32,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  };
 
   useEffect(() => {
     setIsOpen(false);
@@ -288,52 +356,59 @@ const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
 
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 border-b border-zinc-200/65 bg-paper/80 shadow-[0_18px_48px_-38px_rgba(28,25,23,0.45)] backdrop-blur-xl transition-all duration-500 supports-[backdrop-filter]:bg-paper/64 dark:border-zinc-800/65 dark:bg-void/80">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="group z-50 flex items-center space-x-3">
           <div className="relative">
-            <div className="absolute inset-0 bg-accent opacity-20 blur-md transition-opacity group-hover:opacity-40" />
+            <motion.div
+              className="absolute inset-0 bg-accent opacity-20 blur-md transition-opacity group-hover:opacity-40"
+              animate={{ opacity: [0.18, 0.3, 0.18], scale: [0.96, 1.04, 0.96] }}
+              transition={{ duration: 5.8, repeat: Infinity, ease: 'easeInOut' }}
+            />
             <ProgressiveImage src={siteConfig.logo} alt="Logo" wrapperClassName="relative h-10 w-10 rounded-lg bg-white/10" className="h-10 w-10 rounded-lg bg-white/10 object-cover transition-transform duration-300 group-hover:scale-105" />
           </div>
           <span className="font-serif text-2xl font-bold tracking-tight text-ink dark:text-white">{siteConfig.title}</span>
         </Link>
 
         <div className="hidden items-center space-x-8 md:flex">
-          <div className="mr-4 flex space-x-6">
+          <motion.div className="mr-4 flex space-x-6" variants={navListVariants} initial="hidden" animate="visible">
             {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                aria-current={location.pathname === item.path ? 'page' : undefined}
-                className={`group relative inline-flex h-10 items-center px-2 py-1 text-sm font-semibold uppercase tracking-wider transition-colors ${
-                  location.pathname === item.path
-                    ? 'text-ink dark:text-white'
-                    : 'text-zinc-500 hover:text-ink dark:text-zinc-400 dark:hover:text-white'
-                }`}
-              >
-                <span className="relative z-10">{item.label}</span>
-                <span
-                  aria-hidden="true"
-                  className={`absolute bottom-[2px] left-2 right-2 h-[2px] origin-center rounded-full bg-gradient-to-r from-accent-light via-accent to-accent-dark transition-all duration-250 ${
+              <motion.div key={item.path} variants={navItemVariants}>
+                <Link
+                  to={item.path}
+                  aria-current={location.pathname === item.path ? 'page' : undefined}
+                  className={`group relative inline-flex h-10 items-center px-2 py-1 text-sm font-semibold uppercase tracking-wider transition-colors ${
                     location.pathname === item.path
-                      ? 'scale-x-100 opacity-100 shadow-[0_0_16px_rgba(192,57,43,0.4)]'
-                      : 'scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-70'
+                      ? 'text-ink dark:text-white'
+                      : 'text-zinc-500 hover:text-ink dark:text-zinc-400 dark:hover:text-white'
                   }`}
-                />
-              </Link>
+                >
+                  <span className="relative z-10">{item.label}</span>
+                  <span
+                    aria-hidden="true"
+                    className={`absolute bottom-[2px] left-2 right-2 h-[2px] origin-center rounded-full bg-gradient-to-r from-accent-light via-accent to-accent-dark transition-all duration-250 ${
+                      location.pathname === item.path
+                        ? 'scale-x-100 opacity-100 shadow-[0_0_16px_rgba(192,57,43,0.4)]'
+                        : 'scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-70'
+                    }`}
+                  />
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
-          <div className="flex items-center space-x-3 border-l border-zinc-300 pl-6 dark:border-zinc-700">
-            <button onClick={onSearchClick} className="group flex items-center space-x-2 rounded-lg border border-transparent bg-zinc-100/90 px-3 py-2 text-zinc-500 transition-all duration-300 hover:border-zinc-200 hover:bg-white hover:text-accent dark:bg-zinc-800/90 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800" aria-label="打开站内搜索">
+          <motion.div className="flex items-center space-x-3 border-l border-zinc-300 pl-6 dark:border-zinc-700" variants={navListVariants} initial="hidden" animate="visible">
+            <motion.button variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} onClick={onSearchClick} className="group flex items-center space-x-2 rounded-lg border border-transparent bg-zinc-100/90 px-3 py-2 text-zinc-500 transition-all duration-300 hover:border-zinc-200 hover:bg-white hover:text-accent dark:bg-zinc-800/90 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800" aria-label="打开站内搜索">
               <Search size={16} />
               <span className="text-xs font-medium opacity-70 group-hover:opacity-100">Ctrl+K</span>
-            </button>
-            <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group flex items-center space-x-2 rounded-lg bg-orange-50 px-3 py-2 text-orange-600 transition-colors hover:bg-orange-100 dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-950/70">
+            </motion.button>
+            <motion.a variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group flex items-center space-x-2 rounded-lg bg-orange-50 px-3 py-2 text-orange-600 transition-colors hover:bg-orange-100 dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-950/70">
               <Rss size={16} />
               <span className="text-xs font-medium">{TEXT.rssFeed}</span>
-            </a>
-            <ThemeToggle />
-          </div>
+            </motion.a>
+            <motion.div variants={navItemVariants}>
+              <ThemeToggle />
+            </motion.div>
+          </motion.div>
         </div>
 
         <div className="flex items-center space-x-4 md:hidden">
@@ -344,27 +419,29 @@ const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
-      </div>
+      </motion.div>
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: '100vh' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }} className="fixed inset-0 top-0 z-40 overflow-hidden bg-paper/95 px-6 pt-24 backdrop-blur-xl dark:bg-void/95 md:hidden">
-            <div className="flex flex-col items-center space-y-8 text-center">
+          <motion.div initial={{ opacity: 0, height: 0, clipPath: 'inset(0 0 100% 0 round 0px)' }} animate={{ opacity: 1, height: '100vh', clipPath: 'inset(0 0 0% 0 round 0px)' }} exit={{ opacity: 0, height: 0, clipPath: 'inset(0 0 100% 0 round 0px)' }} transition={{ duration: 0.38, ease: easeOutSoft }} className="fixed inset-0 top-0 z-40 overflow-hidden bg-paper/95 px-6 pt-24 backdrop-blur-xl dark:bg-void/95 md:hidden">
+            <motion.div className="flex flex-col items-center space-y-8 text-center" variants={navListVariants} initial="hidden" animate="visible" exit="hidden">
               {navItems.map((item) => (
-                <Link key={item.path} onClick={() => setIsOpen(false)} to={item.path} className="text-4xl font-serif font-bold text-ink transition-colors hover:text-accent dark:text-white">
-                  {item.label}
-                </Link>
+                <motion.div key={item.path} variants={navItemVariants}>
+                  <Link onClick={() => setIsOpen(false)} to={item.path} className="text-4xl font-serif font-bold text-ink transition-colors hover:text-accent dark:text-white">
+                    {item.label}
+                  </Link>
+                </motion.div>
               ))}
-              <div className="my-4 h-px w-12 bg-zinc-200 dark:bg-zinc-800" />
-              <div className="flex items-center gap-4">
+              <motion.div variants={navItemVariants} className="my-4 h-px w-12 bg-zinc-200 dark:bg-zinc-800" />
+              <motion.div variants={navItemVariants} className="flex items-center gap-4">
                 <span className="text-lg font-medium text-zinc-500">{TEXT.theme}</span>
                 <ThemeToggle />
-              </div>
-              <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-full border border-orange-200 bg-orange-50 px-5 py-2.5 text-sm font-bold tracking-wide text-orange-600 transition-colors hover:bg-orange-100 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300 dark:hover:bg-orange-950/50">
+              </motion.div>
+              <motion.a variants={navItemVariants} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-full border border-orange-200 bg-orange-50 px-5 py-2.5 text-sm font-bold tracking-wide text-orange-600 transition-colors hover:bg-orange-100 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300 dark:hover:bg-orange-950/50">
                 <Rss size={16} />
                 <span>{TEXT.rssFeed}</span>
-              </a>
-            </div>
+              </motion.a>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -395,8 +472,12 @@ const Footer = () => {
 
   return (
     <footer className="relative mt-12 overflow-hidden border-t border-zinc-200/90 bg-paper/88 py-12 dark:border-zinc-800/90 dark:bg-void/92 md:mt-32">
-      <div className="absolute left-1/2 top-0 h-px w-full -translate-x-1/2 bg-gradient-to-r from-transparent via-accent to-transparent opacity-30" />
-      <div className="mx-auto max-w-7xl px-6">
+      <motion.div
+        className="absolute left-1/2 top-0 h-px w-full -translate-x-1/2 bg-gradient-to-r from-transparent via-accent to-transparent opacity-30"
+        animate={{ opacity: [0.2, 0.46, 0.2], scaleX: [0.96, 1, 0.97] }}
+        transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.18 }} transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }} className="mx-auto max-w-7xl px-6">
         <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-3">
           <div className="flex flex-col items-center space-y-4 md:items-start">
             <div>
@@ -405,23 +486,23 @@ const Footer = () => {
             </div>
             <p className="text-center text-sm leading-relaxed text-zinc-400 md:text-left">{siteConfig.description}</p>
             <div className="flex items-center gap-4 pt-2">
-              <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" className="rounded-full bg-zinc-100 p-2 text-zinc-500 transition-all duration-300 hover:bg-black hover:text-white dark:bg-zinc-800 dark:hover:bg-accent" aria-label="打开 GitHub 主页">
+              <motion.a whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" className="rounded-full bg-zinc-100 p-2 text-zinc-500 transition-all duration-300 hover:bg-black hover:text-white dark:bg-zinc-800 dark:hover:bg-accent" aria-label="打开 GitHub 主页">
                 <Github size={18} />
-              </a>
-              <a href={siteConfig.social.email} className="rounded-full bg-zinc-100 p-2 text-zinc-500 transition-all duration-300 hover:bg-black hover:text-white dark:bg-zinc-800 dark:hover:bg-accent" aria-label="发送邮件">
+              </motion.a>
+              <motion.a whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} href={siteConfig.social.email} className="rounded-full bg-zinc-100 p-2 text-zinc-500 transition-all duration-300 hover:bg-black hover:text-white dark:bg-zinc-800 dark:hover:bg-accent" aria-label="发送邮件">
                 <Mail size={18} />
-              </a>
+              </motion.a>
             </div>
           </div>
 
           <div className="flex flex-col items-center md:items-start">
             <h4 className="mb-6 text-sm font-bold uppercase tracking-widest text-zinc-400">Tech Stack</h4>
             <div className="flex max-w-xs flex-wrap justify-center gap-2 md:justify-start">
-              {technologies.map((tech) => (
-                <div key={tech.name} className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1.5 text-xs font-bold text-zinc-600 transition-colors hover:border-accent/30 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-400">
+              {technologies.map((tech, index) => (
+                <motion.div key={tech.name} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.3, delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -2 }} className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1.5 text-xs font-bold text-zinc-600 transition-colors hover:border-accent/30 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-400">
                   <tech.icon size={12} className="text-accent" />
                   {tech.name}
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -437,23 +518,23 @@ const Footer = () => {
                 <span>All Systems Normal</span>
               </div>
               {loadTime && (
-                <div className="flex items-center justify-center gap-2 text-xs text-zinc-400 md:justify-end">
+                <motion.div initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="flex items-center justify-center gap-2 text-xs text-zinc-400 md:justify-end">
                   <Zap size={14} className="text-yellow-500" />
                   <span>
                     Page loaded in <span className="font-mono font-bold text-accent">{loadTime}</span>
                   </span>
-                </div>
+                </motion.div>
               )}
-              <div className="flex items-center justify-center gap-2 text-xs text-zinc-400 md:justify-end">
+              <motion.div initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.35, delay: 0.05, ease: [0.22, 1, 0.36, 1] }} className="flex items-center justify-center gap-2 text-xs text-zinc-400 md:justify-end">
                 <Coffee size={14} className="text-amber-700 dark:text-amber-600" />
                 <span>Fueled by Coffee &amp; Code</span>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-4 pb-6 pt-8 md:flex-row">
-          <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-3 transition-all duration-300 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-100 dark:border-orange-900/60 dark:from-orange-950/40 dark:to-amber-950/20 dark:hover:border-orange-700">
+          <motion.a whileHover={{ y: -3 }} whileTap={{ scale: 0.985 }} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-3 transition-all duration-300 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-100 dark:border-orange-900/60 dark:from-orange-950/40 dark:to-amber-950/20 dark:hover:border-orange-700">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 transition-transform duration-300 group-hover:scale-110">
               <Rss size={18} className="text-white" />
             </div>
@@ -462,8 +543,8 @@ const Footer = () => {
               <span className="text-xs text-zinc-500 dark:text-zinc-400">{TEXT.rssHint}</span>
             </div>
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-400/0 via-orange-300/10 to-orange-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          </a>
-          <a href={siteConfig.friendsPage.repoUrl} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl border border-zinc-200 bg-gradient-to-r from-zinc-100 to-zinc-50 px-6 py-3 transition-all duration-300 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 dark:border-zinc-700 dark:from-zinc-800 dark:to-zinc-900 dark:hover:border-accent/50">
+          </motion.a>
+          <motion.a whileHover={{ y: -3 }} whileTap={{ scale: 0.985 }} href={siteConfig.friendsPage.repoUrl} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl border border-zinc-200 bg-gradient-to-r from-zinc-100 to-zinc-50 px-6 py-3 transition-all duration-300 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 dark:border-zinc-700 dark:from-zinc-800 dark:to-zinc-900 dark:hover:border-accent/50">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black transition-transform duration-300 group-hover:scale-110 dark:bg-white">
               <Github size={18} className="text-white dark:text-black" />
             </div>
@@ -472,7 +553,7 @@ const Footer = () => {
               <span className="text-xs text-zinc-500 dark:text-zinc-400">Open Source on GitHub</span>
             </div>
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          </a>
+          </motion.a>
         </div>
 
         <div className="flex w-full flex-col items-center justify-between border-t border-zinc-200/50 pt-8 text-xs font-medium text-zinc-400 dark:border-zinc-800/50 md:flex-row">
@@ -486,7 +567,7 @@ const Footer = () => {
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </footer>
   );
 };
@@ -514,9 +595,16 @@ const Background = () => {
         animate={shouldReduceMotion ? undefined : { x: [16, -20, 12], y: [0, -18, 14], scale: [1, 0.94, 1.05] }}
         transition={shouldReduceMotion ? undefined : { duration: 20, repeat: Infinity, ease: 'easeInOut' }}
       />
+      <motion.div
+        aria-hidden="true"
+        className="absolute left-1/2 top-1/3 hidden h-64 w-64 -translate-x-1/2 rounded-full bg-accent/5 blur-[110px] lg:block"
+        animate={shouldReduceMotion ? undefined : { opacity: [0.18, 0.32, 0.18], scale: [0.9, 1.08, 0.94] }}
+        transition={shouldReduceMotion ? undefined : { duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+      />
     </div>
   );
 };
+
 
 interface LayoutProps {
   children: React.ReactNode;

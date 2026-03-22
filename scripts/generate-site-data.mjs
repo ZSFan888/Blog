@@ -36,6 +36,50 @@ const markdownToSearchText = (markdown) =>
     .replace(/\s+/g, ' ')
     .trim();
 
+const countWords = (markdown) => {
+  const plainText = markdownToSearchText(markdown);
+  const hanCharacters = (plainText.match(/[\u4e00-\u9fff]/g) || []).length;
+  const latinWords = (plainText.replace(/[\u4e00-\u9fff]/g, ' ').match(/[A-Za-z0-9_]+/g) || []).length;
+  return hanCharacters + latinWords;
+};
+
+const countImages = (markdown) => (markdown.match(/!\[[^\]]*\]\([^)]+\)/g) || []).length;
+
+const normalizeTags = (value) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((tag) => String(tag).trim())
+    .filter(Boolean);
+};
+
+const generateSiteStats = (postsWithSearch) => {
+  const totalPosts = postsWithSearch.length;
+  const totalWords = postsWithSearch.reduce((sum, post) => sum + (post.wordCount || 0), 0);
+  const totalCategories = new Set(postsWithSearch.map((post) => post.category)).size;
+  const totalTags = new Set(postsWithSearch.flatMap((post) => post.tags || [])).size;
+  const totalImages = postsWithSearch.reduce((sum, post) => sum + (post.imageCount || 0), 0);
+
+  fs.writeFileSync(
+    path.join(OUTPUT_JSON_DIR, 'site-stats.json'),
+    JSON.stringify(
+      {
+        totalPosts,
+        totalWords,
+        totalCategories,
+        totalTags,
+        totalImages
+      },
+      null,
+      2
+    )
+  );
+
+  console.log('JSON generated: site stats');
+};
+
 const calculateReadTime = (markdown) => {
   const plainText = markdownToSearchText(markdown);
   const hanCharacters = (plainText.match(/[\u4e00-\u9fff]/g) || []).length;
@@ -99,6 +143,21 @@ const formatFrontmatterDate = (value) => {
   return String(value);
 };
 
+const POST_CATEGORIES = ['教程', '技术', '随笔', '分享', '其他'];
+
+const normalizeCategory = (value) => {
+  if (typeof value !== 'string') {
+    return '其他';
+  }
+
+  const category = value.trim();
+  if (!category) {
+    return '其他';
+  }
+
+  return POST_CATEGORIES.includes(category) ? category : '其他';
+};
+
 const writeCloudflareSnapshot = (snapshot) => {
   fs.writeFileSync(CLOUDFLARE_FILE, JSON.stringify(snapshot, null, 2));
 };
@@ -116,6 +175,10 @@ const postsWithSearch = files
     const formattedDate = formatFrontmatterDate(data.date);
     const formattedUpdatedAt = formatFrontmatterDate(updatedAt);
     const normalizedAuthors = normalizeAuthors(author, authors);
+    const category = normalizeCategory(data.category);
+    const tags = normalizeTags(data.tags);
+    const wordCount = countWords(content);
+    const imageCount = countImages(content);
 
     if (!formattedDate) {
       throw new Error(`Post "${filename}" is missing a valid date field.`);
@@ -127,12 +190,16 @@ const postsWithSearch = files
 
     return {
       ...restData,
+      category,
+      tags,
       date: formattedDate,
       updatedAt: formattedUpdatedAt,
       authors: normalizedAuthors,
       id,
       filePath: `/posts/${filename}`,
       readTime: calculateReadTime(content),
+      wordCount,
+      imageCount,
       searchText: markdownToSearchText(content)
     };
   })
@@ -140,6 +207,8 @@ const postsWithSearch = files
   .sort((a, b) => new Date(b.date) - new Date(a.date));
 
 const posts = postsWithSearch.map(({ searchText, ...post }) => post);
+
+generateSiteStats(postsWithSearch);
 
 fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts.json'), JSON.stringify(posts, null, 2));
 fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts-search.json'), JSON.stringify(postsWithSearch, null, 2));

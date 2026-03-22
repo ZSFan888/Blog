@@ -4,7 +4,7 @@ title: 域名接入 Cloudflare DNS FREE 计划教程：从添加站点到切换 
 excerpt: 这篇文章从准备工作、添加域名、选择 Cloudflare Free 套餐、检查 DNS 记录、切换 Nameserver、验证生效，到 DNSSEC 与常见坑整理，带你完整走一遍域名接入 Cloudflare DNS 免费计划的流程。
 date: 2026-03-21
 updatedAt: 2026-03-21
-category: 技术
+category: 教程
 tags:
   - Cloudflare
   - DNS
