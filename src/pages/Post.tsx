@@ -426,23 +426,29 @@ export const Post = () => {
     );
   }
 
-  if (!post) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-        <Seo title="404 Not Found" />
-        <div className="mb-4 text-9xl font-serif font-bold text-zinc-200 dark:text-zinc-800">404</div>
-        <h2 className="mb-4 font-serif text-3xl font-bold text-ink dark:text-white">未找到文章</h2>
-        <p className="mb-8 max-w-md text-zinc-500">很抱歉，您访问的文章可能已被删除、移动或不存在。</p>
-        <div className="mb-8 rounded-lg bg-zinc-100 p-4 font-mono text-xs text-zinc-500 dark:bg-zinc-800">Debug Info: ID=&quot;{id}&quot;</div>
-        <Link to="/" className="rounded-full bg-ink px-6 py-3 font-bold tracking-wide text-white transition-transform hover:scale-105 dark:bg-white dark:text-ink">
-          返回首页
-        </Link>
-      </div>
-    );
-  }
-
   const authors = getDisplayAuthors(post);
   const authorsLabel = authors.map((author) => author.name).join('\u3001');
+  const postStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt,
+    image: post.coverImage ? [new URL(post.coverImage, siteConfig.url).toString()] : undefined,
+    datePublished: post.date,
+    dateModified: post.updatedAt || post.date,
+    author: authors.map((author) => ({
+      '@type': 'Person',
+      name: author.name,
+      url: author.url
+    })),
+    mainEntityOfPage: `${siteConfig.url}/post/${post.id}`,
+    publisher: {
+      '@type': 'Organization',
+      name: siteConfig.title,
+      url: siteConfig.url,
+      logo: post.coverImage ? undefined : undefined
+    }
+  };
 
   return (
     <>
@@ -520,7 +526,7 @@ export const Post = () => {
 
         {post.coverImage && (
           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3, duration: 0.8 }} className="mx-auto mb-10 aspect-[4/3] max-w-6xl cursor-zoom-in overflow-hidden rounded-2xl px-4 shadow-2xl shadow-zinc-200/50 dark:shadow-none sm:aspect-[16/9] md:mb-20 md:aspect-[21/9] md:rounded-3xl md:px-0" onClick={() => setPreviewImage({ src: post.coverImage, alt: post.title })}>
-            <ProgressiveImage src={post.coverImage} alt={post.title} loading="eager" fetchPriority="high" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
+            <ProgressiveImage src={post.coverImage} alt={post.title} loading="eager" fetchPriority="auto" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
           </motion.div>
         )}
 
@@ -577,7 +583,7 @@ export const Post = () => {
         </div>
       </motion.article>
 
-      <ShareModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} title={post.title} excerpt={post.excerpt} url={`${window.location.origin}/post/${post.id}`} />
+      <ShareModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} title={post.title} excerpt={post.excerpt} url={`${typeof window !== 'undefined' ? window.location.origin : siteConfig.url}/post/${post.id}`} />
     </>
   );
 };

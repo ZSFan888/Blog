@@ -104,7 +104,7 @@ const writeCloudflareSnapshot = (snapshot) => {
 };
 
 const files = fs.readdirSync(POSTS_DIR).filter((file) => file.endsWith('.md'));
-const posts = files
+const postsWithSearch = files
   .map((filename) => {
     const filePath = path.join(POSTS_DIR, filename);
     const fileContent = fs.readFileSync(filePath, 'utf-8');
@@ -139,7 +139,10 @@ const posts = files
   .filter(Boolean)
   .sort((a, b) => new Date(b.date) - new Date(a.date));
 
+const posts = postsWithSearch.map(({ searchText, ...post }) => post);
+
 fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts.json'), JSON.stringify(posts, null, 2));
+fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts-search.json'), JSON.stringify(postsWithSearch, null, 2));
 console.log(`JSON generated: ${posts.length} posts`);
 
 const requiredFriendFields = ['name', 'description', 'avatar', 'url'];

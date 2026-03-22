@@ -16,6 +16,11 @@ const loadPostsData = async (): Promise<PostMetadata[]> => {
   return postsDataCache;
 };
 
+const loadPostsSearchData = async (): Promise<Array<PostMetadata & { searchText?: string }>> => {
+  const data = await import('../../generated/posts-search.json');
+  return data.default as Array<PostMetadata & { searchText?: string }>;
+};
+
 const stripFrontmatter = (rawContent: string) => {
   const normalized = rawContent.charCodeAt(0) === 0xfeff ? rawContent.slice(1) : rawContent;
   return normalized.replace(/^---[\s\S]*?---[\r\n]*/, '');
@@ -40,14 +45,14 @@ interface SearchIndexEntry {
   tags: string[];
 }
 
-const buildSearchIndex = (posts: PostMetadata[]): SearchIndexEntry[] =>
-  posts.map((post) => ({
+const buildSearchIndex = (posts: Array<PostMetadata & { searchText?: string }>): SearchIndexEntry[] =>
+  posts.map(({ searchText, ...post }) => ({
     post,
     dateTimestamp: new Date(post.date).getTime(),
     title: normalizeSearchText(post.title),
     excerpt: normalizeSearchText(post.excerpt),
     category: normalizeSearchText(post.category),
-    content: normalizeSearchText(post.searchText ?? ''),
+    content: normalizeSearchText(searchText ?? ''),
     tags: post.tags.map((tag) => normalizeSearchText(String(tag)))
   }));
 
@@ -56,7 +61,7 @@ const loadPostsSearchIndex = async (): Promise<SearchIndexEntry[]> => {
     return postsSearchIndexCache;
   }
 
-  const posts = await loadPostsData();
+  const posts = await loadPostsSearchData();
   postsSearchIndexCache = buildSearchIndex(posts);
   return postsSearchIndexCache;
 };
@@ -219,3 +224,4 @@ export const getAllCategories = async (): Promise<string[]> => {
   const categories = new Set(allPosts.map((post) => post.category));
   return Array.from(categories);
 };
+

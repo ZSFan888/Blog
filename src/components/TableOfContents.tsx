@@ -7,15 +7,16 @@ import type { MarkdownHeading } from '@/utils/headings';
 
 const formatIndex = (value: number) => String(value).padStart(2, '0');
 const MOBILE_TOC_TRIGGER_STYLE = {
-  right: 'max(1rem, calc(env(safe-area-inset-right) + 1rem))',
-  bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 1rem))'
+  left: '50%',
+  bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 1rem))',
+  transform: 'translateX(-50%)'
 } as const;
 const MOBILE_TOC_SHEET_STYLE = {
-  left: 'max(0.75rem, calc(env(safe-area-inset-left) + 0.75rem))',
-  right: 'max(0.75rem, calc(env(safe-area-inset-right) + 0.75rem))',
-  bottom: 'max(0.75rem, calc(env(safe-area-inset-bottom) + 0.75rem))',
-  top: 'max(5.75rem, calc(env(safe-area-inset-top) + 5.75rem))'
+  left: 'max(0.6rem, calc(env(safe-area-inset-left) + 0.6rem))',
+  right: 'max(0.6rem, calc(env(safe-area-inset-right) + 0.6rem))',
+  bottom: 'max(0.45rem, env(safe-area-inset-bottom))'
 } as const;
+
 
 type TocNode = MarkdownHeading & {
   index: number;
@@ -121,6 +122,7 @@ const getRootBranchId = (id: string | null, parentMap: Map<string, string | null
 
 export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ headings }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(headings[0]?.id ?? null);
   const headingTree = useMemo(() => buildHeadingTree(headings), [headings]);
   const parentMap = useMemo(() => buildParentMap(headingTree), [headingTree]);
@@ -128,6 +130,32 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
   const activeItemRef = useRef<HTMLLIElement | null>(null);
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
   const collapseInactiveRootBranches = siteConfig.toc?.collapseInactiveRootBranches ?? false;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 1023px)');
+    const updateViewport = (event?: MediaQueryListEvent) => {
+      const matches = event?.matches ?? mediaQuery.matches;
+      setIsMobileViewport(matches);
+
+      if (!matches) {
+        setIsOpen(false);
+      }
+    };
+
+    updateViewport();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', updateViewport);
+      return () => mediaQuery.removeEventListener('change', updateViewport);
+    }
+
+    mediaQuery.addListener(updateViewport);
+    return () => mediaQuery.removeListener(updateViewport);
+  }, []);
 
   useEffect(() => {
     setExpandedMap(collectInitialExpandedState(headingTree));
@@ -372,23 +400,26 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
     );
   };
 
+  const rootHeadingsCount = headingTree.length;
   const panelContent = (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white/95 p-4 shadow-[0_20px_56px_-36px_rgba(24,24,27,0.28)] backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/92 dark:shadow-none sm:p-4.5">
-      <div className="mb-3.5 flex items-center justify-between gap-3 border-b border-zinc-200/80 pb-3 dark:border-zinc-800/80">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-[26px] border border-zinc-200/80 bg-white/96 p-4 shadow-[0_28px_68px_-42px_rgba(24,24,27,0.34)] backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/94 dark:shadow-none sm:p-4.5">
+      <div className="mb-3.5 flex items-start justify-between gap-3 border-b border-zinc-200/80 pb-3 dark:border-zinc-800/80">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl bg-accent/[0.08] text-accent dark:bg-accent/[0.12]">
-            <List size={16} />
+          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-accent/[0.1] text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:bg-accent/[0.14]">
+            <List size={17} />
           </span>
           <div className="min-w-0">
             <h3 className="truncate text-sm font-semibold text-ink dark:text-white">文章目录</h3>
-            <p className="mt-0.5 text-[11px] text-zinc-400 dark:text-zinc-500">共 {headings.length} 个章节</p>
+            <p className="mt-0.5 text-[11px] text-zinc-400 dark:text-zinc-500">
+              {rootHeadingsCount} 个主章节 · 共 {headings.length} 节
+            </p>
           </div>
         </div>
 
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-ink dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white lg:hidden"
+          className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-ink dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white lg:hidden"
           aria-label="关闭目录"
         >
           <X size={16} />
@@ -407,33 +438,39 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
         type="button"
         onClick={() => setIsOpen((value) => !value)}
         style={MOBILE_TOC_TRIGGER_STYLE}
-        className="fixed z-40 inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/95 px-3.5 py-2.5 text-sm font-medium text-ink shadow-[0_16px_38px_-24px_rgba(28,25,23,0.3)] backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] hover:border-accent/20 hover:text-accent dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 lg:hidden"
+        className="fixed z-40 inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/96 px-4 py-2.5 text-sm font-medium text-ink shadow-[0_16px_42px_-26px_rgba(28,25,23,0.36)] backdrop-blur-xl transition-all duration-300 hover:border-accent/20 hover:text-accent dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 lg:hidden"
         aria-label={isOpen ? '关闭目录' : '打开目录'}
         aria-expanded={isOpen}
       >
         {isOpen ? <X size={16} /> : <List size={16} />}
         <span className="leading-none">目录</span>
+        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-zinc-500 dark:bg-zinc-800 dark:text-zinc-300">
+          {headings.length}
+        </span>
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && isMobileViewport && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-30 bg-black/35 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
               onClick={() => setIsOpen(false)}
             />
 
             <motion.aside
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: 28, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 28, scale: 0.98 }}
+              transition={{ duration: 0.24, ease: 'easeOut' }}
               style={MOBILE_TOC_SHEET_STYLE}
-              className="fixed z-40 lg:hidden"
+              className="fixed z-40 h-[min(68vh,36rem)] lg:hidden"
             >
+              <div className="mb-3 flex justify-center">
+                <span className="h-1.5 w-14 rounded-full bg-white/65 shadow-[0_6px_20px_rgba(0,0,0,0.12)] dark:bg-zinc-700/80" />
+              </div>
               {panelContent}
             </motion.aside>
           </>
@@ -446,3 +483,4 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
     </>
   );
 };
+

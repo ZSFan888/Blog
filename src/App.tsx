@@ -1,61 +1,46 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Layout } from './components/Layout';
-import { preloadPostSearch, preloadPosts } from './services/posts';
-import { Home } from './pages/Home';
-import { Post } from './pages/Post';
-import { About } from './pages/About';
-import { ArchivePage } from './pages/Archive';
-import { Stats } from './pages/Stats';
-import { Friends } from './pages/Friends';
-import { Tags } from './pages/Tags';
-import { NotFound } from './pages/NotFound';
+
+const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
+const Post = lazy(() => import('./pages/Post').then((module) => ({ default: module.Post })));
+const About = lazy(() => import('./pages/About').then((module) => ({ default: module.About })));
+const ArchivePage = lazy(() => import('./pages/Archive').then((module) => ({ default: module.ArchivePage })));
+const Stats = lazy(() => import('./pages/Stats').then((module) => ({ default: module.Stats })));
+const Friends = lazy(() => import('./pages/Friends').then((module) => ({ default: module.Friends })));
+const Tags = lazy(() => import('./pages/Tags').then((module) => ({ default: module.Tags })));
+const NotFound = lazy(() => import('./pages/NotFound').then((module) => ({ default: module.NotFound })));
+
+const RouteFallback: React.FC = () => (
+  <div className="mx-auto flex min-h-[40vh] max-w-7xl items-center justify-center px-4 text-sm text-zinc-500 dark:text-zinc-400">
+    页面加载中...
+  </div>
+);
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();
-  const routeKey = `${location.pathname}${location.search}${location.hash}`;
+  const routeKey = location.pathname;
 
   return (
     <Layout>
-      <Routes location={location} key={routeKey}>
-        <Route path="/" element={<Home />} />
-        <Route path="/post/:id" element={<Post />} />
-        <Route path="/archive" element={<ArchivePage />} />
-        <Route path="/tags" element={<Tags />} />
-        <Route path="/stats" element={<Stats />} />
-        <Route path="/friends" element={<Friends />} />
-        <Route path="/about" element={<About />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes location={location} key={routeKey}>
+          <Route path="/" element={<Home />} />
+          <Route path="/post/:id" element={<Post />} />
+          <Route path="/archive" element={<ArchivePage />} />
+          <Route path="/tags" element={<Tags />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/friends" element={<Friends />} />
+          <Route path="/about" element={<About />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </Layout>
   );
 };
 
 const App: React.FC = () => {
-  useEffect(() => {
-    const warmUp = () => {
-      void preloadPosts();
-      void preloadPostSearch();
-    };
-
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    if ('requestIdleCallback' in window) {
-      const idleId = window.requestIdleCallback(warmUp, { timeout: 1500 });
-      return () => {
-        window.cancelIdleCallback(idleId);
-      };
-    }
-
-    const fallbackTimer = window.setTimeout(warmUp, 1200);
-    return () => {
-      window.clearTimeout(fallbackTimer);
-    };
-  }, []);
-
   return (
     <HelmetProvider>
       <Router>
