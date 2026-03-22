@@ -8,9 +8,10 @@ interface ReadingProgressBadgeProps {
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 const MOBILE_BADGE_STYLE = {
-  left: 'max(1rem, calc(env(safe-area-inset-left) + 1rem))',
-  right: 'max(1rem, calc(env(safe-area-inset-right) + 1rem))',
-  top: 'max(5.5rem, calc(env(safe-area-inset-top) + 5.5rem))'
+  left: '50%',
+  top: 'max(5rem, calc(env(safe-area-inset-top) + 5rem))',
+  transform: 'translateX(-50%)',
+  width: 'min(calc(100vw - 1.5rem), 18rem)'
 } as const;
 
 export const ReadingProgressBadge: React.FC<ReadingProgressBadgeProps> = ({ targetRef }) => {
@@ -65,7 +66,7 @@ export const ReadingProgressBadge: React.FC<ReadingProgressBadgeProps> = ({ targ
     >
       <div
         style={MOBILE_BADGE_STYLE}
-        className="pointer-events-none fixed z-30 rounded-2xl border border-zinc-200/80 bg-white/92 px-3 py-2 shadow-[0_18px_40px_-30px_rgba(24,24,27,0.3)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/84 md:hidden"
+        className="pointer-events-none fixed z-40 rounded-2xl border border-zinc-200/80 bg-white/92 px-3 py-2 shadow-[0_16px_34px_-24px_rgba(24,24,27,0.28)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/84 md:hidden"
       >
         <div className="mb-1.5 flex items-center justify-between gap-3">
           <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">

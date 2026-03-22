@@ -140,7 +140,30 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
 
 
   useEffect(() => {
-    setIsClient(true);
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 1023px)');
+    const syncViewport = () => {
+      const nextIsMobile = mediaQuery.matches;
+      setIsClient(true);
+      setIsMobileViewport(nextIsMobile);
+
+      if (!nextIsMobile) {
+        setIsOpen(false);
+      }
+    };
+
+    syncViewport();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', syncViewport);
+      return () => mediaQuery.removeEventListener('change', syncViewport);
+    }
+
+    mediaQuery.addListener(syncViewport);
+    return () => mediaQuery.removeListener(syncViewport);
   }, []);
 
   useEffect(() => {
@@ -444,6 +467,16 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
   const rootHeadingsCount = headingTree.length;
   const panelContent = (
     <div className="relative flex h-full flex-col overflow-hidden rounded-[26px] border border-zinc-200/80 bg-white/96 p-4 shadow-[0_28px_68px_-42px_rgba(24,24,27,0.34)] backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/94 dark:shadow-none sm:p-4.5">
+      <div
+        className="mb-3 flex justify-center lg:hidden"
+        onTouchStart={handleSheetTouchStart}
+        onTouchMove={handleSheetTouchMove}
+        onTouchEnd={handleSheetTouchEnd}
+        onTouchCancel={handleSheetTouchEnd}
+      >
+        <span className="h-1.5 w-14 rounded-full bg-zinc-300/90 shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:bg-zinc-700/90" />
+      </div>
+
       <div className="mb-3.5 flex items-start justify-between gap-3 border-b border-zinc-200/80 pb-3 dark:border-zinc-800/80">
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-accent/[0.1] text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:bg-accent/[0.14]">
@@ -471,7 +504,7 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
         ref={navRef}
         aria-label="目录"
         style={MOBILE_SCROLL_STYLE}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 no-scrollbar"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-1 no-scrollbar"
       >
         {renderNodes(headingTree)}
       </nav>
@@ -500,15 +533,8 @@ export const TableOfContents: React.FC<{ headings: MarkdownHeading[] }> = ({ hea
                   ...MOBILE_TOC_SHEET_STYLE,
                   touchAction: 'pan-y'
                 }}
-                onTouchStart={handleSheetTouchStart}
-                onTouchMove={handleSheetTouchMove}
-                onTouchEnd={handleSheetTouchEnd}
-                onTouchCancel={handleSheetTouchEnd}
                 className="fixed z-[80] h-[min(72vh,38rem)] lg:hidden"
               >
-                <div className="mb-3 flex justify-center">
-                  <span className="h-1.5 w-14 rounded-full bg-white/65 shadow-[0_6px_20px_rgba(0,0,0,0.12)] dark:bg-zinc-700/80" />
-                </div>
                 {panelContent}
               </motion.aside>
             </>
