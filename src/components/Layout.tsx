@@ -423,7 +423,7 @@ const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div initial={{ opacity: 0, height: 0, clipPath: 'inset(0 0 100% 0 round 0px)' }} animate={{ opacity: 1, height: 'auto', clipPath: 'inset(0 0 0% 0 round 0px)' }} exit={{ opacity: 0, height: 0, clipPath: 'inset(0 0 100% 0 round 0px)' }} transition={{ duration: 0.38, ease: easeOutSoft }} className="absolute left-0 right-0 top-full z-40 overflow-hidden bg-paper/95 px-6 py-8 backdrop-blur-xl dark:bg-void/95 md:hidden">
+          <motion.div initial={{ opacity: 0, height: 0, clipPath: 'inset(0 0 100% 0 round 0px)' }} animate={{ opacity: 1, height: 'auto', clipPath: 'inset(0 0 0% 0 round 0px)' }} exit={{ opacity: 0, height: 0, clipPath: 'inset(0 0 100% 0 round 0px)' }} transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }} className="absolute left-0 right-0 top-full z-40 overflow-hidden bg-paper/95 px-6 py-8 backdrop-blur-xl dark:bg-void/95 md:hidden">
             <motion.div className="flex flex-col items-center space-y-8 text-center" variants={navListVariants} initial="hidden" animate="visible" exit="hidden">
               {navItems.map((item) => (
                 <motion.div key={item.path} variants={navItemVariants}>

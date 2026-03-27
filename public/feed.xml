@@ -33,38 +33,6 @@
       <category>技术</category>
     </item>
     <item>
-      <title><![CDATA[AI 智能体现在最尴尬的地方，不是它不会做事，而是你还不敢真把事交给它做]]></title>
-      <link>https://blog.pldduck.com/post/ai-agent-governance-bottleneck</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/ai-agent-governance-bottleneck</guid>
-      <description><![CDATA[AI 智能体已经从会聊天走向会执行，但真正的瓶颈也随之暴露：权限、安全、责任、可追溯和人机协同机制，才是决定它能不能大规模落地的关键。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[AI 制药最值得盯的变化，不是筛分子更快了，而是行业终于开始反过来追问“疾病到底怎么看懂”]]></title>
-      <link>https://blog.pldduck.com/post/ai-drug-discovery-cognition-shift</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/ai-drug-discovery-cognition-shift</guid>
-      <description><![CDATA[AI 制药过去更像一场效率竞赛，但真正决定新药研发上限的，也许不是分子筛选速度，而是对疾病机制和正确靶点的认知深度。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[AI 眼镜这波为什么又火了？因为它终于不只是个玩具，而是在认真争夺“下一代日常入口”]]></title>
-      <link>https://blog.pldduck.com/post/ai-glasses-daily-interface-shift</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/ai-glasses-daily-interface-shift</guid>
-      <description><![CDATA[AI 眼镜重新变热，不只是因为厂商又做出一批新硬件，而是因为大模型、轻量化和场景闭环开始一起成熟，它第一次有了争夺日常入口的样子。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[AWS 和 NVIDIA 这次不是普通合作扩容，而是在给 Agentic AI 铺超大规模算力底盘]]></title>
-      <link>https://blog.pldduck.com/post/aws-nvidia-agentic-ai-capacity</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/aws-nvidia-agentic-ai-capacity</guid>
-      <description><![CDATA[AWS 与 NVIDIA 扩大合作的真正意义，不是多部署一点 GPU，而是 hyperscaler 已经开始按 Agentic AI 时代的长期需求重构算力逻辑。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
       <title><![CDATA[Claude Code 使用教程：从上手到高效使用的完整实践]]></title>
       <link>https://blog.pldduck.com/post/claude-code-third-party-api-guide</link>
       <guid isPermaLink="true">https://blog.pldduck.com/post/claude-code-third-party-api-guide</guid>
@@ -89,92 +57,12 @@
       <category>技术</category>
     </item>
     <item>
-      <title><![CDATA[Cursor 开始不只帮你写代码了，Automations 说明它想接管整个研发流水线]]></title>
-      <link>https://blog.pldduck.com/post/cursor-automations-agent-workflow</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/cursor-automations-agent-workflow</guid>
-      <description><![CDATA[Cursor 发布 Automations 这件事真正厉害的地方，不是又多了一个功能，而是它把 AI 编程工具从“辅助写代码”推进到了“常驻研发代理”。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[Cursor 不只是编辑器了，插件和 MCP 生态才是它真正的平台野心]]></title>
-      <link>https://blog.pldduck.com/post/cursor-plugin-mcp-ecosystem</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/cursor-plugin-mcp-ecosystem</guid>
-      <description><![CDATA[Cursor 插件与 MCP 生态这次扩展，真正让人警觉的不是多了多少合作方，而是它正在把自己从 AI 编程工具做成可连接真实工具链的执行平台。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[DeepSeek 之后，国产开源大模型真正开始可怕的地方，是它在长成一整个生态]]></title>
-      <link>https://blog.pldduck.com/post/deepseek-open-model-ecosystem</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/deepseek-open-model-ecosystem</guid>
-      <description><![CDATA[DeepSeek 真正改变行业的，不只是模型能力更强，而是它用低成本和开源路线，把大模型从少数巨头的算力游戏，推向了更多行业都能接住的生态扩散。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
       <title><![CDATA[Docker 容器入门指南：为什么它能改变开发、测试和部署方式]]></title>
       <link>https://blog.pldduck.com/post/docker-container-introduction-guide</link>
       <guid isPermaLink="true">https://blog.pldduck.com/post/docker-container-introduction-guide</guid>
       <description><![CDATA[这篇文章从 Docker 容器是什么、它和虚拟机有什么区别、镜像与容器的关系、常用命令、网络和数据卷，再到 Docker Compose 的实际价值，系统讲清容器化为什么已经成了现代开发的基础设施。]]></description>
       <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
       <category>技术</category>
-    </item>
-    <item>
-      <title><![CDATA[具身智能真正开始难了，不是因为机器人不会动，而是因为它终于要被要求去干活了]]></title>
-      <link>https://blog.pldduck.com/post/embodied-intelligence-industrialization</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/embodied-intelligence-industrialization</guid>
-      <description><![CDATA[人形机器人和具身智能已经完成了第一轮“出圈”，但真正的考验才刚开始：从会表演到能稳定进厂、进仓、进真实场景，产业化比热闹难得多。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[欧盟开始精简 AI 规则，这说明 AI 监管已经进入真正的执行阶段]]></title>
-      <link>https://blog.pldduck.com/post/eu-ai-rules-streamlining</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/eu-ai-rules-streamlining</guid>
-      <description><![CDATA[欧盟理事会就 AI 规则精简达成立场，这件事的重点不在于监管放松，而在于 AI 监管已经从原则制定走到执行、调整和产业适配并行的新阶段。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[Google 正在把 Gemini 塞进整个 Workspace，这才是办公 AI 真正卷起来的样子]]></title>
-      <link>https://blog.pldduck.com/post/google-gemini-workspace-integration</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/google-gemini-workspace-integration</guid>
-      <description><![CDATA[Gemini 深度嵌入 Docs、Sheets、Slides 和 Drive 的意义，不在于又多了几个按钮，而在于 Google 终于开始把 AI 变成原生工作流层。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[Meta 和 Nebius 这 270 亿美元协议，说明 AI 竞争已经进入锁产能时代]]></title>
-      <link>https://blog.pldduck.com/post/meta-nebius-ai-capacity-deal</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/meta-nebius-ai-capacity-deal</guid>
-      <description><![CDATA[Meta 与 Nebius 达成最高约 270 亿美元的长期协议，这件事最值得注意的不是金额大，而是 AI 巨头开始用多年期合同锁未来几代基础设施供给。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[微软把 Copilot 从助手推成工作代理，这可能是办公 AI 真正转折点]]></title>
-      <link>https://blog.pldduck.com/post/microsoft-365-copilot-wave3</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/microsoft-365-copilot-wave3</guid>
-      <description><![CDATA[Microsoft 365 Copilot Wave 3 最重要的不是又多了几个功能，而是微软第一次非常明确地把 Copilot 推向嵌入式 Agent 工作流。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[微软开始认真管理 Agent 了，Agent 365 才是企业级 AI 真正的狠活]]></title>
-      <link>https://blog.pldduck.com/post/microsoft-agent-365</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/microsoft-agent-365</guid>
-      <description><![CDATA[当微软把 Agent 365 定义为 the control plane for agents，AI Agent 的竞争就不再只是“能不能做任务”，而是正式进入治理、权限、审计和合规阶段。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
-    </item>
-    <item>
-      <title><![CDATA[GTC 2026 真正值得盯的，不只是芯片，而是 NVIDIA 开始卖 AI 工厂和 Agent 基础设施了]]></title>
-      <link>https://blog.pldduck.com/post/nvidia-gtc-2026-vera-rubin-dsx-nemoclaw</link>
-      <guid isPermaLink="true">https://blog.pldduck.com/post/nvidia-gtc-2026-vera-rubin-dsx-nemoclaw</guid>
-      <description><![CDATA[Vera Rubin、DSX AI Factory、NemoClaw 这些名字放在一起看，说明 NVIDIA 正在从 AI 芯片公司进一步变成 AI 工厂总包商。]]></description>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <category>随笔</category>
     </item>
     <item>
       <title><![CDATA[OpenAI Codex 是什么：从 CLI 到 App，聊聊这个 AI Coding Agent 值不值得用]]></title>

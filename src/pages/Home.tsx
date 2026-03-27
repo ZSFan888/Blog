@@ -379,7 +379,7 @@ export const Home = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [postsPerPage, setPostsPerPage] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 768 ? 5 : 9));
+  const [postsPerPage, setPostsPerPage] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 768 ? 6 : 9));
   const [sharePost, setSharePost] = useState<PostMetadata | null>(null);
   const { searchQuery, isSearching, results, handleSearch, clearSearch, hasSearchQuery } = usePostSearch({
     emptyResults: allPosts
@@ -390,7 +390,7 @@ export const Home = () => {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
 
     const syncPostsPerPage = () => {
-      setPostsPerPage(mediaQuery.matches ? 5 : 9);
+      setPostsPerPage(mediaQuery.matches ? 6 : 9);
     };
 
     const attachMediaQueryListener = () => {
@@ -461,7 +461,16 @@ export const Home = () => {
   }, [searchQuery, selectedCategory, sortOrder]);
 
   const displayedPosts = useMemo(() => filterAndSortPosts(results, selectedCategory, sortOrder), [results, selectedCategory, sortOrder]);
-  const totalPages = Math.max(1, Math.ceil(displayedPosts.length / postsPerPage));
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const pinnedPosts = displayedPosts.filter(post => post.top !== undefined);
+  const regularPosts = displayedPosts.filter(post => post.top === undefined);
+
+  // 计算顶置文章占用的位置：移动端每个顶置文章占2个位置，大屏端占3个位置
+  const pinnedPostsSlots = pinnedPosts.length * (isMobile ? 2 : 3);
+  // 总位置数 = 顶置文章占用的位置 + 普通文章数量
+  const totalSlots = pinnedPostsSlots + regularPosts.length;
+  const totalPages = Math.max(1, Math.ceil(totalSlots / postsPerPage));
 
   useEffect(() => {
     setCurrentPage((previous) => Math.min(previous, totalPages));
@@ -491,9 +500,49 @@ export const Home = () => {
 
   const activeCategoryLabel = selectedCategory === ALL_CATEGORY ? '全部分类' : selectedCategory;
 
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = displayedPosts.slice(indexOfFirstPost, indexOfLastPost);
+  // 计算当前页显示的文章
+  const getCurrentPagePosts = () => {
+    const startSlot = (currentPage - 1) * postsPerPage;
+    const endSlot = startSlot + postsPerPage;
+
+    const result: PostMetadata[] = [];
+    let currentSlot = 0;
+
+    // 先处理顶置文章
+    for (const post of pinnedPosts) {
+      const postSlots = isMobile ? 2 : 3;
+      const postEndSlot = currentSlot + postSlots;
+
+      // 如果这个顶置文章的任何一个位置在当前页范围内，就显示它
+      if (postEndSlot > startSlot && currentSlot < endSlot) {
+        result.push(post);
+      }
+
+      currentSlot = postEndSlot;
+
+      // 如果已经超出当前页范围，停止处理顶置文章
+      if (currentSlot >= endSlot) {
+        return result;
+      }
+    }
+
+    // 再处理普通文章
+    for (const post of regularPosts) {
+      if (currentSlot >= endSlot) {
+        break;
+      }
+
+      if (currentSlot >= startSlot) {
+        result.push(post);
+      }
+
+      currentSlot++;
+    }
+
+    return result;
+  };
+
+  const currentPosts = getCurrentPagePosts();
 
   const paginate = (pageNumber: number) => {
     const nextPage = Math.min(Math.max(pageNumber, 1), totalPages);
