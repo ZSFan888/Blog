@@ -149,28 +149,28 @@ export const Friends = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900"
+              className="relative z-10 flex max-h-[70vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900"
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
             >
-              <div className="flex items-center justify-between border-b border-zinc-100 p-5 dark:border-zinc-800">
+              <div className="flex items-center justify-between border-b border-zinc-100 p-4 dark:border-zinc-800">
                 <h3 id={titleId} className="text-xl font-serif font-bold text-ink dark:text-white">申请友链</h3>
                 <button ref={closeButtonRef} onClick={() => setIsModalOpen(false)} className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="关闭申请友链弹窗">
                   <X size={20} />
                 </button>
               </div>
 
-              <div className="space-y-6 overflow-y-auto p-5">
-                <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm leading-relaxed text-orange-800 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300">
+              <div className="space-y-4 overflow-y-auto p-4">
+                <div className="rounded-xl border border-orange-200 bg-orange-50 p-3 text-sm leading-relaxed text-orange-800 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300">
                   <strong>公告：</strong>
                   {siteConfig.friendsPage.announcement}
                 </div>
 
                 <div>
-                  <h4 className="mb-3 text-sm font-bold text-ink dark:text-white">本站信息（提交前请先添加本站友链）</h4>
-                  <div className="flex flex-col items-start gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50 sm:flex-row sm:items-center">
-                    <ProgressiveImage src={siteInfo.avatar} alt={siteInfo.name} wrapperClassName="h-16 w-16 flex-shrink-0 rounded-full border border-zinc-200 bg-white dark:border-zinc-600" className="h-16 w-16 rounded-full object-cover" />
+                  <h4 className="mb-2 text-sm font-bold text-ink dark:text-white">本站信息（提交前请先添加本站友链）</h4>
+                  <div className="flex flex-col items-start gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50 sm:flex-row sm:items-center">
+                    <ProgressiveImage src={siteInfo.avatar} alt={siteInfo.name} wrapperClassName="h-14 w-14 flex-shrink-0 rounded-full border border-zinc-200 bg-white dark:border-zinc-600" className="h-14 w-14 rounded-full object-cover" />
                     <div className="w-full flex-1 space-y-1">
                       <div className="font-bold text-ink dark:text-white">{siteInfo.name}</div>
                       <div className="text-sm text-zinc-500 dark:text-zinc-400">{siteInfo.description}</div>
@@ -181,25 +181,25 @@ export const Friends = () => {
                 </div>
 
                 <div>
-                  <div className="mb-3 flex items-center justify-between">
+                  <div className="mb-2 flex items-center justify-between">
                     <h4 className="text-sm font-bold text-ink dark:text-white">友链 JSON 模板</h4>
                     <button onClick={handleCopyTemplate} className="flex items-center gap-1.5 rounded-md bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent transition-opacity hover:opacity-80">
                       {isCopied ? <Check size={14} /> : <Copy size={14} />}
                       {isCopied ? '已复制' : '复制模板'}
                     </button>
                   </div>
-                  <pre className="select-all whitespace-pre-wrap rounded-xl border border-zinc-200 bg-zinc-50 p-4 font-mono text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+                  <pre className="select-all whitespace-pre-wrap rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-mono text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
                     {templateText}
                   </pre>
                 </div>
 
                 <div>
-                  <h4 className="mb-3 text-sm font-bold text-ink dark:text-white">提交方式</h4>
+                  <h4 className="mb-2 text-sm font-bold text-ink dark:text-white">提交方式</h4>
                   <a
                     href={siteConfig.friendsPage.repoFriendsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 transition-colors hover:border-accent/40 hover:bg-accent/5 dark:border-zinc-800 dark:bg-zinc-800/50"
+                    className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3 transition-colors hover:border-accent/40 hover:bg-accent/5 dark:border-zinc-800 dark:bg-zinc-800/50"
                   >
                     <div>
                       <div className="font-bold text-ink dark:text-white">GitHub PR</div>
@@ -212,7 +212,7 @@ export const Friends = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end border-t border-zinc-100 bg-zinc-50/50 p-5 dark:border-zinc-800 dark:bg-zinc-900/50">
+              <div className="flex justify-end border-t border-zinc-100 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <a
                   href={siteConfig.friendsPage.repoFriendsUrl}
                   target="_blank"
