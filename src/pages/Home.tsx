@@ -211,7 +211,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
   }
 
   return (
-    <motion.article layout variants={cardVariants} whileHover={hoverMotion} transition={springCardLayout} className="flex h-full flex-col">
+    <motion.article layout variants={cardVariants} whileHover={hoverMotion} transition={springCardLayout} className="flex h-full flex-col min-w-0">
       <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white backdrop-blur-md transition-all duration-500 hover:border-zinc-300 hover:shadow-2xl hover:shadow-zinc-200/50 dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:hover:border-zinc-700 dark:hover:shadow-accent/5 md:rounded-3xl">
         <Link to={`/post/${post.id}`} className="group/image relative aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800" aria-label={`阅读文章：${post.title}`}>
           {post.coverImage ? (
@@ -466,8 +466,8 @@ export const Home = () => {
   const pinnedPosts = displayedPosts.filter(post => post.top !== undefined);
   const regularPosts = displayedPosts.filter(post => post.top === undefined);
 
-  // 计算顶置文章占用的位置：移动端单列展示占 1 个位置，大屏端占 3 个位置
-  const pinnedPostsSlots = pinnedPosts.length * (isMobile ? 1 : 3);
+  // 计算顶置文章占用的位置：移动端双列展示占 2 个位置，大屏端占 3 个位置
+  const pinnedPostsSlots = pinnedPosts.length * (isMobile ? 2 : 3);
   // 总位置数 = 顶置文章占用的位置 + 普通文章数量
   const totalSlots = pinnedPostsSlots + regularPosts.length;
   const totalPages = Math.max(1, Math.ceil(totalSlots / postsPerPage));
@@ -510,7 +510,7 @@ export const Home = () => {
 
     // 先处理顶置文章
     for (const post of pinnedPosts) {
-      const postSlots = isMobile ? 1 : 3;
+      const postSlots = isMobile ? 2 : 3;
       const postEndSlot = currentSlot + postSlots;
 
       // 如果这个顶置文章的任何一个位置在当前页范围内，就显示它
@@ -596,7 +596,7 @@ export const Home = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={`${selectedCategory}-${sortOrder}-${currentPage}-${searchQuery}`}
-                className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3"
+                className="grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3"
                 variants={listContainerVariants}
                 initial="hidden"
                 animate="visible"

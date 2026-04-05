@@ -18,7 +18,7 @@ export const DBlogLoader: React.FC<DBlogLoaderProps> = ({
   const fillId = `${gradientId}-fill`;
   const lineId = `${gradientId}-line`;
   const isImage = size === 'image';
-  const widthClass = isImage ? 'w-24 sm:w-28' : 'w-44 sm:w-52';
+  const widthClass = isImage ? 'w-32 sm:w-36' : 'w-44 sm:w-52';
 
   return (
     <div className={mergeClassName('pointer-events-none select-none text-zinc-900 dark:text-zinc-100', className)}>
