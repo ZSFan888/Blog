@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DBlogLoader } from './DBlogLoader';
 
 interface ProgressiveImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -19,13 +19,32 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   alt,
   ...props
 }) => {
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+
+  const syncImageState = useCallback(() => {
+    const image = imgRef.current;
+    if (!image || !src) {
+      return;
+    }
+
+    if (image.complete) {
+      if (image.naturalWidth > 0) {
+        setIsLoaded(true);
+        setHasError(false);
+      } else {
+        setIsLoaded(false);
+        setHasError(true);
+      }
+    }
+  }, [src]);
 
   useEffect(() => {
     setIsLoaded(false);
     setHasError(false);
-  }, [src]);
+    syncImageState();
+  }, [src, syncImageState]);
 
   return (
     <div className={mergeClassName('relative overflow-hidden', wrapperClassName)}>
@@ -57,6 +76,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
       ) : (
         <img
           {...props}
+          ref={imgRef}
           src={src}
           alt={alt}
           decoding={decoding}
