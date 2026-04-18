@@ -10,24 +10,38 @@ dist-ssr
 # Generated files
 generated/
 
-# WorkBuddy data
-.workbuddy/
+# Cache directories
+.vite
+.cache
+.turbo
+.eslintcache
+*.tsbuildinfo
 
 # Environment files
 .env
 .env.local
 .env.production
+.env.*.local
 
 # Editor directories
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
 
 # Logs
 logs
@@ -38,6 +52,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Testing
+coverage
+*.lcov
+.nyc_output
+
+# Auto-generated at build time
 public/feed.xml
 public/sitemap.xml
+
+# Local tool data
 .claude/
+CLAUDE.md
+AGENTS.md
