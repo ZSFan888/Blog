@@ -279,7 +279,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
             <motion.button
               key={category}
               onClick={() => onSelect(category)}
-              aria-pressed={selected === category}
+              role="tab"
+              aria-selected={selected === category}
+              aria-controls="posts-grid"
+              tabIndex={selected === category ? 0 : -1}
               variants={chipMotion}
               initial="rest"
               animate="rest"
