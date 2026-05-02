@@ -182,7 +182,7 @@ export const Friends = () => {
           </div>
 
           <div className="relative space-y-5 pt-5">
-            <div className="rounded-2xl border border-orange-200/80 bg-orange-50/90 p-4 text-sm leading-7 text-orange-800 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300">
+            <div className="rounded-2xl border border-orange-200/80 bg-orange-100/90 p-4 text-sm leading-7 text-orange-900 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300">
               <strong>公告：</strong>
               {siteConfig.friendsPage.announcement}
             </div>

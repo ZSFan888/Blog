@@ -659,7 +659,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                 <Search size={16} />
                 <span className="text-xs font-medium opacity-70 group-hover:opacity-100">Ctrl+K</span>
               </motion.button>
-              <motion.a variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group flex items-center space-x-2 rounded-lg bg-orange-50 px-3 py-2 text-orange-600 transition-colors hover:bg-orange-100 dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-950/70">
+              <motion.a variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group flex items-center space-x-2 rounded-lg bg-orange-100 px-3 py-2 text-orange-800 transition-colors hover:bg-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-950/70">
                 <Rss size={16} />
                 <span className="text-xs font-medium">{TEXT.rssFeed}</span>
               </motion.a>
@@ -754,7 +754,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                   <ThemeToggle />
                 </div>
 
-                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-orange-200/80 bg-orange-50 px-5 py-3 text-sm font-bold tracking-wide text-orange-600 transition-colors hover:bg-orange-100 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300 dark:hover:bg-orange-950/50">
+                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-orange-200/80 bg-orange-100 px-5 py-3 text-sm font-bold tracking-wide text-orange-800 transition-colors hover:bg-orange-200 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300 dark:hover:bg-orange-950/50">
                   <Rss size={16} />
                   <span>{TEXT.rssFeed}</span>
                 </a>

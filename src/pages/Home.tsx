@@ -191,7 +191,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
               </h2>
             </Link>
             <p className="mb-6 font-sans text-sm leading-relaxed text-zinc-500 line-clamp-3 dark:text-zinc-400 md:mb-8 md:text-base">{post.excerpt}</p>
-            <div className="mt-auto flex items-center gap-4 text-xs font-bold tracking-wider text-zinc-400">
+            <div className="mt-auto flex items-center gap-4 text-xs font-bold tracking-wider text-zinc-600 dark:text-zinc-400">
               <div className="flex items-center gap-2">
                 <Calendar size={14} />
                 <span>{post.date}</span>
@@ -245,7 +245,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
             </h3>
           </Link>
           <p className="mb-6 hidden flex-grow line-clamp-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 md:block">{post.excerpt}</p>
-          <div className="mt-auto flex items-center justify-between border-t border-zinc-100 pt-3 text-[10px] font-bold tracking-wide text-zinc-400 dark:border-zinc-800 md:pt-5 md:text-xs">
+          <div className="mt-auto flex items-center justify-between border-t border-zinc-100 pt-3 text-[10px] font-bold tracking-wide text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 md:pt-5 md:text-xs">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="flex items-center gap-1 md:gap-1.5">
                 <Calendar size={12} className="md:h-[13px] md:w-[13px]" />
