@@ -177,7 +177,7 @@ export const ArchivePage = () => {
             )}
           </div>
           {hasSearchQuery && (
-            <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
               搜索 "<span className="font-bold text-accent">{searchQuery}</span>" 找到 {totalPosts} 篇文章
             </div>
           )}
@@ -211,9 +211,9 @@ export const ArchivePage = () => {
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {group.categories.map((category) => (
-                          <span key={`${group.year}-${category}`} className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                            {category}
-                          </span>
+                          <span key={`${group.year}-${category}`} className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                        {category}
+                      </span>
                         ))}
                       </div>
                     </div>
@@ -225,10 +225,10 @@ export const ArchivePage = () => {
                         <div className="absolute -left-[30px] top-2 h-2 w-2 rounded-full border-2 border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900 md:-left-[38px]" />
 
                         <Link to={`/post/${post.id}`} className="group block rounded-xl border border-zinc-200 bg-white/50 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-white hover:shadow-lg hover:shadow-accent/5 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 md:p-5">
-                          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
                             <time className="font-mono font-semibold">{formatDay(post.date)}</time>
                             <span className="text-zinc-300 dark:text-zinc-700">•</span>
-                            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                               {post.category}
                             </span>
                             <span className="text-zinc-300 dark:text-zinc-700">•</span>
@@ -239,7 +239,7 @@ export const ArchivePage = () => {
                             {post.title}
                           </h3>
 
-                          <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                          <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
                             {post.excerpt}
                           </p>
 

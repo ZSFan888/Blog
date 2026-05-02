@@ -125,7 +125,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         <div className="relative pr-12">
           <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-accent/80">Share</p>
           <h3 id={titleId} className="text-xl font-serif font-bold text-ink dark:text-white sm:text-2xl">分享文章</h3>
-          <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">复制完整分享文案，或者只带走这篇文章的链接。</p>
+          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">复制完整分享文案，或者只带走这篇文章的链接。</p>
         </div>
 
         <div className="relative mt-5 rounded-2xl border border-zinc-200/80 bg-white/85 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70">
@@ -134,8 +134,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             当前文章
           </div>
           <h4 className="mb-2 line-clamp-2 text-base font-bold leading-7 text-ink dark:text-white">{title}</h4>
-          <p id={descriptionId} className="mb-4 line-clamp-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{excerpt}</p>
-          <div className="break-all rounded-2xl border border-dashed border-zinc-300/90 bg-zinc-50/90 p-3 text-sm font-mono leading-6 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">{url}</div>
+          <p id={descriptionId} className="mb-4 line-clamp-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{excerpt}</p>
+          <div className="break-all rounded-2xl border border-dashed border-zinc-300/90 bg-zinc-50/90 p-3 text-sm font-mono leading-6 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">{url}</div>
         </div>
 
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -157,7 +157,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           </button>
         </div>
 
-        <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400" aria-live="polite">
+        <p className="mt-4 text-xs text-zinc-600 dark:text-zinc-300" aria-live="polite">
           {copyError ?? (copiedType ? '复制成功。' : '可复制完整分享文案或单独链接。')}
         </p>
       </div>

@@ -51,7 +51,7 @@ export const About = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             {['React', 'TypeScript', 'Tailwind CSS', 'Next.js', 'Node.js', 'Vite', 'Framer Motion'].map((tech) => (
-              <span key={tech} className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-bold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              <span key={tech} className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                 {tech}
               </span>
             ))}
@@ -63,7 +63,7 @@ export const About = () => {
             <Terminal className="text-accent" />
             <h2 className="font-serif text-2xl font-bold">折腾记录</h2>
           </div>
-          <p className="mb-4 leading-relaxed text-zinc-600 dark:text-zinc-400">
+          <p className="mb-4 leading-relaxed text-zinc-600 dark:text-zinc-300">
             热衷于探索前端 Web 技术，喜欢构建极致性能和优秀交互的用户界面，目前正致力于开源项目的贡献与个人产品的打磨。
           </p>
         </div>

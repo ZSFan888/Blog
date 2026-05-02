@@ -118,7 +118,7 @@ export const Tags = () => {
         <div className="max-w-3xl">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-accent">Tags Collection</p>
           <h1 className="mb-6 font-serif text-4xl font-bold tracking-tight text-ink dark:text-white md:text-6xl">标签集合</h1>
-          <p className="max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-300 md:text-base">
+          <p className="max-w-2xl text-sm leading-7 text-zinc-700 dark:text-zinc-300 md:text-base">
             共 {allTags.length} 个标签，{allTags.reduce((sum, tag) => sum + tag.count, 0)} 篇文章
           </p>
         </div>
@@ -154,7 +154,7 @@ export const Tags = () => {
               )}
             </div>
             {hasSearchQuery && (
-              <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
                 搜索 "<span className="font-bold text-accent">{searchQuery}</span>" 找到 {tags.length} 个标签
               </div>
             )}
@@ -172,11 +172,11 @@ export const Tags = () => {
                       transition={{ delay: index * 0.03 }}
                       onClick={() => updateTagParam(tag.name)}
                       className={`${getTagSize(tag.count)} group relative rounded-full border-2 border-zinc-200 bg-white px-5 py-2.5 font-bold text-zinc-700 transition-all hover:scale-110 hover:border-accent hover:text-accent dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-accent dark:hover:text-accent`}
-                      aria-label={`查看标签 ${tag.name}，共 ${tag.count} 篇文章`}
-                    >
-                      {tag.name}
-                      <span className="ml-2 text-xs opacity-60">({tag.count})</span>
-                    </motion.button>
+                  aria-label={`查看标签 ${tag.name}，共 ${tag.count} 篇文章`}
+                >
+                  {tag.name}
+                  <span className="ml-2 text-xs opacity-60">({tag.count})</span>
+                </motion.button>
                   ))}
                 </div>
               </div>

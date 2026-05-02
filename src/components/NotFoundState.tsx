@@ -44,12 +44,12 @@ export const NotFoundState: React.FC<NotFoundStateProps> = React.memo(({
               {title}
             </h1>
 
-            <p className="max-w-xl text-sm leading-7 text-zinc-600 dark:text-zinc-400 md:text-base">
+            <p className="max-w-xl text-sm leading-7 text-zinc-700 dark:text-zinc-300 md:text-base">
               {description}
             </p>
 
             {debugLabel && (
-              <div className="mt-6 inline-flex max-w-full items-center rounded-2xl border border-zinc-200/80 bg-zinc-50/85 px-4 py-3 font-mono text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
+              <div className="mt-6 inline-flex max-w-full items-center rounded-2xl border border-zinc-200/80 bg-zinc-50/85 px-4 py-3 font-mono text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300">
                 {debugLabel}
               </div>
             )}

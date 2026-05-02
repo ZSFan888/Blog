@@ -190,8 +190,8 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
                 {post.title}
               </h2>
             </Link>
-            <p className="mb-6 font-sans text-sm leading-relaxed text-zinc-500 line-clamp-3 dark:text-zinc-400 md:mb-8 md:text-base">{post.excerpt}</p>
-            <div className="mt-auto flex items-center gap-4 text-xs font-bold tracking-wider text-zinc-600 dark:text-zinc-400">
+            <p className="mb-6 font-sans text-sm leading-relaxed text-zinc-600 line-clamp-3 dark:text-zinc-300 md:mb-8 md:text-base">{post.excerpt}</p>
+            <div className="mt-auto flex items-center gap-4 text-xs font-bold tracking-wider text-zinc-700 dark:text-zinc-300">
               <div className="flex items-center gap-2">
                 <Calendar size={14} />
                 <span>{post.date}</span>
@@ -244,8 +244,8 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
               {post.title}
             </h3>
           </Link>
-          <p className="mb-6 hidden flex-grow line-clamp-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 md:block">{post.excerpt}</p>
-          <div className="mt-auto flex items-center justify-between border-t border-zinc-100 pt-3 text-[10px] font-bold tracking-wide text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 md:pt-5 md:text-xs">
+          <p className="mb-6 hidden flex-grow line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 md:block">{post.excerpt}</p>
+          <div className="mt-auto flex items-center justify-between border-t border-zinc-100 pt-3 text-[10px] font-bold tracking-wide text-zinc-700 dark:border-zinc-800 dark:text-zinc-300 md:pt-5 md:text-xs">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="flex items-center gap-1 md:gap-1.5">
                 <Calendar size={12} className="md:h-[13px] md:w-[13px]" />
@@ -291,7 +291,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
               className={`whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-bold tracking-wide transition-all duration-300 ${
                 selected === category
                   ? 'scale-[1.02] border-ink bg-ink text-white shadow-lg shadow-zinc-900/10 dark:border-white dark:bg-white dark:text-ink'
-                  : 'border-transparent bg-transparent text-zinc-500 hover:border-zinc-200 hover:bg-zinc-50 hover:text-ink dark:hover:border-zinc-700 dark:hover:bg-zinc-800/80 dark:hover:text-white'
+                  : 'border-transparent bg-transparent text-zinc-700 hover:border-zinc-200 hover:bg-zinc-50 hover:text-ink dark:hover:border-zinc-700 dark:hover:bg-zinc-800/80 dark:hover:text-white'
               }`}
             >
               {category}
@@ -299,7 +299,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
           ))}
         </div>
       </div>
-      <motion.button onClick={onToggleSort} aria-pressed={sortOrder === 'oldest'} aria-label={`当前排序：${sortOrder === 'newest' ? '最新优先' : '最早优先'}，点击切换`} variants={chipMotion} initial="rest" animate="rest" whileHover="hover" whileTap="tap" className="flex w-full items-center justify-center space-x-2 rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-bold tracking-wide text-zinc-500 transition-all duration-300 hover:border-zinc-300 hover:text-ink dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:hover:text-white md:w-auto">
+      <motion.button onClick={onToggleSort} aria-pressed={sortOrder === 'oldest'} aria-label={`当前排序：${sortOrder === 'newest' ? '最新优先' : '最早优先'}，点击切换`} variants={chipMotion} initial="rest" animate="rest" whileHover="hover" whileTap="tap" className="flex w-full items-center justify-center space-x-2 rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-bold tracking-wide text-zinc-700 transition-all duration-300 hover:border-zinc-300 hover:text-ink dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:hover:text-white md:w-auto">
         {sortOrder === 'newest' ? <ArrowDownWideNarrow size={16} /> : <ArrowUpWideNarrow size={16} />}
         <span>{sortOrder === 'newest' ? '最新' : '最早'}</span>
       </motion.button>
@@ -329,7 +329,7 @@ const Hero = ({ onSearch, searchQuery, onClearSearch }: { onSearch: (val: string
       <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.82, ease: [0.16, 1, 0.3, 1] }} className="mb-6 font-serif text-5xl font-bold leading-[1.05] tracking-tight text-ink drop-shadow-[0_10px_24px_rgba(28,25,23,0.14)] dark:text-white dark:drop-shadow-[0_10px_28px_rgba(255,255,255,0.08)] sm:text-6xl md:mb-8 md:text-7xl lg:text-8xl">
         {siteConfig.title}
       </motion.h1>
-      <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.72, ease: [0.16, 1, 0.3, 1] }} className="mx-auto mb-12 max-w-2xl font-sans text-base leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-xl">
+      <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.72, ease: [0.16, 1, 0.3, 1] }} className="mx-auto mb-12 max-w-2xl font-sans text-base leading-relaxed text-zinc-600 dark:text-zinc-300 md:text-xl">
         {siteConfig.description}
       </motion.p>
       <motion.div initial={{ opacity: 0, y: 12, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.24, duration: 0.72, ease: [0.16, 1, 0.3, 1] }} className="flex w-full flex-col items-center gap-6">
@@ -553,7 +553,7 @@ export const Home = () => {
           <AnimatePresence mode="wait" initial={false}>
             {hasSearchQuery && (
               <motion.div key={`search-summary-${searchQuery}-${activeCategoryLabel}`} initial={{ opacity: 0, y: 8, scale: 0.992 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.992 }} transition={listSwapTransition} className="mb-6 px-2">
-                <motion.div layout className="flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200/70 bg-white/72 px-4 py-3 text-sm text-zinc-600 shadow-[0_20px_45px_-38px_rgba(28,25,23,0.5)] backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-900/48 dark:text-zinc-400">
+                <motion.div layout className="flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200/70 bg-white/72 px-4 py-3 text-sm text-zinc-700 shadow-[0_20px_45px_-38px_rgba(28,25,23,0.5)] backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-900/48 dark:text-zinc-300">
                   <motion.div initial={{ opacity: 0, scale: 0.86 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.34, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}>
                     <Search size={16} className="text-accent" />
                   </motion.div>
@@ -615,7 +615,7 @@ export const Home = () => {
                 <motion.button whileHover={{ y: -1.5 }} whileTap={{ scale: 0.988 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="rounded-full border border-zinc-200 bg-white/80 p-3 shadow-[0_16px_30px_-24px_rgba(28,25,23,0.5)] transition-colors hover:border-accent hover:text-accent disabled:opacity-30 disabled:hover:border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/70" aria-label="上一页">
                   <ChevronLeft size={20} />
                 </motion.button>
-                <motion.span layout transition={{ type: 'spring', stiffness: 280, damping: 30, mass: 0.8 }} className="rounded-full border border-zinc-200/80 bg-white/80 px-4 py-2 font-mono text-sm font-bold text-zinc-500 shadow-[0_12px_24px_-20px_rgba(28,25,23,0.4)] dark:border-zinc-800 dark:bg-zinc-900/70" aria-live="polite">
+                <motion.span layout transition={{ type: 'spring', stiffness: 280, damping: 30, mass: 0.8 }} className="rounded-full border border-zinc-200/80 bg-white/80 px-4 py-2 font-mono text-sm font-bold text-zinc-600 shadow-[0_12px_24px_-20px_rgba(28,25,23,0.4)] dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300" aria-live="polite">
                   {currentPage} / {totalPages}
                 </motion.span>
                 <motion.button whileHover={{ y: -1.5 }} whileTap={{ scale: 0.988 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-full border border-zinc-200 bg-white/80 p-3 shadow-[0_16px_30px_-24px_rgba(28,25,23,0.5)] transition-colors hover:border-accent hover:text-accent disabled:opacity-30 disabled:hover:border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/70" aria-label="下一页">
