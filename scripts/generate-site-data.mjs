@@ -315,14 +315,20 @@ const generateCloudflareSnapshot = async () => {
         }
       `;
 
-      const totalsResponse = await fetch('https://api.cloudflare.com/client/v4/graphql', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ query: totalsQuery })
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
+      try {
+        const totalsResponse = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ query: totalsQuery }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
 
       if (!totalsResponse.ok) {
         throw new Error(`API request failed with status ${totalsResponse.status}`);
@@ -466,15 +472,21 @@ const generateUmamiSnapshot = async () => {
     try {
       const url = `https://${apiUrl}/api/websites/${websiteId}/stats?startAt=${startAtMs}&endAt=${endAtMs}`;
 
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'x-umami-api-key': apiKey,
-          'Content-Type': 'application/json'
-        }
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
-      if (!response.ok) {
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'x-umami-api-key': apiKey,
+            'Content-Type': 'application/json'
+          },
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
 
