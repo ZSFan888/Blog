@@ -206,13 +206,55 @@ export const Stats = () => {
     >
       <Seo title="统计" description="基于 Cloudflare Analytics 生成的站点访问统计页，仅展示当前稳定可用的核心指标。" />
 
-      <section className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-7 md:p-10 lg:p-12">
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5 md:p-6 lg:p-8">
+        <div className="mb-5 flex items-center gap-2.5 md:mb-6">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            <Database size={18} />
+          </div>
+          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">站点概览</h2>
+        </div>
 
+        <div className="grid gap-4 sm:gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <SummaryCard icon={FileText} title="当前文章数" value={formatValue(siteStats.totalPosts)} detail="已公开发布的文章总数" />
+          <SummaryCard icon={Type} title="总字数" value={formatValue(siteStats.totalWords)} detail="按正文内容累计的总阅读字数" />
+          <SummaryCard icon={FolderTree} title="总分类数" value={formatValue(siteStats.totalCategories)} detail="当前启用的文章分类数量" />
+          <SummaryCard icon={Hash} title="总标签数" value={formatValue(siteStats.totalTags)} detail="去重后的标签总数量" />
+          <SummaryCard icon={FileImage} title="总图片数" value={formatValue(siteStats.totalImages)} detail="正文内 Markdown 图片累计数量" />
+        </div>
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5 md:mt-12 md:p-6 lg:mt-14 lg:p-8">
+        <div className="mb-5 flex items-center gap-2.5 md:mb-6">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            <BarChart3 size={18} />
+          </div>
+          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">Umami 访问统计</h2>
+        </div>
+
+        <p className="mb-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400 md:text-base md:leading-7">
+          查看详细的访问统计数据，包括访客数、访问次数和浏览量。
+        </p>
+
+        <div className="flex justify-center">
+          <a
+            href="https://cloud.umami.is/share/lbt9NW1ZYgWpm1KO"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex min-h-14 w-full max-w-xl items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-zinc-900 px-6 py-4 text-base font-bold text-white transition-all hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-white dark:border-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:ring-offset-zinc-950 sm:text-lg"
+            title="查看 Umami 统计数据"
+          >
+            <BarChart3 size={20} />
+            <span>查看 Umami 统计数据</span>
+          </a>
+        </div>
+      </section>
+
+      <section className="relative mt-8 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-7 md:mt-12 md:p-10 lg:mt-14 lg:p-12">
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
             <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 sm:mb-4 sm:text-xs dark:text-zinc-400">Analytics Dashboard</p>
             <h1 className="max-w-2xl font-serif text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-4xl md:text-5xl lg:text-6xl">
-              站点访问统计
+              Cloudflare 访问统计
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400 md:mt-4 md:text-base md:leading-7">
               这里展示 Cloudflare 当前能稳定返回的聚合统计数据。页面保留最近一次成功结果，避免刷新或切换时整块闪烁。
@@ -322,96 +364,6 @@ export const Stats = () => {
               <RefreshCw size={22} className="transition-transform duration-300 group-hover:rotate-90" />
               <span>获取 Cloudflare 访问数据</span>
             </button>
-          </div>
-        )}
-      </section>
-
-      <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5 md:mt-12 md:p-6 lg:mt-14">
-        <div className="mb-5 flex items-center gap-2.5 md:mb-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-            <Database size={18} />
-          </div>
-          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">站点概览</h2>
-        </div>
-
-        <div className="grid gap-4 sm:gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          <SummaryCard icon={FileText} title="当前文章数" value={formatValue(siteStats.totalPosts)} detail="已公开发布的文章总数" />
-          <SummaryCard icon={Type} title="总字数" value={formatValue(siteStats.totalWords)} detail="按正文内容累计的总阅读字数" />
-          <SummaryCard icon={FolderTree} title="总分类数" value={formatValue(siteStats.totalCategories)} detail="当前启用的文章分类数量" />
-          <SummaryCard icon={Hash} title="总标签数" value={formatValue(siteStats.totalTags)} detail="去重后的标签总数量" />
-          <SummaryCard icon={FileImage} title="总图片数" value={formatValue(siteStats.totalImages)} detail="正文内 Markdown 图片累计数量" />
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-7 md:mt-12 md:p-10 lg:mt-14 lg:p-12">
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 sm:mb-4 sm:text-xs dark:text-zinc-400">Umami Analytics</p>
-            <h1 className="max-w-2xl font-serif text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-4xl md:text-5xl lg:text-6xl">
-              Umami 访问统计
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400 md:mt-4 md:text-base md:leading-7">
-              查看详细的访问统计数据，包括访客数、访问次数和浏览量。
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
-            <a
-              href="https://cloud.umami.is/share/lbt9NW1ZYgWpm1KO"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-zinc-300 bg-zinc-900 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-zinc-800 dark:border-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 sm:w-auto"
-              title="查看 Umami 统计数据"
-            >
-              <BarChart3 size={18} />
-              <span className="sm:hidden">查看统计</span>
-              <span className="hidden sm:inline">查看 Umami 统计数据</span>
-            </a>
-          </div>
-        </div>
-
-        <div className="mt-10 flex justify-center">
-          <a
-            href="https://cloud.umami.is/share/lbt9NW1ZYgWpm1KO"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex min-h-16 w-full max-w-xl items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-zinc-900 px-6 py-5 text-base font-bold text-white transition-all hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-white dark:border-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:ring-offset-zinc-950 sm:text-lg"
-            title="查看 Umami 统计数据"
-          >
-            <BarChart3 size={22} />
-            <span>查看 Umami 统计数据</span>
-          </a>
-        </div>
-      </section>
-
-      <section className="mt-8 space-y-5 md:mt-12 md:space-y-6 lg:mt-14">
-        {!cloudflareLoading && cloudflareRequested && hasData && currentTimeWindow && (
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5 md:p-6">
-            <div className="mb-5 flex items-center gap-2.5 md:mb-6">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                <Database size={18} />
-              </div>
-              <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">Cloudflare 数据说明</h2>
-              {cloudflareLoading && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                  <Loader2 size={12} className="animate-spin" />
-                  同步中
-                </span>
-              )}
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
-              <InfoCard title="统计域名" value={snapshot.domain || 'pldduck.com'} icon={Database} />
-              <InfoCard title="统计窗口" value={`最近 ${currentTimeWindow.days} 天`} icon={BarChart3} />
-              <InfoCard title="更新时间" value={formatDateTime(snapshot.fetchedAt)} icon={Clock3} />
-              <InfoCard title="展示范围" value="仅显示 Cloudflare 当前可稳定获取的总览指标" icon={ShieldCheck} />
-            </div>
-          </div>
-        )}
-
-        {!cloudflareLoading && cloudflareRequested && !snapshot.enabled && (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-6 py-16 text-center text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-            暂无 Cloudflare 统计数据。请配置环境变量后重新执行 `npm run build`。
           </div>
         )}
       </section>

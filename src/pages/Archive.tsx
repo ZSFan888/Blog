@@ -220,41 +220,41 @@ export const ArchivePage = () => {
     <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }} className="pb-10 md:pb-20">
       <Seo title="归档" description="按年份整理本站全部文章，快速查看发布时间、分类与历史更新轨迹。" />
 
-      <section className="relative overflow-hidden rounded-[2rem] border border-zinc-200 bg-[radial-gradient(circle_at_top_left,_rgba(192,57,43,0.12),_transparent_38%),linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(244,244,245,0.9))] p-8 dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(192,57,43,0.2),_transparent_40%),linear-gradient(135deg,_rgba(24,24,27,0.96),_rgba(9,9,11,0.96))] md:p-12">
-        <div className="absolute right-6 top-6 rounded-full border border-accent/20 bg-accent/10 p-3 text-accent">
+      <section className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900 md:p-12">
+        <div className="absolute right-6 top-6 rounded-lg border border-zinc-200 bg-zinc-100 p-3 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
           <Archive size={22} />
         </div>
         <div className="max-w-3xl">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-accent">Archive Index</p>
-          <h1 className="mb-6 font-serif text-4xl font-bold tracking-tight text-ink dark:text-white md:text-6xl">
+          <p className="mb-4 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 sm:text-xs">Archive Index</p>
+          <h1 className="mb-6 font-serif text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 md:text-6xl">
             所有文章，按年份归档。
           </h1>
-          <p className="max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-300 md:text-base">
+          <p className="max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400 md:text-base">
             这里集中展示全部历史内容，适合按时间线回看更新节奏，也方便快速跳转到旧文章。
           </p>
         </div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/60 bg-white/70 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="mb-3 flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
               <Archive size={16} />
-              <span className="text-xs font-bold uppercase tracking-[0.25em]">文章总数</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider sm:text-[11px]">文章总数</span>
             </div>
-            <div className="text-3xl font-bold text-ink dark:text-white">{totalPosts}</div>
+            <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{totalPosts}</div>
           </div>
-          <div className="rounded-2xl border border-white/60 bg-white/70 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="mb-3 flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
               <Calendar size={16} />
-              <span className="text-xs font-bold uppercase tracking-[0.25em]">归档年份</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider sm:text-[11px]">归档年份</span>
             </div>
-            <div className="text-3xl font-bold text-ink dark:text-white">{groups.length}</div>
+            <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{groups.length}</div>
           </div>
-          <div className="rounded-2xl border border-white/60 bg-white/70 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
-            <div className="mb-3 flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="mb-3 flex items-center gap-2 text-zinc-500 dark:tt-zinc-400">
               <FolderTree size={16} />
-              <span className="text-xs font-bold uppercase tracking-[0.25em]">最近更新</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider sm:text-[11px]">最近更新</span>
             </div>
-            <div className="text-lg font-bold text-ink dark:text-white">{latestDate ? formatFullDate(latestDate) : '--'}</div>
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{latestDate ? formatFullDate(latestDate) : '--'}</div>
           </div>
         </div>
       </section>
@@ -281,7 +281,7 @@ export const ArchivePage = () => {
           </div>
           {hasSearchQuery && (
             <div className="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
-              搜索 "<span className="font-bold text-accent">{searchQuery}</span>" 找到 {totalPosts} 篇文章
+              搜索 "<span className="font-bold text-zinc-900 dark:text-zinc-100">{searchQuery}</span>" 找到 {totalPosts} 篇文章
             </div>
           )}
         </div>
@@ -416,7 +416,7 @@ export const ArchivePage = () => {
 
                                               <Link 
                                                 to={`/post/${post.id}`} 
-                                                className="group block rounded-xl border border-zinc-200 bg-white/50 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-white hover:shadow-lg hover:shadow-accent/5 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 md:p-5"
+                                                className="group block rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 md:p-5"
                                               >
                                                 <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
                                                   <time className="font-mono font-semibold">{formatDay(post.date)}</time>
@@ -428,16 +428,16 @@ export const ArchivePage = () => {
                                                   <span>{post.readTime}</span>
                                                 </div>
 
-                                                <h3 className="mb-2 font-serif text-lg font-bold text-ink transition-colors group-hover:text-accent dark:text-white md:text-xl">
+                                                <h3 className="mb-2 font-serif text-lg font-bold text-zinc-900 transition-colors group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300 md:text-xl">
                                                   {post.title}
                                                 </h3>
 
-                                                <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                                <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                                                   {post.excerpt}
                                                 </p>
 
-                                                <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-zinc-400 transition-colors group-hover:text-accent">
-                                                  <span>阅读文章</span>
+                                                <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-zinc-400 transition-colors group-hover:text-zinc-700 dark:group-hover:text-zinc-300">
+                                          <span>阅读文章</span>
                                                   <ArrowUpRight size={14} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                                                 </div>
                                               </Link>

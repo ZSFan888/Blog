@@ -411,9 +411,9 @@ export const TableOfContents: React.FC<{
                     <span
                       className={`mt-[0.15rem] inline-flex min-w-[1.9rem] justify-center rounded-full px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] transition-colors ${
                         isActive
-                          ? 'bg-accent text-white'
+                          ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
                           : isInActiveBranch
-                            ? 'bg-accent/10 text-accent dark:bg-accent/15'
+                            ? 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300'
                             : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500'
                       }`}
                     >
@@ -435,8 +435,8 @@ export const TableOfContents: React.FC<{
                       onClick={() => toggleNode(item.id)}
                       className={`mt-0.5 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
                         isInActiveBranch
-                          ? 'bg-accent/10 text-accent dark:bg-accent/15'
-                          : 'text-zinc-400 hover:bg-zinc-200/80 hover:text-accent dark:text-zinc-500 dark:hover:bg-zinc-800'
+                          ? 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300'
+                          : 'text-zinc-400 hover:bg-zinc-200/80 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300'
                       }`}
                       aria-label={isExpanded ? '折叠子目录' : '展开子目录'}
                       aria-expanded={isExpanded}
@@ -532,7 +532,7 @@ export const TableOfContents: React.FC<{
   }, 0);
   const shouldForceExpandFilteredTree = searchQuery.trim().length > 0;
   const panelContent = (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-[26px] border border-zinc-200/80 bg-white/96 p-4 shadow-[0_28px_68px_-42px_rgba(24,24,27,0.34)] backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/94 dark:shadow-none sm:p-4.5">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-lg backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-4.5">
       <div
         className="mb-3 flex justify-center lg:hidden"
         onTouchStart={handleSheetTouchStart}
@@ -540,16 +540,16 @@ export const TableOfContents: React.FC<{
         onTouchEnd={handleSheetTouchEnd}
         onTouchCancel={handleSheetTouchEnd}
       >
-        <span className="h-1.5 w-14 rounded-full bg-zinc-300/90 shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:bg-zinc-700/90" />
+        <span className="h-1.5 w-14 rounded-full bg-zinc-300 dark:bg-zinc-700" />
       </div>
 
-      <div className="mb-3.5 flex items-start justify-between gap-3 border-b border-zinc-200/80 pb-3 dark:border-zinc-800/80">
+      <div className="mb-3.5 flex items-start justify-between gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-800">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-accent/[0.1] text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:bg-accent/[0.14]">
+          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
             <List size={17} />
           </span>
           <div className="min-w-0">
-            <h3 className="truncate text-sm font-semibold text-ink dark:text-white">文章目录</h3>
+            <h3 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">文章目录</h3>
             <p className="mt-0.5 text-[11px] text-zinc-400 dark:text-zinc-500">
               {rootHeadingsCount} 个主章节 · 共 {headings.length} 节
             </p>
@@ -559,7 +559,7 @@ export const TableOfContents: React.FC<{
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-ink dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white lg:hidden"
+          className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-300 lg:hidden"
           aria-label="关闭目录"
         >
           <X size={16} />
@@ -576,7 +576,7 @@ export const TableOfContents: React.FC<{
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="搜索目录标题"
-            className="w-full rounded-2xl border border-zinc-200/80 bg-zinc-50/90 py-2.5 pl-10 pr-4 text-sm text-ink outline-none transition-colors placeholder:text-zinc-400 focus:border-accent/40 focus:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/70 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-accent/40 dark:focus:bg-zinc-950"
+            className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-4 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-100 dark:focus:bg-zinc-950"
             aria-label="搜索目录标题"
           />
         </label>
@@ -594,7 +594,7 @@ export const TableOfContents: React.FC<{
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-1 no-scrollbar"
       >
         {filteredHeadingTree.length > 0 ? renderNodes(filteredHeadingTree) : (
-          <div className="flex h-full min-h-[9rem] items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-zinc-50/70 px-4 text-center text-sm text-zinc-400 dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:text-zinc-500">
+          <div className="flex h-full min-h-[9rem] items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-4 text-center text-sm text-zinc-400 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-500">
             没有找到匹配的目录标题
           </div>
         )}
@@ -641,7 +641,7 @@ export const TableOfContents: React.FC<{
             type="button"
             onClick={() => setIsOpen((value) => !value)}
             style={MOBILE_TOC_TRIGGER_STYLE}
-            className="fixed z-[60] inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/96 px-4 py-2.5 text-sm font-medium text-ink shadow-[0_16px_42px_-26px_rgba(28,25,23,0.36)] backdrop-blur-xl transition-all duration-300 hover:border-accent/20 hover:text-accent dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 lg:hidden"
+            className="fixed z-[60] inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/96 px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 dark:hover:border-zinc-600 lg:hidden"
             aria-label={isOpen ? '关闭目录' : '打开目录'}
             aria-expanded={isOpen}
           >
@@ -683,7 +683,7 @@ export const TableOfContents: React.FC<{
             type="button"
             onClick={() => setIsOpen((value) => !value)}
             style={DESKTOP_TOC_TRIGGER_STYLE}
-            className="fixed z-[60] hidden items-center gap-2 rounded-full border border-zinc-200/80 bg-white/96 px-4 py-2.5 text-sm font-medium text-ink shadow-[0_16px_42px_-26px_rgba(28,25,23,0.36)] backdrop-blur-xl transition-all duration-300 hover:border-accent/20 hover:text-accent dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 md:inline-flex"
+            className="fixed z-[60] hidden items-center gap-2 rounded-full border border-zinc-200 bg-white/96 px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 dark:hover:border-zinc-600 md:inline-flex"
             aria-label={isOpen ? '关闭目录' : '打开目录'}
             aria-expanded={isOpen}
           >

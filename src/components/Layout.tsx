@@ -643,9 +643,9 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                     <span className="relative z-10">{item.label}</span>
                     <span
                       aria-hidden="true"
-                      className={`absolute bottom-[2px] left-2 right-2 h-[2px] origin-center rounded-full bg-gradient-to-r from-accent-light via-accent to-accent-dark transition-all duration-250 ${
+                      className={`absolute bottom-[2px] left-2 right-2 h-[2px] origin-center rounded-full bg-zinc-900 dark:bg-zinc-100 transition-all duration-250 ${
                         location.pathname === item.path
-                          ? 'scale-x-100 opacity-100 shadow-[0_0_16px_rgba(192,57,43,0.4)]'
+                          ? 'scale-x-100 opacity-100'
                           : 'scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-70'
                       }`}
                     />
@@ -655,11 +655,11 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             </motion.div>
 
             <motion.div className="flex items-center space-x-3 border-l border-zinc-300 pl-6 dark:border-zinc-700" variants={navListVariants} initial="hidden" animate="visible">
-              <motion.button variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} onClick={onSearchClick} className="group flex items-center space-x-2 rounded-lg border border-transparent bg-zinc-100/90 px-3 py-2 text-zinc-700 transition-all duration-300 hover:border-zinc-200 hover:bg-white hover:text-accent dark:bg-zinc-800/90 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-800" aria-label="打开站内搜索">
+              <motion.button variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} onClick={onSearchClick} className="group flex items-center space-x-2 rounded-lg border border-transparent bg-zinc-100 px-3 py-2 text-zinc-700 transition-all duration-300 hover:border-zinc-200 hover:bg-white dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900" aria-label="打开站内搜索">
                 <Search size={16} />
                 <span className="text-xs font-medium opacity-70 group-hover:opacity-100">Ctrl+K</span>
               </motion.button>
-              <motion.a variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group flex items-center space-x-2 rounded-lg bg-orange-100 px-3 py-2 text-orange-800 transition-colors hover:bg-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-950/70">
+              <motion.a variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group flex items-center space-x-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                 <Rss size={16} />
                 <span className="text-xs font-medium">{TEXT.rssFeed}</span>
               </motion.a>
@@ -754,7 +754,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                   <ThemeToggle />
                 </div>
 
-                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-orange-200/80 bg-orange-100 px-5 py-3 text-sm font-bold tracking-wide text-orange-800 transition-colors hover:bg-orange-200 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300 dark:hover:bg-orange-950/50">
+                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-bold tracking-wide text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                   <Rss size={16} />
                   <span>{TEXT.rssFeed}</span>
                 </a>

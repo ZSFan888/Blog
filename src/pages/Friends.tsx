@@ -93,17 +93,16 @@ export const Friends = () => {
           whileHover={{ y: -6, scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-          className="group relative overflow-hidden rounded-[28px] border border-accent/20 bg-gradient-to-br from-accent/[0.14] via-orange-50 to-white p-6 text-left shadow-[0_18px_50px_rgba(249,115,22,0.12)] dark:from-accent/15 dark:via-zinc-900 dark:to-zinc-950 lg:col-span-3 lg:p-7"
+          className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 text-left shadow-lg dark:border-zinc-800 dark:bg-zinc-900 lg:col-span-3 lg:p-7"
         >
-          <div className="absolute right-0 top-0 h-32 w-32 translate-x-10 -translate-y-10 rounded-full bg-accent/15 blur-3xl transition-transform duration-500 group-hover:scale-125 dark:bg-accent/20" />
           <div className="relative flex h-full flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-white/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.24em] text-accent dark:bg-zinc-900/60">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
                 <Plus size={14} />
                 Friend Link
               </div>
-              <h3 className="text-2xl font-serif font-bold text-ink dark:text-white">申请友链</h3>
-              <p className="mt-3 text-sm leading-7 text-zinc-700 dark:text-zinc-300 md:text-base">
+              <h3 className="text-2xl font-serif font-bold text-zinc-900 dark:text-zinc-100">申请友链</h3>
+              <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-400 md:text-base">
                 想出现在这个列表里?先添加本站友链,再按模板提交 PR 即可,信息清晰、审核也更快。
               </p>
             </div>
@@ -124,10 +123,9 @@ export const Friends = () => {
               href={friend.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative block overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 transition-all duration-300 hover:border-accent/30 hover:shadow-xl hover:shadow-accent/5 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-accent/30"
+              className="group relative block overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 transition-all duration-300 hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
             >
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <div className="absolute right-0 top-0 p-4 text-accent opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+              <div className="absolute right-0 top-0 p-4 text-zinc-400 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 dark:text-zinc-500">
                 <ExternalLink size={16} />
               </div>
               <div className="flex items-start gap-4">
@@ -165,16 +163,16 @@ export const Friends = () => {
       >
         <div className="relative overflow-hidden rounded-[24px] border border-zinc-200/70 bg-white/85 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-zinc-800/70 dark:bg-zinc-950/40 dark:shadow-none sm:p-6">
           <div className="pointer-events-none absolute inset-x-8 top-0 h-24 rounded-full bg-accent/10 blur-3xl dark:bg-accent/15" />
-          <div className="relative flex items-start justify-between gap-4 border-b border-zinc-200/70 pb-4 dark:border-zinc-800/80">
+          <div className="relative flex items-start justify-between gap-4 border-b border-zinc-200 pb-4 dark:border-zinc-800">
             <div>
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-accent/80">Friend Link</p>
-              <h3 id={titleId} className="text-xl font-serif font-bold text-ink dark:text-white sm:text-2xl">申请友链</h3>
-              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">按模板提交 PR，就能更快完成收录。</p>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Friend Link</p>
+              <h3 id={titleId} className="text-xl font-serif font-bold text-zinc-900 dark:text-zinc-100 sm:text-2xl">申请友链</h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">按模板提交 PR，就能更快完成收录。</p>
             </div>
             <button
               ref={closeButtonRef}
               onClick={() => setIsModalOpen(false)}
-              className="rounded-xl border border-zinc-200/80 bg-white/80 p-2 text-zinc-400 transition-all hover:border-accent/30 hover:text-accent dark:border-zinc-700/80 dark:bg-zinc-900/80 dark:hover:border-accent/30"
+              className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-400 transition-all hover:border-zinc-300 hover:text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:hover:text-zinc-300"
               aria-label="关闭申请友链弹窗"
             >
               <X size={18} />
@@ -182,28 +180,28 @@ export const Friends = () => {
           </div>
 
           <div className="relative space-y-5 pt-5">
-            <div className="rounded-2xl border border-orange-200/80 bg-orange-100/90 p-4 text-sm leading-7 text-orange-900 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-300">
+            <div className="rounded-2xl border border-zinc-200 bg-zinc-100 p-4 text-sm leading-7 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
               <strong>公告：</strong>
               {siteConfig.friendsPage.announcement}
             </div>
 
-            <div className="rounded-2xl border border-zinc-200/80 bg-white/85 p-4 dark:border-zinc-800 dark:bg-zinc-900/70">
-              <h4 className="mb-3 text-sm font-bold text-ink dark:text-white">本站信息（提交前请先添加本站友链）</h4>
-              <div className="flex flex-col items-start gap-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/90 p-4 dark:border-zinc-700 dark:bg-zinc-800/50 sm:flex-row sm:items-center">
-                <ProgressiveImage src={siteInfo.avatar} alt={siteInfo.name} wrapperClassName="h-14 w-14 flex-shrink-0 rounded-full border border-zinc-200 bg-white dark:border-zinc-600" className="h-14 w-14 rounded-full object-cover object-center" />
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+              <h4 className="mb-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">本站信息（提交前请先添加本站友链）</h4>
+              <div className="flex flex-col items-start gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800 sm:flex-row sm:items-center">
+                <ProgressiveImage src={siteInfo.avatar} alt={siteInfo.name} wrapperClassName="h-14 w-14 flex-shrink-0 rounded-full border border-zinc-200 bg-white dark:border-zinc-700" className="h-14 w-14 rounded-full object-cover object-center" />
                 <div className="w-full flex-1 space-y-1.5">
-                  <div className="font-bold text-ink dark:text-white">{siteInfo.name}</div>
-                  <div className="text-sm leading-6 text-zinc-600 dark:text-zinc-300">{siteInfo.description}</div>
-                  <div className="break-all pt-1 font-mono text-xs leading-5 text-zinc-700 dark:text-zinc-300 select-all">链接：{siteInfo.url}</div>
-                  <div className="break-all font-mono text-xs leading-5 text-zinc-700 dark:text-zinc-300 select-all">LOGO：{siteInfo.avatar}</div>
+                  <div className="font-bold text-zinc-900 dark:text-zinc-100">{siteInfo.name}</div>
+                  <div className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">{siteInfo.description}</div>
+                  <div className="break-all pt-1 font-mono text-xs leading-5 text-zinc-700 dark:text-zinc-400 select-all">链接：{siteInfo.url}</div>
+                  <div className="break-all font-mono text-xs leading-5 text-zinc-700 dark:text-zinc-400 select-all">LOGO：{siteInfo.avatar}</div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200/80 bg-white/85 p-4 dark:border-zinc-800 dark:bg-zinc-900/70">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <h4 className="text-sm font-bold text-ink dark:text-white">友链 JSON 模板</h4>
-                <button onClick={handleCopyTemplate} className="flex items-center gap-1.5 rounded-xl border border-accent/20 bg-accent/10 px-3 py-2 text-xs font-bold text-accent transition-all hover:-translate-y-0.5 hover:bg-accent/15">
+                <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">友链 JSON 模板</h4>
+                <button onClick={handleCopyTemplate} className="flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-900 transition-all hover:-translate-y-0.5 hover:bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700">
                   {isCopied ? <Check size={14} /> : <Copy size={14} />}
                   {isCopied ? '已复制' : '复制模板'}
                 </button>
@@ -231,10 +229,10 @@ export const Friends = () => {
 
           <div className="relative mt-5 flex justify-end border-t border-zinc-200/70 pt-5 dark:border-zinc-800/80">
             <a
-              href={siteConfig.friendsPage.repoFriendsUrl}
+              href={`${siteConfig.friendsPage.repoUrl}/tree/main/${siteConfig.friendsPage.repoFriendsDir}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center rounded-2xl bg-ink px-6 py-3 text-sm font-bold text-white shadow-lg shadow-zinc-900/10 transition-all hover:-translate-y-0.5 hover:opacity-95 dark:bg-white dark:text-ink dark:shadow-none"
+              className="flex items-center justify-center rounded-2xl bg-zinc-900 px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               去提交 PR
             </a>
