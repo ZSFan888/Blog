@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, RefreshCw, Type, Image as ImageIcon, Palette, Sparkles, Upload, X, ZoomIn, ZoomOut, Move, Search } from 'lucide-react';
 import { Seo } from '../components/Seo';
 import { coverTemplates as templates, type CoverTemplate } from '../config/coverTemplates';
+import { debounce } from '../utils/debounce';
 
 interface ExportRatio {
   label: string;
@@ -196,6 +197,13 @@ export const CoverGenerator: React.FC = () => {
       return;
     }
     
+    // 检查网络连接状态
+    if (!navigator.onLine) {
+      setSearchError('网络未连接，请检查网络设置');
+      setIconifyResults([]);
+      return;
+    }
+    
     setIsSearching(true);
     setSearchError(null);
     
@@ -211,7 +219,15 @@ export const CoverGenerator: React.FC = () => {
       
       // 检查 HTTP 响应状态
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        if (response.status === 404) {
+          throw new Error('API 端点不存在');
+        } else if (response.status === 429) {
+          throw new Error('请求过于频繁，请稍后再试');
+        } else if (response.status >= 500) {
+          throw new Error('服务器错误，请稍后再试');
+        } else {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
       }
       
       const data = await response.json();
@@ -225,9 +241,12 @@ export const CoverGenerator: React.FC = () => {
       if (error.name === 'AbortError') {
         console.error('搜索超时：请求超过 5 秒未响应');
         setSearchError('搜索超时，请重试');
+      } else if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        console.error('网络错误:', error);
+        setSearchError('网络连接失败，请检查网络后重试');
       } else {
         console.error('搜索失败:', error);
-        setSearchError('搜索失败，请检查网络连接后重试');
+        setSearchError(error.message || '搜索失败，请稍后重试');
       }
       setIconifyResults([]);
     } finally {
@@ -235,6 +254,14 @@ export const CoverGenerator: React.FC = () => {
       setIsSearching(false);
     }
   }, []);
+
+  // 防抖搜索函数
+  const debouncedSearchIconify = useCallback(
+    debounce((query: string) => {
+      searchIconify(query);
+    }, 500),
+    [searchIconify]
+  );
 
   // 选择 Iconify 图标
   const selectIconifyIcon = useCallback((icon: string) => {
@@ -1415,7 +1442,7 @@ export const CoverGenerator: React.FC = () => {
                     value={iconifySearch}
                     onChange={(e) => {
                       setIconifySearch(e.target.value);
-                      searchIconify(e.target.value);
+                      debouncedSearchIconify(e.target.value);
                     }}
                     placeholder="搜索图标，例如：home, user, settings..."
                     className="w-full rounded-lg border border-zinc-200 bg-white py-3 pl-10 pr-4 text-ink outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-ink/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-white dark:focus:ring-white/20"
