@@ -43,7 +43,7 @@ const fetchAnalyticsForDays = async (
     const startAtMs = startAt.getTime();
     const endAtMs = now.getTime();
 
-    const url = `https://api.umami.is/api/websites/${websiteId}/stats?startAt=${startAtMs}&endAt=${endAtMs}`;
+    const url = `https://api.umami.is/v1/websites/${websiteId}/stats?startAt=${startAtMs}&endAt=${endAtMs}`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
