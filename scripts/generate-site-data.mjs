@@ -495,22 +495,30 @@ const generateUmamiSnapshot = async () => {
         clearTimeout(timeout);
 
         if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        snapshot.timeWindows.push({
+          days,
+          data: {
+            pageviews: data.pageviews?.value || 0,
+            visitors: data.visitors?.value || 0,
+            visits: data.visits?.value || 0
+          },
+          error: null
+        });
+
+        console.log(`Umami data fetched for ${days} days: ${data.pageviews?.value || 0} page views`);
+      } catch (error) {
+        console.warn(`Umami Analytics failed for ${days} days: ${error.message}`);
+        snapshot.timeWindows.push({
+          days,
+          data: { pageviews: 0, visitors: 0, visits: 0 },
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
-
-      const data = await response.json();
-
-      snapshot.timeWindows.push({
-        days,
-        data: {
-          pageviews: data.pageviews?.value || 0,
-          visitors: data.visitors?.value || 0,
-          visits: data.visits?.value || 0
-        },
-        error: null
-      });
-
-      console.log(`Umami data fetched for ${days} days: ${data.pageviews?.value || 0} page views`);
     } catch (error) {
       console.warn(`Umami Analytics failed for ${days} days: ${error.message}`);
       snapshot.timeWindows.push({
