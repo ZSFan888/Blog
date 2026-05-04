@@ -36,14 +36,22 @@ export const CookieNotice: React.FC = () => {
         >
           <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {/* 文字内容 */}
-              <div className="flex-1 pr-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">我们尊重您的隐私</span>
-                <span className="mx-2 hidden sm:inline">·</span>
-                <br className="sm:hidden" />
-                <span>
-                  如果您继续访问 D-blog，为了帮助我们更好地改进网站，我们会使用 Umami、Cloudflare、MS Clarity 等项目对您在网站上的行为进行分析。如不同意，请您关闭 D-blog 以保护您的隐私。
-                </span>
+              {/* 左侧标题和文字内容 */}
+              <div className="flex flex-1 flex-col gap-2 pr-4 sm:flex-row sm:items-start sm:gap-4">
+                {/* Cookie使用标题 */}
+                <div className="flex-shrink-0">
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Cookie 使用</span>
+                </div>
+                
+                {/* 文字内容 */}
+                <div className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  <p className="mb-1">
+                    <span className="font-medium text-zinc-900 dark:text-zinc-100">我们尊重您的隐私。</span>
+                  </p>
+                  <p>
+                    如果您继续访问 D-blog，为了帮助我们更好地改进网站，我们会使用 Umami、Cloudflare、MS Clarity 等项目对您在网站上的行为进行分析。如不同意，请您关闭 D-blog 以保护您的隐私。
+                  </p>
+                </div>
               </div>
 
               {/* 按钮组 */}
