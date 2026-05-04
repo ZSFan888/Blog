@@ -330,30 +330,38 @@ const generateCloudflareSnapshot = async () => {
         });
         clearTimeout(timeout);
 
-      if (!totalsResponse.ok) {
-        throw new Error(`API request failed with status ${totalsResponse.status}`);
+        if (!totalsResponse.ok) {
+          throw new Error(`API request failed with status ${totalsResponse.status}`);
+        }
+
+        const totalsData = await totalsResponse.json();
+        const groups = totalsData?.data?.viewer?.zones?.[0]?.httpRequests1dGroups || [];
+
+        const totals = groups.reduce(
+          (acc, group) => ({
+            requests: acc.requests + (group.sum?.requests || 0),
+            pageViews: acc.pageViews + (group.sum?.pageViews || 0),
+            bandwidth: acc.bandwidth + (group.sum?.bytes || 0),
+            uniques: acc.uniques + (group.uniq?.uniques || 0)
+          }),
+          { requests: 0, pageViews: 0, bandwidth: 0, uniques: 0 }
+        );
+
+        snapshot.timeWindows.push({
+          days,
+          data: totals,
+          error: null
+        });
+
+        console.log(`Cloudflare data fetched for ${days} days: ${totals.pageViews} page views`);
+      } catch (error) {
+        console.warn(`Cloudflare Analytics failed for ${days} days: ${error.message}`);
+        snapshot.timeWindows.push({
+          days,
+          data: { requests: 0, pageViews: 0, bandwidth: 0, uniques: 0 },
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
-
-      const totalsData = await totalsResponse.json();
-      const groups = totalsData?.data?.viewer?.zones?.[0]?.httpRequests1dGroups || [];
-
-      const totals = groups.reduce(
-        (acc, group) => ({
-          requests: acc.requests + (group.sum?.requests || 0),
-          pageViews: acc.pageViews + (group.sum?.pageViews || 0),
-          bandwidth: acc.bandwidth + (group.sum?.bytes || 0),
-          uniques: acc.uniques + (group.uniq?.uniques || 0)
-        }),
-        { requests: 0, pageViews: 0, bandwidth: 0, uniques: 0 }
-      );
-
-      snapshot.timeWindows.push({
-        days,
-        data: totals,
-        error: null
-      });
-
-      console.log(`Cloudflare data fetched for ${days} days: ${totals.pageViews} page views`);
     } catch (error) {
       console.warn(`Cloudflare Analytics failed for ${days} days: ${error.message}`);
       snapshot.timeWindows.push({
