@@ -195,9 +195,16 @@ export const CoverGenerator: React.FC = () => {
     }
     
     setIsSearching(true);
+    
+    // 创建 AbortController 用于超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     try {
       // 搜索 Iconify 图标
-      const response = await fetch(`https://api.iconify.design/search?query=${encodeURIComponent(query)}&limit=24`);
+      const response = await fetch(`https://api.iconify.design/search?query=${encodeURIComponent(query)}&limit=24`, {
+        signal: controller.signal
+      });
       
       // 检查 HTTP 响应状态
       if (!response.ok) {
@@ -211,10 +218,15 @@ export const CoverGenerator: React.FC = () => {
       } else {
         setIconifyResults([]);
       }
-    } catch (error) {
-      console.error('Failed to search Iconify:', error);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('搜索超时：请求超过 5 秒未响应');
+      } else {
+        console.error('搜索失败:', error);
+      }
       setIconifyResults([]);
     } finally {
+      clearTimeout(timeoutId);
       setIsSearching(false);
     }
   }, []);
