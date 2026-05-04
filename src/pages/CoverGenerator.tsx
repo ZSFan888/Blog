@@ -198,6 +198,12 @@ export const CoverGenerator: React.FC = () => {
     try {
       // 搜索 Iconify 图标
       const response = await fetch(`https://api.iconify.design/search?query=${encodeURIComponent(query)}&limit=24`);
+      
+      // 检查 HTTP 响应状态
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       
       if (data.icons && data.icons.length > 0) {
