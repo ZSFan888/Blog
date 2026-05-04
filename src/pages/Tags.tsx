@@ -111,14 +111,14 @@ export const Tags = () => {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-10 md:pb-20">
       <Seo title="标签" description="按标签浏览文章" />
 
-      <section className="relative mb-10 overflow-hidden rounded-[2rem] border border-zinc-200 bg-gradient-to-br from-white via-zinc-50 to-white p-8 dark:border-zinc-800 dark:from-zinc-900 dark:via-zinc-900/50 dark:to-zinc-900 md:p-12">
+      <section className="relative mb-10 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900 md:p-12">
         <div className="absolute right-6 top-6 rounded-lg border border-zinc-200 bg-zinc-100 p-3 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
           <Tag size={22} />
         </div>
         <div className="max-w-3xl">
           <p className="mb-4 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 sm:text-xs">Tags Collection</p>
-          <h1 className="mb-6 font-serif text-4xl font-bold tracking-tight text-ink dark:text-white md:text-6xl">标签集合</h1>
-          <p className="max-w-2xl text-sm leading-7 text-zinc-700 dark:text-zinc-300 md:text-base">
+          <h1 className="mb-6 font-serif text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 md:text-6xl">标签集合</h1>
+          <p className="max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400 md:text-base">
             共 {allTags.length} 个标签，{allTags.reduce((sum, tag) => sum + tag.count, 0)} 篇文章
           </p>
         </div>
@@ -162,7 +162,7 @@ export const Tags = () => {
 
           {!selectedTag ? (
             allTags.length > 0 ? (
-              <div className="rounded-2xl border border-zinc-200 bg-white/80 p-8 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/50 md:p-12">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900 md:p-12">
                 <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
                   {tags.map((tag, index) => (
                     <motion.button
@@ -171,7 +171,7 @@ export const Tags = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: index * 0.03 }}
                       onClick={() => updateTagParam(tag.name)}
-                      className={`${getTagSize(tag.count)} group relative rounded-full border-2 border-zinc-200 bg-white px-5 py-2.5 font-bold text-zinc-700 transition-all hover:scale-110 hover:border-zinc-900 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-100 dark:hover:text-zinc-100`}
+                      className={`${getTagSize(tag.count)} group relative rounded-xl border border-zinc-200 bg-white px-5 py-2.5 font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-100 dark:hover:text-zinc-100`}
                   aria-label={`查看标签 ${tag.name}，共 ${tag.count} 篇文章`}
                 >
                   {tag.name}
@@ -181,20 +181,20 @@ export const Tags = () => {
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white/80 p-8 text-center text-sm text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400">
+              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
                 当前还没有可展示的标签内容。
               </div>
             )
           ) : (
             <div>
               <div className="mb-8 flex items-center justify-between">
-                <h2 className="font-serif text-2xl font-bold text-ink dark:text-white md:text-3xl">
+                <h2 className="font-serif text-2xl font-bold text-zinc-900 dark:text-zinc-100 md:text-3xl">
                   标签: {selectedTag}
                   <span className="ml-3 text-base text-zinc-400">({selectedTagInfo?.count ?? 0} 篇)</span>
                 </h2>
                 <button
                   onClick={() => updateTagParam()}
-                  className="rounded-full border border-zinc-200 px-4 py-2 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-100 dark:hover:text-zinc-100"
+                  className="rounded-xl border border-zinc-200 px-4 py-2 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-100 dark:hover:text-zinc-100"
                 >
                   查看全部
                 </button>
@@ -203,13 +203,13 @@ export const Tags = () => {
               <div className="grid gap-6 md:grid-cols-2">
                 {filteredSelectedTagPosts.map((post, index) => (
                   <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                    <Link to={`/post/${post.id}`} className="group block rounded-2xl border border-zinc-200 bg-white p-6 transition-all hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:border-zinc-700">
+                    <Link to={`/post/${post.id}`} className="group block rounded-2xl border border-zinc-200 bg-white p-6 transition-all hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
                       <div className="mb-3 flex items-center gap-2">
-                        <span className="rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
+                        <span className="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
                           {post.category}
                         </span>
                       </div>
-                      <h3 className="mb-3 font-serif text-xl font-bold text-ink transition-colors group-hover:text-zinc-700 dark:text-white dark:group-hover:text-zinc-300">
+                      <h3 className="mb-3 font-serif text-xl font-bold text-zinc-900 transition-colors group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">
                         {post.title}
                       </h3>
                       <p className="mb-4 line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">{post.excerpt}</p>
@@ -228,13 +228,13 @@ export const Tags = () => {
                 ))}
 
                 {selectedTagInfo && filteredSelectedTagPosts.length === 0 && (
-                  <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
+                  <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
                     当前标签存在，但在当前搜索条件下没有匹配文章。你可以清除搜索后查看完整列表。
                   </div>
                 )}
 
                 {!selectedTagInfo && (
-                  <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
+                  <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
                     当前标签不存在或已失效，请返回查看全部标签。
                   </div>
                 )}

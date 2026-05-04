@@ -75,11 +75,11 @@ export const Friends = () => {
       <Seo title="友情链接" description="我的朋友们和推荐的网站" />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-16 text-center">
-        <h1 className="mb-6 font-serif text-4xl font-bold text-ink dark:text-white md:text-5xl">友情链接</h1>
-        <p className="mx-auto max-w-xl text-zinc-600 dark:text-zinc-300">
+        <h1 className="mb-6 font-serif text-4xl font-bold text-zinc-900 dark:text-zinc-100 md:text-5xl">友情链接</h1>
+        <p className="mx-auto max-w-xl text-zinc-600 dark:text-zinc-400">
           这里汇集了一些优秀的技术博客和有趣的网站。如果你也想交换友链，可以直接在仓库里提交 PR。
         </p>
-        <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+        <p className="mt-4 inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-100 px-4 py-2 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400">
           <Sparkles size={14} />
           以下排名不分先后，每次刷新都会随机排序
         </p>
@@ -93,11 +93,11 @@ export const Friends = () => {
           whileHover={{ y: -6, scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-          className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 text-left shadow-lg dark:border-zinc-800 dark:bg-zinc-900 lg:col-span-3 lg:p-7"
+          className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 text-left dark:border-zinc-800 dark:bg-zinc-900 lg:col-span-3 lg:p-7"
         >
           <div className="relative flex h-full flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
                 <Plus size={14} />
                 Friend Link
               </div>
@@ -106,7 +106,7 @@ export const Friends = () => {
                 想出现在这个列表里?先添加本站友链,再按模板提交 PR 即可,信息清晰、审核也更快。
               </p>
             </div>
-            <div className="flex items-center gap-3 self-start rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-sm font-bold text-ink shadow-sm transition-all group-hover:border-accent/20 group-hover:text-accent dark:border-zinc-800/80 dark:bg-zinc-900/70 dark:text-white">
+            <div className="flex items-center gap-3 self-start rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm font-bold text-zinc-900 transition-all group-hover:border-zinc-900 group-hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100 dark:group-hover:border-zinc-100">
               查看申请说明
               <GitPullRequest size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
             </div>
@@ -129,12 +129,12 @@ export const Friends = () => {
                 <ExternalLink size={16} />
               </div>
               <div className="flex items-start gap-4">
-                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-zinc-100 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
+                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
                   <ProgressiveImage src={friend.avatar} alt={friend.name} wrapperClassName="h-full w-full" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="mb-1 truncate font-serif text-lg font-bold text-ink transition-colors group-hover:text-accent dark:text-white">{friend.name}</h3>
-                  <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">{friend.description}</p>
+                  <h3 className="mb-1 truncate font-serif text-lg font-bold text-zinc-900 transition-colors group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">{friend.name}</h3>
+                  <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{friend.description}</p>
                 </div>
               </div>
             </motion.a>
@@ -215,15 +215,15 @@ export const Friends = () => {
               href={siteConfig.friendsPage.repoFriendsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center justify-between gap-4 rounded-2xl border border-zinc-200/80 bg-gradient-to-r from-white to-zinc-50 p-4 transition-all hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/5 dark:border-zinc-800 dark:from-zinc-900/80 dark:to-zinc-900/40"
+              className="group flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-4 transition-all hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
             >
               <div>
-                <div className="font-bold text-ink transition-colors group-hover:text-accent dark:text-white">GitHub PR</div>
-                <div className="break-all text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                <div className="font-bold text-zinc-900 transition-colors group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">GitHub PR</div>
+                <div className="break-all text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                   在仓库 {siteConfig.friendsPage.repoFriendsDir} 目录下新增一个 JSON 文件并提交 PR
                 </div>
               </div>
-              <GitPullRequest size={18} className="flex-shrink-0 text-accent transition-transform duration-300 group-hover:translate-x-1" />
+              <GitPullRequest size={18} className="flex-shrink-0 text-zinc-700 transition-transform duration-300 group-hover:translate-x-1 dark:text-zinc-300" />
             </a>
           </div>
 
