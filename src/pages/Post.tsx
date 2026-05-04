@@ -246,7 +246,7 @@ const createMarkdownComponents = (
       <button
         type="button"
         onClick={() => onPreviewImage({ src: props.src || '', alt: props.alt })}
-        className="my-12 block w-full rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+        className="my-12 block w-full rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
         aria-label={props.alt ? `预览图片：${props.alt}` : '预览图片'}
       >
         <ProgressiveImage
@@ -275,7 +275,7 @@ const createMarkdownComponents = (
       }
 
       return (
-        <code className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-bold text-accent before:content-none after:content-none dark:bg-zinc-900 dark:text-accent-light" {...restProps}>
+        <code className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-bold text-zinc-900 before:content-none after:content-none dark:bg-zinc-900 dark:text-zinc-100" {...restProps}>
           {children}
         </code>
       );
@@ -524,24 +524,24 @@ export const Post = () => {
 
         <header className="mx-auto mb-10 max-w-4xl pt-6 text-center md:mb-16 md:pt-10">
           <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-zinc-400 md:mb-6">
-            <Link to="/" className="transition-colors hover:text-accent">
+            <Link to="/" className="transition-colors hover:text-zinc-900 dark:hover:text-zinc-100">
               首页
             </Link>
             <ChevronRight size={14} className="text-zinc-300 dark:text-zinc-600" />
-            <Link to={`/?category=${encodeURIComponent(post.category)}`} className="transition-colors hover:text-accent">
+            <Link to={`/?category=${encodeURIComponent(post.category)}`} className="transition-colors hover:text-zinc-900 dark:hover:text-zinc-100">
               {post.category}
             </Link>
             <ChevronRight size={14} className="text-zinc-300 dark:text-zinc-600" />
             <span className="max-w-[14rem] truncate text-zinc-500 dark:text-zinc-400 md:max-w-xl">{post.title}</span>
           </nav>
-          <Link to="/" className="group mb-6 inline-flex items-center text-xs font-bold uppercase tracking-widest text-zinc-500 transition-colors hover:text-accent md:mb-10">
+          <Link to="/" className="group mb-6 inline-flex items-center text-xs font-bold uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100 md:mb-10">
             <ArrowLeft size={16} className="mr-2 transition-transform group-hover:-translate-x-1" />
             返回文章
           </Link>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <div className="mb-8 flex flex-col items-center gap-4">
-              <span className="rounded-full border border-accent/20 bg-accent/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-accent">
+              <span className="rounded-full border border-zinc-200 bg-zinc-100 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
                 {post.category}
               </span>
             </div>
@@ -571,7 +571,7 @@ export const Post = () => {
                 <Clock size={14} className="mr-2" /> {post.readTime}
               </span>
               <span className="hidden h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700 md:block" />
-              <button onClick={() => setShareModalOpen(true)} className="flex items-center transition-colors hover:text-accent" aria-label={`分享文章：${post.title}`}>
+              <button onClick={() => setShareModalOpen(true)} className="flex items-center transition-colors hover:text-zinc-900 dark:hover:text-zinc-100" aria-label={`分享文章：${post.title}`}>
                 <Share2 size={14} className="mr-1.5" /> 分享
               </button>
             </div>
@@ -579,7 +579,7 @@ export const Post = () => {
         </header>
 
         {post.coverImage && (
-          <button type="button" className="mx-auto block w-full max-w-6xl px-4 md:px-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent" onClick={() => setPreviewImage({ src: post.coverImage, alt: post.title })} aria-label={`预览文章封面：${post.title}`}>
+          <button type="button" className="mx-auto block w-full max-w-6xl px-4 md:px-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100" onClick={() => setPreviewImage({ src: post.coverImage, alt: post.title })} aria-label={`预览文章封面：${post.title}`}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3, duration: 0.8 }} className="mb-10 aspect-[4/3] cursor-zoom-in overflow-hidden rounded-2xl shadow-2xl shadow-zinc-200/50 dark:shadow-none sm:aspect-[16/9] md:mb-20 md:aspect-[21/9] md:rounded-3xl">
               <ProgressiveImage src={post.coverImage} alt={post.title} loading="eager" fetchPriority="auto" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
             </motion.div>
@@ -588,7 +588,7 @@ export const Post = () => {
 
         <div ref={articleBodyRef} className="mx-auto flex max-w-3xl flex-col gap-8 px-4 pb-20 md:px-0 md:pb-32">
           <div className="flex-1">
-            <div className="prose prose-base max-w-none prose-stone dark:prose-invert md:prose-lg prose-headings:scroll-mt-24 prose-headings:font-serif prose-headings:font-bold prose-headings:text-ink dark:prose-headings:text-white prose-p:font-sans prose-p:text-base prose-p:leading-relaxed md:prose-p:text-lg prose-a:break-words prose-a:text-accent prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-strong:font-bold prose-strong:text-ink dark:prose-strong:text-white prose-img:my-6 prose-img:h-auto prose-img:w-full prose-img:max-w-full prose-img:cursor-zoom-in prose-img:rounded-xl prose-img:shadow-lg prose-img:transition-transform hover:prose-img:scale-[1.01] dark:prose-img:rounded-2xl md:prose-img:my-12 md:prose-img:rounded-2xl prose-blockquote:rounded-r-xl prose-blockquote:border-l-accent prose-blockquote:bg-zinc-50 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:font-serif prose-blockquote:not-italic prose-blockquote:text-base dark:prose-blockquote:bg-zinc-900 md:prose-blockquote:rounded-r-2xl md:prose-blockquote:px-8 md:prose-blockquote:py-6 md:prose-blockquote:text-xl prose-code:font-mono prose-code:text-xs md:prose-code:text-sm prose-pre:overflow-hidden prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-[#0d1117] prose-pre:p-0 prose-pre:shadow-xl md:prose-pre:rounded-2xl">
+            <div className="prose prose-base max-w-none prose-stone dark:prose-invert md:prose-lg prose-headings:scroll-mt-24 prose-headings:font-serif prose-headings:font-bold prose-headings:text-ink dark:prose-headings:text-white prose-p:font-sans prose-p:text-base prose-p:leading-relaxed md:prose-p:text-lg prose-a:break-words prose-a:text-zinc-900 prose-a:font-medium prose-a:no-underline hover:prose-a:underline dark:prose-a:text-zinc-100 prose-strong:font-bold prose-strong:text-ink dark:prose-strong:text-white prose-img:my-6 prose-img:h-auto prose-img:w-full prose-img:max-w-full prose-img:cursor-zoom-in prose-img:rounded-xl prose-img:shadow-lg prose-img:transition-transform hover:prose-img:scale-[1.01] dark:prose-img:rounded-2xl md:prose-img:my-12 md:prose-img:rounded-2xl prose-blockquote:rounded-r-xl prose-blockquote:border-l-zinc-900 prose-blockquote:bg-zinc-50 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:font-serif prose-blockquote:not-italic prose-blockquote:text-base dark:prose-blockquote:border-l-zinc-100 dark:prose-blockquote:bg-zinc-900 md:prose-blockquote:rounded-r-2xl md:prose-blockquote:px-8 md:prose-blockquote:py-6 md:prose-blockquote:text-xl prose-code:font-mono prose-code:text-xs md:prose-code:text-sm prose-pre:overflow-hidden prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-[#0d1117] prose-pre:p-0 prose-pre:shadow-xl md:prose-pre:rounded-2xl">
               <ReactMarkdown
                 remarkPlugins={remarkPlugins}
                 rehypePlugins={rehypePlugins}
@@ -604,7 +604,7 @@ export const Post = () => {
               </div>
               <div className="relative z-10 flex flex-col items-start gap-6 md:flex-row">
                 <div className="flex-shrink-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-accent/30 bg-accent/5 text-accent">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
                     <span className="font-serif text-xl font-bold">CC</span>
                   </div>
                 </div>
@@ -612,14 +612,14 @@ export const Post = () => {
                   <h3 className="mb-2 text-lg font-serif font-bold text-ink dark:text-white">CC BY-SA 4.0 许可协议</h3>
                   <p className="mb-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                     本文由 <strong className="text-ink dark:text-zinc-200">{authorsLabel}</strong> 原创。除非另有声明，本站文章采用
-                    <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="noopener noreferrer" className="mx-1 font-medium text-accent hover:underline">
+                    <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="noopener noreferrer" className="mx-1 font-medium text-zinc-900 hover:underline dark:text-zinc-100">
                       CC BY-SA 4.0
                     </a>
                     协议进行授权。
                   </p>
                   <div className="inline-block rounded-lg border border-zinc-200/50 bg-zinc-100 p-3 text-xs text-zinc-500 dark:border-zinc-800/50 dark:bg-zinc-950/50 dark:text-zinc-500">
                     <strong>协议含义：</strong>
-                    您可以自由复制、传播、修改本作品，但必须 <span className="text-accent">署名作者</span>，并 <span className="text-accent">以相同许可协议发布</span> 衍生作品。
+                    您可以自由复制、传播、修改本作品，但必须 <span className="text-zinc-900 dark:text-zinc-100">署名作者</span>，并 <span className="text-zinc-900 dark:text-zinc-100">以相同许可协议发布</span> 衍生作品。
                   </div>
                 </div>
               </div>
@@ -637,7 +637,7 @@ export const Post = () => {
                 href={`${siteConfig.friendsPage.repoUrl}/blob/main/posts/${post.id}.md`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-sm font-medium text-zinc-600 transition-all hover:border-accent/30 hover:bg-accent/5 hover:text-accent dark:border-zinc-800 dark:bg-zinc-900/30 dark:text-zinc-400 dark:hover:text-accent"
+                className="group inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-sm font-medium text-zinc-600 transition-all hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900/30 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
               >
                 <ExternalLink size={16} className="transition-transform group-hover:scale-110" />
                 <span>此文章有问题？帮助改进！</span>

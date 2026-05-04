@@ -156,7 +156,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
         transition={springCardLayout}
         className="col-span-full w-full"
       >
-        <div className="relative flex h-auto flex-col overflow-hidden rounded-[2rem] border border-zinc-200 bg-white transition-all duration-500 hover:shadow-2xl hover:shadow-accent/10 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700 md:h-[480px] md:flex-row">
+        <div className="relative flex h-auto flex-col overflow-hidden rounded-[2rem] border border-zinc-200 bg-white transition-all duration-500 hover:shadow-2xl hover:shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700 md:h-[480px] md:flex-row">
           <Link to={`/post/${post.id}`} className="group relative block h-64 w-full overflow-hidden md:h-full md:w-7/12" aria-label={`阅读文章：${post.title}`}>
             <div className="absolute inset-0 animate-pulse bg-zinc-200 dark:bg-zinc-800" />
             {post.coverImage ? (
@@ -178,15 +178,15 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
             transition={shouldReduceMotion ? undefined : { duration: 0.56, delay: 0.08 + index * 0.04, ease: easeOutSoft }}
           >
             {post.top !== undefined && (
-              <div className="absolute right-6 top-6 rounded-full border border-accent/10 bg-accent/5 p-2 text-accent">
+              <div className="absolute right-6 top-6 rounded-full border border-zinc-200 bg-zinc-100 p-2 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
                 <Pin size={16} fill="currentColor" />
               </div>
             )}
             <div className="mb-4 md:mb-6">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Featured Post</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-700 dark:text-zinc-300">Featured Post</span>
             </div>
             <Link to={`/post/${post.id}`} className="group/text" aria-label={`阅读文章：${post.title}`}>
-              <h2 className="mb-4 font-serif text-xl font-bold leading-[1.1] text-ink transition-colors duration-300 group-hover/text:text-accent dark:text-white md:mb-6 md:text-4xl">
+              <h2 className="mb-4 font-serif text-xl font-bold leading-[1.1] text-ink transition-colors duration-300 group-hover/text:text-zinc-700 dark:text-white dark:group-hover/text:text-zinc-300 md:mb-6 md:text-4xl">
                 {post.title}
               </h2>
             </Link>
@@ -201,7 +201,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
                 <Clock size={14} />
                 <span>{post.readTime}</span>
               </div>
-              <button onClick={handleShareClick} className="ml-auto rounded-full p-2 transition-colors hover:bg-accent/10 hover:text-accent" aria-label={`分享文章：${post.title}`}>
+              <button onClick={handleShareClick} className="ml-auto rounded-full p-2 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100" aria-label={`分享文章：${post.title}`}>
                 <Share2 size={16} />
               </button>
             </div>
@@ -213,7 +213,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
 
   return (
     <motion.article layout variants={cardVariants} whileHover={hoverMotion} transition={springCardLayout} className="flex h-full flex-col min-w-0">
-      <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white backdrop-blur-md transition-all duration-500 hover:border-zinc-300 hover:shadow-2xl hover:shadow-zinc-200/50 dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:hover:border-zinc-700 dark:hover:shadow-accent/5 md:rounded-3xl">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white backdrop-blur-md transition-all duration-500 hover:border-zinc-300 hover:shadow-2xl hover:shadow-zinc-200/50 dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:hover:border-zinc-700 md:rounded-3xl">
         <Link to={`/post/${post.id}`} className="group/image relative aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800" aria-label={`阅读文章：${post.title}`}>
           {post.coverImage ? (
             <ProgressiveImage src={post.coverImage} alt={post.title} loading="lazy" width={1600} height={1000} wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover/image:scale-110" />
@@ -228,7 +228,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
           </div>
           <div className="absolute right-2 top-2 z-10 md:right-4 md:top-4">
             {post.top !== undefined ? (
-              <div className="rounded-full bg-accent p-1 text-white shadow-lg shadow-accent/20 md:p-1.5">
+              <div className="rounded-full bg-zinc-900 p-1 text-white shadow-lg dark:bg-zinc-100 dark:text-zinc-900 md:p-1.5">
                 <Pin size={12} className="md:h-3.5 md:w-3.5" fill="currentColor" />
               </div>
             ) : (
@@ -240,7 +240,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
         </Link>
         <div className="flex flex-grow flex-col p-4 md:p-7">
           <Link to={`/post/${post.id}`} className="group/text" aria-label={`阅读文章：${post.title}`}>
-            <h3 className="mb-2 line-clamp-2 text-base font-serif font-bold leading-tight text-ink transition-colors group-hover/text:text-accent dark:text-gray-100 dark:group-hover/text:text-accent-light md:mb-3 md:text-xl">
+            <h3 className="mb-2 line-clamp-2 text-base font-serif font-bold leading-tight text-ink transition-colors group-hover/text:text-zinc-700 dark:text-gray-100 dark:group-hover/text:text-zinc-300 md:mb-3 md:text-xl">
               {post.title}
             </h3>
           </Link>
@@ -252,7 +252,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
                 <span>{post.date}</span>
               </div>
             </div>
-            <button onClick={handleShareClick} className="rounded-md p-1.5 transition-colors hover:bg-accent/10 hover:text-accent" aria-label={`分享文章：${post.title}`}>
+            <button onClick={handleShareClick} className="rounded-md p-1.5 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100" aria-label={`分享文章：${post.title}`}>
               <Share2 size={12} className="md:h-[14px] md:w-[14px]" />
             </button>
           </div>
@@ -314,14 +314,14 @@ const Hero = ({ onSearch, searchQuery, onClearSearch }: { onSearch: (val: string
     <div className="relative z-10 flex flex-col items-center px-4 py-20 text-center md:py-32">
       <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.64, ease: [0.16, 1, 0.3, 1] }} className="relative mb-8">
         <motion.span
-          className="relative z-10 text-xs font-bold uppercase tracking-[0.3em] text-accent md:text-sm"
+          className="relative z-10 text-xs font-bold uppercase tracking-[0.3em] text-zinc-700 dark:text-zinc-300 md:text-sm"
           animate={shouldReduceMotion ? undefined : { opacity: [0.92, 1, 0.94] }}
           transition={shouldReduceMotion ? undefined : { duration: 6.2, repeat: Infinity, ease: 'easeInOut' }}
         >
           {siteConfig.subtitle}
         </motion.span>
         <motion.div
-          className="absolute -inset-4 rounded-full bg-accent/5 blur-xl"
+          className="absolute -inset-4 rounded-full bg-zinc-200/50 blur-xl dark:bg-zinc-800/50"
           animate={shouldReduceMotion ? undefined : { scale: [1, 1.05, 1], opacity: [0.62, 0.9, 0.66] }}
           transition={shouldReduceMotion ? undefined : { duration: 8.6, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -341,7 +341,7 @@ const Hero = ({ onSearch, searchQuery, onClearSearch }: { onSearch: (val: string
           />
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5">
             <motion.div animate={searchQuery ? { scale: 1.04, opacity: 1 } : { scale: 1, opacity: 0.86 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
-              <Search className="text-zinc-400 transition-colors group-focus-within:text-accent" size={20} />
+              <Search className="text-zinc-400 transition-colors group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100" size={20} />
             </motion.div>
           </div>
           <input
@@ -349,7 +349,7 @@ const Hero = ({ onSearch, searchQuery, onClearSearch }: { onSearch: (val: string
             placeholder="搜索文章..."
             value={searchQuery}
             onChange={(event) => onSearch(event.target.value)}
-            className="w-full rounded-full border border-zinc-200/90 bg-white/90 py-4 pl-12 pr-12 text-base text-ink shadow-[0_18px_40px_-28px_rgba(28,25,23,0.35)] outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-accent focus:ring-4 ring-accent/10 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-white dark:focus:border-accent"
+            className="w-full rounded-full border border-zinc-200/90 bg-white/90 py-4 pl-12 pr-12 text-base text-ink shadow-[0_18px_40px_-28px_rgba(28,25,23,0.35)] outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-4 ring-zinc-900/10 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-white dark:focus:border-zinc-100 dark:ring-zinc-100/10"
             aria-label="搜索文章"
           />
           <AnimatePresence initial={false}>
@@ -360,7 +360,7 @@ const Hero = ({ onSearch, searchQuery, onClearSearch }: { onSearch: (val: string
                 exit={{ opacity: 0, scale: 0.82, x: 6 }}
                 transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
                 onClick={onClearSearch}
-                className="absolute inset-y-0 right-0 flex items-center pr-5 text-zinc-400 transition-colors hover:text-accent"
+                className="absolute inset-y-0 right-0 flex items-center pr-5 text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
                 aria-label="清除搜索"
               >
                 <X size={18} />
@@ -555,12 +555,12 @@ export const Home = () => {
               <motion.div key={`search-summary-${searchQuery}-${activeCategoryLabel}`} initial={{ opacity: 0, y: 8, scale: 0.992 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.992 }} transition={listSwapTransition} className="mb-6 px-2">
                 <motion.div layout className="flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200/70 bg-white/72 px-4 py-3 text-sm text-zinc-700 shadow-[0_20px_45px_-38px_rgba(28,25,23,0.5)] backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-900/48 dark:text-zinc-300">
                   <motion.div initial={{ opacity: 0, scale: 0.86 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.34, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}>
-                    <Search size={16} className="text-accent" />
+                    <Search size={16} className="text-zinc-700 dark:text-zinc-300" />
                   </motion.div>
-                  <motion.span layout>
-                    搜索 “<span className="font-bold text-accent">{searchQuery}</span>” 共命中 {results.length} 篇文章，当前按 “<span className="font-bold text-ink dark:text-white">{activeCategoryLabel}</span>” 显示 {displayedPosts.length} 篇
-                  </motion.span>
-                  <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={handleClearSearch} className="ml-auto rounded-full border border-zinc-200/80 bg-white/90 px-3 py-1.5 text-xs transition-colors hover:border-accent hover:text-accent dark:border-zinc-800 dark:bg-zinc-900/85" aria-label="清除搜索">
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                    搜索 "<span className="font-bold text-zinc-900 dark:text-zinc-100">{searchQuery}</span>" 共命中 {results.length} 篇文章，当前按 "<span className="font-bold text-ink dark:text-white">{activeCategoryLabel}</span>" 显示 {displayedPosts.length} 篇
+                  </p>
+                  <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={handleClearSearch} className="ml-auto rounded-full border border-zinc-200/80 bg-white/90 px-3 py-1.5 text-xs transition-colors hover:border-zinc-900 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900/85 dark:hover:border-zinc-100 dark:hover:text-zinc-100" aria-label="清除搜索">
                     清除搜索
                   </motion.button>
                 </motion.div>
@@ -580,9 +580,9 @@ export const Home = () => {
             ))}
           </motion.div>
         ) : loadError ? (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={listSwapTransition} className="col-span-full rounded-[2rem] border border-dashed border-red-200 bg-red-50/80 py-16 text-center shadow-[0_18px_45px_-40px_rgba(28,25,23,0.55)] dark:border-red-900/40 dark:bg-red-950/20">
-            <p className="mb-2 font-serif text-xl text-red-500 dark:text-red-300">加载失败</p>
-            <p className="text-sm text-red-500/80 dark:text-red-300/80">{loadError}</p>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={listSwapTransition} className="col-span-full rounded-[2rem] border border-dashed border-zinc-200 bg-zinc-50 py-16 text-center shadow-[0_18px_45px_-40px_rgba(28,25,23,0.55)] dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="mb-2 font-serif text-xl text-zinc-700 dark:text-zinc-300">加载失败</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">{loadError}</p>
           </motion.div>
         ) : (
           <div className="space-y-16">
@@ -601,7 +601,7 @@ export const Home = () => {
                   <motion.div variants={pageBlockVariants} className="col-span-full rounded-[2rem] border border-dashed border-zinc-200 bg-white/60 py-24 text-center shadow-[0_18px_45px_-40px_rgba(28,25,23,0.55)] dark:border-zinc-800 dark:bg-zinc-900/40">
                     <p className="mb-2 font-serif text-xl text-zinc-400">{hasSearchQuery ? '未找到匹配的文章' : '暂无相关文章'}</p>
                     {hasSearchQuery && (
-                      <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={handleClearSearch} className="mt-4 text-sm text-accent hover:underline" aria-label="清除搜索条件">
+                      <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={handleClearSearch} className="mt-4 text-sm text-zinc-700 hover:underline dark:text-zinc-300" aria-label="清除搜索条件">
                         清除搜索条件
                       </motion.button>
                     )}
@@ -612,13 +612,13 @@ export const Home = () => {
 
             {totalPages > 1 && (
               <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="mt-8 flex items-center justify-center gap-4 md:mt-16" aria-label="分页导航">
-                <motion.button whileHover={{ y: -1.5 }} whileTap={{ scale: 0.988 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="rounded-full border border-zinc-200 bg-white/80 p-3 shadow-[0_16px_30px_-24px_rgba(28,25,23,0.5)] transition-colors hover:border-accent hover:text-accent disabled:opacity-30 disabled:hover:border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/70" aria-label="上一页">
+                <motion.button whileHover={{ y: -1.5 }} whileTap={{ scale: 0.988 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="rounded-full border border-zinc-200 bg-white/80 p-3 shadow-[0_16px_30px_-24px_rgba(28,25,23,0.5)] transition-colors hover:border-zinc-900 hover:text-zinc-900 disabled:opacity-30 disabled:hover:border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/70 dark:hover:border-zinc-100 dark:hover:text-zinc-100" aria-label="上一页">
                   <ChevronLeft size={20} />
                 </motion.button>
                 <motion.span layout transition={{ type: 'spring', stiffness: 280, damping: 30, mass: 0.8 }} className="rounded-full border border-zinc-200/80 bg-white/80 px-4 py-2 font-mono text-sm font-bold text-zinc-600 shadow-[0_12px_24px_-20px_rgba(28,25,23,0.4)] dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300" aria-live="polite">
                   {currentPage} / {totalPages}
                 </motion.span>
-                <motion.button whileHover={{ y: -1.5 }} whileTap={{ scale: 0.988 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-full border border-zinc-200 bg-white/80 p-3 shadow-[0_16px_30px_-24px_rgba(28,25,23,0.5)] transition-colors hover:border-accent hover:text-accent disabled:opacity-30 disabled:hover:border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/70" aria-label="下一页">
+                <motion.button whileHover={{ y: -1.5 }} whileTap={{ scale: 0.988 }} transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }} onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-full border border-zinc-200 bg-white/80 p-3 shadow-[0_16px_30px_-24px_rgba(28,25,23,0.5)] transition-colors hover:border-zinc-900 hover:text-zinc-900 disabled:opacity-30 disabled:hover:border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/70 dark:hover:border-zinc-100 dark:hover:text-zinc-100" aria-label="下一页">
                   <ChevronRight size={20} />
                 </motion.button>
               </motion.div>

@@ -26,12 +26,12 @@ export const NotFoundState: React.FC<NotFoundStateProps> = React.memo(({
       <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center px-4 py-10">
         <div className="relative w-full overflow-hidden rounded-[2rem] border border-zinc-200/80 bg-white/75 p-8 shadow-[0_24px_80px_-36px_rgba(24,24,27,0.28)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/70 md:p-12">
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute left-[-8%] top-[-12%] h-40 w-40 rounded-full bg-accent/12 blur-3xl dark:bg-accent/18" />
+            <div className="absolute left-[-8%] top-[-12%] h-40 w-40 rounded-full bg-zinc-200/50 blur-3xl dark:bg-zinc-800/50" />
             <div className="absolute bottom-[-18%] right-[-6%] h-48 w-48 rounded-full bg-zinc-200/70 blur-3xl dark:bg-zinc-800/60" />
           </div>
 
           <div className="relative">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.28em] text-accent">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
               <Compass size={14} />
               Page Missing
             </div>

@@ -389,7 +389,7 @@ export const TableOfContents: React.FC<{
               <div
                 className={`rounded-2xl transition-colors duration-200 ${
                   isActive
-                    ? 'bg-accent/[0.08] dark:bg-accent/[0.14]'
+                    ? 'bg-zinc-100 dark:bg-zinc-800'
                     : isInActiveBranch
                       ? 'bg-zinc-100/80 dark:bg-zinc-900/70'
                       : 'bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60'

@@ -178,7 +178,7 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                     transition={{ duration: 0.22, ease: modalEase }}
                     className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
                       searchScope === option.value
-                        ? 'border-accent bg-accent text-white shadow-sm shadow-accent/30'
+                        ? 'border-zinc-900 bg-zinc-900 text-white shadow-sm dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
                         : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:text-ink dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:text-white'
                     }`}
                   >
@@ -192,7 +192,7 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
             <div className="max-h-[60vh] overflow-y-auto">
               {isSearching ? (
                 <div className="p-12 text-center text-zinc-400">
-                  <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                  <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent dark:border-zinc-100" />
                 </div>
               ) : visibleResults.length > 0 ? (
                 <motion.div layout className="p-2">
@@ -202,9 +202,9 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                   {visibleResults.map((post, index) => (
                     <motion.button key={post.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.26, delay: index * 0.03, ease: modalEase }} onClick={() => handleSelect(post.id)} className="group block w-full rounded-xl p-4 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50" aria-label={`打开文章：${post.title}`}>
                       <div className="mb-1 flex items-center gap-2">
-                        <span className="rounded-md border border-accent/20 bg-accent/5 px-1.5 py-0.5 text-xs font-bold text-accent">{post.category}</span>
+                        <span className="rounded-md border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 text-xs font-bold text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">{post.category}</span>
                       </div>
-                      <h4 className="text-lg font-semibold text-ink transition-colors group-hover:text-accent dark:text-gray-100 dark:group-hover:text-accent-light">
+                      <h4 className="text-lg font-semibold text-ink transition-colors group-hover:text-zinc-700 dark:text-gray-100 dark:group-hover:text-zinc-300">
                         {post.title}
                       </h4>
                       <p className="mt-1 line-clamp-1 text-sm text-zinc-600 dark:text-zinc-300">{post.excerpt}</p>
@@ -303,7 +303,7 @@ const ThemeToggle = () => {
   };
 
   return (
-    <button onClick={toggleTheme} className="group relative rounded-full bg-zinc-100 p-2.5 text-ink transition-all duration-300 hover:ring-2 ring-accent/20 dark:bg-zinc-800 dark:text-amber-300" aria-label="切换主题">
+    <button onClick={toggleTheme} className="group relative rounded-full bg-zinc-100 p-2.5 text-ink transition-all duration-300 hover:ring-2 ring-zinc-900/20 dark:bg-zinc-800 dark:text-amber-300 dark:ring-zinc-100/20" aria-label="切换主题">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div key={theme} initial={{ y: -10, opacity: 0, rotate: -45 }} animate={{ y: 0, opacity: 1, rotate: 0 }} exit={{ y: 10, opacity: 0, rotate: 45 }} transition={{ duration: 0.2 }}>
           {theme === 'light' && <Sun size={18} />}
@@ -618,7 +618,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
           <Link to="/" className="group z-50 flex items-center space-x-3">
             <div className="relative">
               <motion.div
-                className="absolute inset-0 bg-accent opacity-20 blur-md transition-opacity group-hover:opacity-40"
+                className="absolute inset-0 bg-zinc-900/20 opacity-20 blur-md transition-opacity group-hover:opacity-40 dark:bg-zinc-100/20"
                 animate={{ opacity: [0.18, 0.3, 0.18], scale: [0.96, 1.04, 0.96] }}
                 transition={{ duration: 5.8, repeat: Infinity, ease: 'easeInOut' }}
               />
@@ -705,7 +705,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             <div className="flex h-16 items-center justify-between border-b border-zinc-200/70 px-4 sm:h-20 sm:px-6 dark:border-zinc-800/70">
               <button type="button" onClick={() => handleMobileNavItemSelect('/')} disabled={isMobileNavAnimating} className="group flex items-center space-x-3 text-left disabled:cursor-not-allowed disabled:opacity-60" aria-label="返回首页">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-accent/20 blur-md transition-opacity group-hover:opacity-40" />
+                  <div className="absolute inset-0 bg-zinc-900/20 blur-md transition-opacity group-hover:opacity-40 dark:bg-zinc-100/20" />
                   <ProgressiveImage src={siteConfig.logo} alt="Logo" wrapperClassName="relative h-9 w-9 rounded-lg bg-white/10 sm:h-10 sm:w-10" className="h-9 w-9 rounded-lg bg-white/10 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10" />
                 </div>
                 <span className="font-serif text-xl font-bold tracking-tight text-ink dark:text-white sm:text-2xl">{siteConfig.title}</span>
@@ -733,7 +733,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                       disabled={isMobileNavAnimating}
                       className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                         isActive
-                          ? 'border-accent/30 bg-accent/[0.08] text-accent shadow-[0_12px_28px_-24px_rgba(192,57,43,0.7)] dark:border-accent/35 dark:bg-accent/[0.12]'
+                          ? 'border-zinc-900/30 bg-zinc-100 text-zinc-900 shadow-lg dark:border-zinc-100/30 dark:bg-zinc-800 dark:text-zinc-100'
                           : 'border-zinc-200/80 bg-white/82 text-ink hover:border-zinc-300 hover:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/70 dark:text-white dark:hover:border-zinc-700 dark:hover:bg-zinc-900'
                       }`}
                       aria-current={isActive ? 'page' : undefined}
@@ -742,7 +742,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                         <span className="text-lg font-semibold tracking-tight">{item.label}</span>
                         <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{item.hint}</span>
                       </span>
-                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${isActive ? 'bg-accent/12 text-accent dark:bg-accent/18' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500'}`}>{isActive ? '当前' : '进入'}</span>
+                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${isActive ? 'bg-zinc-900/12 text-zinc-900 dark:bg-zinc-100/18 dark:text-zinc-100' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500'}`}>{isActive ? '当前' : '进入'}</span>
                     </button>
                   );
                 })}
@@ -791,7 +791,7 @@ const Footer = () => {
   return (
     <footer className="relative mt-12 overflow-hidden border-t border-zinc-200/90 bg-paper/88 py-12 dark:border-zinc-800/90 dark:bg-void/92 md:mt-32">
       <motion.div
-        className="absolute left-1/2 top-0 h-px w-full -translate-x-1/2 bg-gradient-to-r from-transparent via-accent to-transparent opacity-30"
+        className="absolute left-1/2 top-0 h-px w-full -translate-x-1/2 bg-gradient-to-r from-transparent via-zinc-900/30 to-transparent opacity-30 dark:via-zinc-100/30"
         animate={{ opacity: [0.2, 0.46, 0.2], scaleX: [0.96, 1, 0.97] }}
         transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
       />
@@ -804,10 +804,10 @@ const Footer = () => {
             </div>
             <p className="text-center text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 md:text-left">{siteConfig.description}</p>
             <div className="flex items-center gap-4 pt-2">
-              <motion.a whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" className="rounded-full bg-zinc-100 p-2 text-zinc-700 transition-all duration-300 hover:bg-black hover:text-white dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-accent" aria-label="打开 GitHub 主页">
+              <motion.a whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" className="rounded-full bg-zinc-100 p-2 text-zinc-700 transition-all duration-300 hover:bg-black hover:text-white dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900" aria-label="打开 GitHub 主页">
                 <Github size={18} />
               </motion.a>
-              <motion.a whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} href={siteConfig.social.email} className="rounded-full bg-zinc-100 p-2 text-zinc-700 transition-all duration-300 hover:bg-black hover:text-white dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-accent" aria-label="发送邮件">
+              <motion.a whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} href={siteConfig.social.email} className="rounded-full bg-zinc-100 p-2 text-zinc-700 transition-all duration-300 hover:bg-black hover:text-white dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900" aria-label="发送邮件">
                 <Mail size={18} />
               </motion.a>
             </div>
@@ -817,8 +817,8 @@ const Footer = () => {
             <h4 className="mb-6 text-sm font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">Tech Stack</h4>
             <div className="flex max-w-xs flex-wrap justify-center gap-2 md:justify-start">
               {technologies.map((tech, index) => (
-                <motion.div key={tech.name} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.3, delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -2 }} className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1.5 text-xs font-bold text-zinc-700 transition-colors hover:border-accent/30 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-300">
-                  <tech.icon size={12} className="text-accent" />
+                <motion.div key={tech.name} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.3, delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -2 }} className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1.5 text-xs font-bold text-zinc-700 transition-colors hover:border-zinc-900/30 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:border-zinc-100/30">
+                  <tech.icon size={12} className="text-zinc-700 dark:text-zinc-300" />
                   {tech.name}
                 </motion.div>
               ))}
@@ -839,7 +839,7 @@ const Footer = () => {
                 <motion.div initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-300 md:justify-end">
                   <Zap size={14} className="text-yellow-500" />
                   <span>
-                    Page loaded in <span className="font-mono font-bold text-accent">{loadTime}</span>
+                    Page loaded in <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{loadTime}</span>
                   </span>
                 </motion.div>
               )}
@@ -872,7 +872,7 @@ const Footer = () => {
             </div>
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-400/0 via-orange-300/10 to-orange-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </motion.a>
-          <motion.a whileHover={{ y: -3 }} whileTap={{ scale: 0.985 }} href={siteConfig.friendsPage.repoUrl} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl border border-zinc-200 bg-gradient-to-r from-zinc-100 to-zinc-50 px-6 py-3 transition-all duration-300 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 dark:border-zinc-700 dark:from-zinc-800 dark:to-zinc-900 dark:hover:border-accent/50">
+          <motion.a whileHover={{ y: -3 }} whileTap={{ scale: 0.985 }} href={siteConfig.friendsPage.repoUrl} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl border border-zinc-200 bg-gradient-to-r from-zinc-100 to-zinc-50 px-6 py-3 transition-all duration-300 hover:border-zinc-900/50 hover:shadow-lg dark:border-zinc-700 dark:from-zinc-800 dark:to-zinc-900 dark:hover:border-zinc-100/50">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black transition-transform duration-300 group-hover:scale-110 dark:bg-white">
               <Github size={18} className="text-white dark:text-black" />
             </div>

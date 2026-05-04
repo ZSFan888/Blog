@@ -71,7 +71,7 @@ export const ReadingProgressBadge: React.FC<ReadingProgressBadgeProps> = React.m
           >
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-400">
-                <BookOpenCheck size={11} className="text-accent" />
+                <BookOpenCheck size={11} className="text-zinc-700 dark:text-zinc-300" />
                 进度
               </span>
               <span className="font-serif text-xs font-bold text-ink dark:text-white">
@@ -80,7 +80,7 @@ export const ReadingProgressBadge: React.FC<ReadingProgressBadgeProps> = React.m
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-zinc-200/80 dark:bg-zinc-800">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-accent/70 via-accent to-amber-400"
+                className="h-full rounded-full bg-gradient-to-r from-zinc-700 via-zinc-900 to-zinc-950 dark:from-zinc-300 dark:via-zinc-100 dark:to-zinc-50"
                 animate={{ width: `${percentage}%` }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
               />
@@ -101,7 +101,7 @@ export const ReadingProgressBadge: React.FC<ReadingProgressBadgeProps> = React.m
             <div className="min-w-[9.5rem] rounded-2xl border border-zinc-200/80 bg-white/92 px-4 py-3 shadow-[0_18px_48px_-30px_rgba(24,24,27,0.35)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/84">
               <div className="mb-2 flex items-center justify-between gap-3 md:mb-2.5">
                 <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                  <BookOpenCheck size={14} className="text-accent" />
+                  <BookOpenCheck size={14} className="text-zinc-700 dark:text-zinc-300" />
                   阅读进度
                 </span>
                 <span className="font-serif text-lg font-bold text-ink dark:text-white">
@@ -110,7 +110,7 @@ export const ReadingProgressBadge: React.FC<ReadingProgressBadgeProps> = React.m
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-zinc-200/80 dark:bg-zinc-800">
                 <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-accent/70 via-accent to-amber-400"
+                  className="h-full rounded-full bg-gradient-to-r from-zinc-700 via-zinc-900 to-zinc-950 dark:from-zinc-300 dark:via-zinc-100 dark:to-zinc-50"
                   animate={{ width: `${percentage}%` }}
                   transition={{ duration: 0.18, ease: 'easeOut' }}
                 />
