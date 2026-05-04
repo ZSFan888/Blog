@@ -19,7 +19,6 @@ interface UmamiSnapshot {
 
 interface UmamiRequestContext {
   env: {
-    UMAMI_API_URL?: string;
     UMAMI_API_KEY?: string;
     UMAMI_WEBSITE_ID?: string;
   };
@@ -32,7 +31,6 @@ interface UmamiStatsResponse {
 }
 
 const fetchAnalyticsForDays = async (
-  apiUrl: string,
   apiKey: string,
   websiteId: string,
   days: number
@@ -45,7 +43,7 @@ const fetchAnalyticsForDays = async (
     const startAtMs = startAt.getTime();
     const endAtMs = now.getTime();
 
-    const url = `https://${apiUrl}/api/websites/${websiteId}/stats?startAt=${startAtMs}&endAt=${endAtMs}`;
+    const url = `https://api.umami.is/api/websites/${websiteId}/stats?startAt=${startAtMs}&endAt=${endAtMs}`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -89,7 +87,6 @@ const fetchAnalyticsForDays = async (
 export async function onRequest(context: UmamiRequestContext) {
   const { env } = context;
   
-  const apiUrl = env.UMAMI_API_URL?.replace(/\s+/g, '') || 'api.umami.is';
   const apiKey = env.UMAMI_API_KEY?.replace(/\s+/g, '');
   const websiteId = env.UMAMI_WEBSITE_ID?.replace(/\s+/g, '');
 
@@ -118,7 +115,7 @@ export async function onRequest(context: UmamiRequestContext) {
   const timeWindows = [1, 7, 30];
   
   const results = await Promise.all(
-    timeWindows.map(days => fetchAnalyticsForDays(apiUrl, apiKey, websiteId, days))
+    timeWindows.map(days => fetchAnalyticsForDays(apiKey, websiteId, days))
   );
   
   snapshot.timeWindows = results;

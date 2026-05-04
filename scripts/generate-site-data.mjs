@@ -444,7 +444,6 @@ const generateRss = () => {
 };
 
 const generateUmamiSnapshot = async () => {
-  const apiUrl = process.env.UMAMI_API_URL?.trim() || 'api.umami.is';
   const apiKey = process.env.UMAMI_API_KEY?.trim();
   const websiteId = process.env.UMAMI_WEBSITE_ID?.trim();
 
@@ -478,7 +477,7 @@ const generateUmamiSnapshot = async () => {
     const endAtMs = now.getTime();
 
     try {
-      const url = `https://${apiUrl}/api/websites/${websiteId}/stats?startAt=${startAtMs}&endAt=${endAtMs}`;
+      const url = `https://api.umami.is/api/websites/${websiteId}/stats?startAt=${startAtMs}&endAt=${endAtMs}`;
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000);
