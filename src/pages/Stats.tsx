@@ -63,22 +63,48 @@ const SummaryCard = ({
   icon: Icon,
   title,
   value,
-  detail
+  detail,
+  accentColor = 'accent'
 }: {
   icon: React.ElementType;
   title: string;
   value: string | number;
   detail: string;
-}) => (
-  <div className="rounded-[1.25rem] border border-zinc-200/80 bg-white/92 p-3.5 shadow-[0_18px_48px_-28px_rgba(24,24,27,0.22)] dark:border-zinc-800/90 dark:bg-zinc-950/72 dark:shadow-none sm:rounded-[1.4rem] sm:p-5">
-    <div className="mb-2.5 flex items-center gap-2 text-zinc-500 dark:text-zinc-400 sm:mb-3">
-      <Icon size={16} />
-      <span className="text-[10px] font-bold uppercase tracking-[0.18em] sm:text-[11px] sm:tracking-[0.24em]">{title}</span>
+  accentColor?: string;
+}) => {
+  const colorClasses = {
+    accent: 'bg-accent/8 text-accent dark:bg-accent/12',
+    blue: 'bg-blue-500/8 text-blue-600 dark:bg-blue-500/12 dark:text-blue-400',
+    emerald: 'bg-emerald-500/8 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-400',
+    violet: 'bg-violet-500/8 text-violet-600 dark:bg-violet-500/12 dark:text-violet-400'
+  };
+
+  const iconBgClass = colorClasses[accentColor as keyof typeof colorClasses] || colorClasses.accent;
+
+  return (
+    <div className="group relative overflow-hidden rounded-[1.4rem] border border-zinc-200/80 bg-gradient-to-br from-white/95 to-zinc-50/90 p-4 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)] dark:border-zinc-800/90 dark:from-zinc-900/90 dark:to-zinc-950/80 dark:shadow-none dark:hover:border-zinc-700/90 sm:rounded-[1.6rem] sm:p-6">
+      <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-zinc-100/40 to-transparent opacity-60 blur-2xl transition-opacity duration-300 group-hover:opacity-80 dark:from-zinc-800/40 sm:-right-8 sm:-top-8 sm:h-32 sm:w-32" />
+      
+      <div className="relative">
+        <div className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl ${iconBgClass} transition-transform duration-300 group-hover:scale-105 sm:h-12 sm:w-12`}>
+          <Icon size={20} className="sm:size-[22px]" />
+        </div>
+        
+        <div className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 sm:text-[11px]">
+          {title}
+        </div>
+        
+        <div className="mb-2 text-2xl font-bold leading-none text-ink dark:text-white sm:text-3xl lg:text-4xl">
+          {value}
+        </div>
+        
+        <div className="text-xs leading-5 te-600 dark:text-zinc-400 sm:text-sm sm:leading-6">
+          {detail}
+        </div>
+      </div>
     </div>
-    <div className="text-xl font-bold leading-none text-ink dark:text-white sm:text-3xl">{value}</div>
-    <div className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400 sm:text-sm sm:leading-6">{detail}</div>
-  </div>
-);
+  );
+};
 
 const InfoCard = ({
   title,
@@ -89,11 +115,13 @@ const InfoCard = ({
   value: string;
   icon: React.ElementType;
 }) => (
-  <div className="rounded-[1.15rem] border border-zinc-200/80 bg-zinc-50/92 p-3.5 dark:border-zinc-800 dark:bg-zinc-950/60 sm:rounded-2xl sm:p-4">
-    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 sm:text-[11px] sm:tracking-[0.24em]">{title}</div>
-    <div className="mt-2 flex min-w-0 items-start gap-2 text-sm font-semibold leading-5 text-ink dark:text-white sm:leading-6">
-      <Icon size={16} className="mt-0.5 flex-shrink-0 text-accent sm:mt-1" />
-      <span className="break-all">{value}</span>
+  <div className="group rounded-[1.25rem] border border-zinc-200/70 bg-white/80 p-3.5 transition-all duration-200 hover:border-zinc-300/80 hover:bg-white/95 dark:border-zinc-800/80 dark:bg-zinc-900/60 dark:hover:border-zinc-700/90 dark:hover:bg-zinc-900/80 sm:rounded-[1.4rem] sm:p-4">
+    <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 sm:text-[11px]">{title}</div>
+    <div className="flex min-w-0 items-center gap-2.5">
+      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-accent/8 text-accent transition-transform duration-200 group-hover:scale-105 dark:bg-accent/12 sm:h-9 sm:w-9">
+        <Icon size={16} className="sm:size-[18px]" />
+      </div>
+      <span className="break-all text-sm font-semibold leading-5 text-ink dark:text-white sm:text-[15px]">{value}</span>
     </div>
   </div>
 );
@@ -191,9 +219,9 @@ export const Stats = () => {
     >
       <Seo title="统计" description="基于 Cloudflare Analytics 生成的站点访问统计页，仅展示当前稳定可用的核心指标。" />
 
-      <section className="relative overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-[radial-gradient(circle_at_top_left,_rgba(192,57,43,0.12),_transparent_34%),linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,244,245,0.96))] p-4 dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(192,57,43,0.18),_transparent_36%),linear-gradient(135deg,_rgba(24,24,27,0.96),_rgba(9,9,11,0.98))] sm:rounded-[2rem] sm:p-7 md:p-10 lg:p-12">
-        <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-accent/70 to-transparent opacity-70" />
-        <div className="pointer-events-none absolute -right-10 top-10 h-32 w-32 rounded-full bg-accent/8 blur-2xl dark:bg-accent/14" />
+      <section className="relative overflow-hidden rounded-[1.5rem] border border-zinc-200/80 bg-gradient-to-br from-white/95 via-zinc-50/80 to-white/90 p-4 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] dark:border-zinc-800/80 dark:from-zinc-900/90 dark:via-zinc-950/85 dark:to-zinc-900/80 dark:shadow-none sm:rounded-[2rem] sm:p-7 md:p-10 lg:p-12">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+        <div className="pointer-events-none absolute -right-12 top-8 h-40 w-40 rounded-full bg-accent/6 blur-3xl dark:bg-accent/10" />
 
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
@@ -236,29 +264,11 @@ export const Stats = () => {
           </div>
         </div>
 
-        <div className="relative mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[1.15rem] border border-zinc-200/80 bg-white/92 px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/72 sm:rounded-[1.4rem] sm:px-4 sm:py-4">
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 sm:text-[11px] sm:tracking-[0.24em]">数据源</div>
-            <div className="mt-2 break-all text-sm font-semibold text-ink dark:text-white">{snapshot.domain || 'pldduck.com'}</div>
-          </div>
-          <div className="rounded-[1.15rem] border border-zinc-200/80 bg-white/92 px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/72 sm:rounded-[1.4rem] sm:px-4 sm:py-4">
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 sm:text-[11px] sm:tracking-[0.24em]">最近更新</div>
-            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">
-              {cloudflareRequested ? formatDateTime(snapshot.fetchedAt) : '尚未请求'}
-            </div>
-          </div>
-          <div className="rounded-[1.15rem] border border-zinc-200/80 bg-white/92 px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/72 sm:rounded-[1.4rem] sm:px-4 sm:py-4">
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 sm:text-[11px] sm:tracking-[0.24em]">时间窗口</div>
-            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">
-              {cloudflareRequested ? `${snapshot.timeWindows.length} 个可选区间` : '点击后加载'}
-            </div>
-          </div>
-          <div className="rounded-[1.15rem] border border-zinc-200/80 bg-white/92 px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/72 sm:rounded-[1.4rem] sm:px-4 sm:py-4">
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 sm:text-[11px] sm:tracking-[0.24em]">访问状态</div>
-            <div className="mt-2 text-sm font-semibold text-ink dark:text-white">
-              {cloudflareRequested ? (snapshot.enabled ? '数据可用' : '等待配置') : '未请求'}
-            </div>
-          </div>
+        <div className="relative mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <InfoCard title="数据源" value={snapshot.domain || 'pldduck.com'} icon={Database} />
+          <InfoCard title="最近更新" value={cloudflareRequested ? formatDateTime(snapshot.fetchedAt) : '尚未请求'} icon={Clock3} />
+          <InfoCard title="时间窗口" value={cloudflareRequested ? `${snapshot.timeWindows.length} 个可选区间` : '点击后加载'} icon={BarChart3} />
+          <InfoCard title="访问状态" value={cloudflareRequested ? (snapshot.enabled ? '数据可用' : '等待配置') : '未请求'} icon={ShieldCheck} />
         </div>
 
         {cloudflareLoading && (
@@ -289,11 +299,11 @@ export const Stats = () => {
 
             {currentTimeWindow && (
               <>
-                <div className="mt-6 grid gap-3 sm:mt-8 sm:gap-4 min-[480px]:grid-cols-2 xl:grid-cols-4">
-                  <SummaryCard icon={Eye} title="页面浏览" value={formatValue(currentTimeWindow.data.pageViews)} detail={`最近 ${currentTimeWindow.days} 天总浏览量`} />
-                  <SummaryCard icon={Users} title="独立访客" value={formatValue(currentTimeWindow.data.uniques)} detail="去重后的访问人数" />
-                  <SummaryCard icon={TrendingUp} title="请求总数" value={formatValue(currentTimeWindow.data.requests)} detail="所有 HTTP 请求总量" />
-                  <SummaryCard icon={HardDrive} title="带宽消耗" value={formatBytes(currentTimeWindow.data.bandwidth)} detail="当前时间窗口内的总流量" />
+                <div className="mt-6 grid gap-4 sm:mt-8 sm:gap-5 min-[480px]:grid-cols-2 xl:grid-cols-4">
+                  <SummaryCard icon={Eye} title="页面浏览" value={formatValue(currentTimeWindow.data.pageViews)} detail={`最近 ${currentTimeWindow.days} 天总浏览量`} accentColor="blue" />
+                  <SummaryCard icon={Users} title="独立访客" value={formatValue(currentTimeWindow.data.uniques)} detail="去重后的访问人数" accentColor="emerald" />
+                  <SummaryCard icon={TrendingUp} title="请求总数" value={formatValue(currentTimeWindow.data.requests)} detail="所有 HTTP 请求总量" accentColor="violet" />
+                  <SummaryCard icon={HardDrive} title="带宽消耗" value={formatBytes(currentTimeWindow.data.bandwidth)} detail="当前时间窗口内的总流量" accentColor="accent" />
                 </div>
 
                 {currentTimeWindow.error && (
@@ -331,27 +341,31 @@ export const Stats = () => {
         )}
       </section>
 
-      <section className="mt-8 rounded-[1.5rem] border border-zinc-200 bg-white/92 p-4 shadow-[0_20px_52px_-30px_rgba(24,24,27,0.22)] dark:border-zinc-800 dark:bg-zinc-950/72 dark:shadow-none sm:rounded-[1.75rem] sm:p-5 md:mt-14 md:p-6">
-        <div className="mb-5 flex items-center gap-2">
-          <Database size={18} className="text-accent" />
-          <h2 className="font-serif text-xl font-bold text-ink dark:text-white">站点概览</h2>
+      <section className="mt-8 rounded-[1.5rem] border border-zinc-200/80 bg-white/95 p-4 shadow-[0_2px_20px_-6px_rgba(0,0,0,0.08)] dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:shadow-none sm:rounded-[1.75rem] sm:p-5 md:mt-12 md:p-6 lg:mt-14">
+        <div className="mb-5 flex items-center gap-2.5 md:mb-6">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/8 text-accent dark:bg-accent/12">
+            <Database size={18} />
+          </div>
+          <h2 className="font-serif text-xl font-bold text-ink dark:text-white md:text-2xl">站点概览</h2>
         </div>
 
-        <div className="grid gap-3 sm:gap-4 min-[480px]:grid-cols-2 xl:grid-cols-5">
-          <SummaryCard icon={FileText} title="当前文章数" value={formatValue(siteStats.totalPosts)} detail="已公开发布的文章总数" />
-          <SummaryCard icon={Type} title="总字数" value={formatValue(siteStats.totalWords)} detail="按正文内容累计的总阅读字数" />
-          <SummaryCard icon={FolderTree} title="总分类数" value={formatValue(siteStats.totalCategories)} detail="当前启用的文章分类数量" />
-          <SummaryCard icon={Hash} title="总标签数" value={formatValue(siteStats.totalTags)} detail="去重后的标签总数量" />
-          <SummaryCard icon={FileImage} title="总图片数" value={formatValue(siteStats.totalImages)} detail="正文内 Markdown 图片累计数量" />
+        <div className="grid gap-4 sm:gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <SummaryCard icon={FileText} title="当前文章数" value={formatValue(siteStats.totalPosts)} detail="已公开发布的文章总数" accentColor="blue" />
+          <SummaryCard icon={Type} title="总字数" value={formatValue(siteStats.totalWords)} detail="按正文内容累计的总阅读字数" accentColor="emerald" />
+          <SummaryCard icon={FolderTree} title="总分类数" value={formatValue(siteStats.totalCategories)} detail="当前启用的文章分类数量" accentColor="violet" />
+          <SummaryCard icon={Hash} title="总标签数" value={formatValue(siteStats.totalTags)} detail="去重后的标签总数量" accentColor="accent" />
+          <SummaryCard icon={FileImage} title="总图片数" value={formatValue(siteStats.totalImages)} detail="正文内 Markdown 图片累计数量" accentColor="blue" />
         </div>
       </section>
 
-      <section className="mt-8 space-y-5 md:mt-14 md:space-y-6">
+      <section className="mt-8 space-y-5 md:mt-12 md:space-y-6 lg:mt-14">
         {!cloudflareLoading && cloudflareRequested && hasData && currentTimeWindow && (
-          <div className="rounded-[1.5rem] border border-zinc-200 bg-white/92 p-4 shadow-[0_20px_52px_-30px_rgba(24,24,27,0.22)] dark:border-zinc-800 dark:bg-zinc-950/72 dark:shadow-none sm:rounded-[1.75rem] sm:p-5 md:p-6">
-            <div className="mb-5 flex items-center gap-2">
-              <Database size={18} className="text-accent" />
-              <h2 className="font-serif text-xl font-bold text-ink dark:text-white">数据说明</h2>
+          <div className="rounded-[1.5rem] border border-zinc-200/80 bg-white/95 p-4 shadow-[0_2px_20px_-6px_rgba(0,0,0,0.08)] dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:shadow-none sm:rounded-[1.75rem] sm:p-5 md:p-6">
+            <div className="mb-5 flex items-center gap-2.5 md:mb-6">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/8 text-accent dark:bg-accent/12">
+                <Database size={18} />
+              </div>
+              <h2 className="font-serif text-xl font-bold text-ink dark:text-white md:text-2xl">数据说明</h2>
               {cloudflareLoading && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-700 dark:text-sky-300">
                   <Loader2 size={12} className="animate-spin" />
@@ -360,7 +374,7 @@ export const Stats = () => {
               )}
             </div>
 
-            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
               <InfoCard title="统计域名" value={snapshot.domain || 'pldduck.com'} icon={Database} />
               <InfoCard title="统计窗口" value={`最近 ${currentTimeWindow.days} 天`} icon={BarChart3} />
               <InfoCard title="更新时间" value={formatDateTime(snapshot.fetchedAt)} icon={Clock3} />

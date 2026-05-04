@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Archive, Calendar, FolderTree, ArrowUpRight, Search, X } from 'lucide-react';
+import { Archive, Calendar, FolderTree, ArrowUpRight, Search, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { getPosts } from '@/services/posts';
 import { PostMetadata } from '../types';
 import { Seo } from '../components/Seo';
 import { usePostSearch } from '@/hooks/usePostSearch';
 import { formatDate, getDateTimestamp } from '@/utils/date';
 
+interface MonthGroup {
+  month: string;
+  monthNum: number;
+  total: number;
+  posts: PostMetadata[];
+}
+
 interface ArchiveGroup {
   year: string;
   total: number;
   categories: string[];
-  months: string[];
-  posts: PostMetadata[];
+  months: MonthGroup[];
 }
 
-const formatMonth = (dateText: string) => formatDate(dateText, 'zh-CN', { month: 'numeric' }) + '月';
+const formatMonth = (dateText: string) => formatDate(dateText, 'zh-CN', { month: 'numeric' });
 
 const formatDay = (dateText: string) => formatDate(dateText, 'zh-CN', {
   month: '2-digit',
@@ -37,37 +43,49 @@ const buildArchiveGroups = (posts: PostMetadata[]) => {
     .sort((a, b) => getDateTimestamp(b.date) - getDateTimestamp(a.date))
     .forEach((post) => {
       const year = formatDate(post.date, 'zh-CN', { year: 'numeric' });
-      const existing = groups.get(year);
+      const monthStr = formatMonth(post.date);
+      const monthNum = Number.parseInt(monthStr.replace('月', ''), 10);
 
-      if (!existing) {
-        groups.set(year, {
+      let yearGroup = groups.get(year);
+      
+      if (!yearGroup) {
+        yearGroup = {
           year,
-          total: 1,
-          categories: [post.category],
-          months: [formatMonth(post.date)],
-          posts: [post]
-        });
-        return;
+          total: 0,
+          categories: [],
+          months: []
+        };
+        groups.set(year, yearGroup);
       }
 
-      existing.total += 1;
-      existing.posts.push(post);
-
-      if (!existing.categories.includes(post.category)) {
-        existing.categories.push(post.category);
+      // 更新年份统计
+      yearGroup.total += 1;
+      if (!yearGroup.categories.includes(post.category)) {
+        yearGroup.categories.push(post.category);
       }
 
-      const month = formatMonth(post.date);
-      if (!existing.months.includes(month)) {
-        existing.months.push(month);
+      // 查找或创建月份分组
+      let monthGroup = yearGroup.months.find(m => m.monthNum === monthNum);
+      if (!monthGroup) {
+        monthGroup = {
+          month: `${monthNum}月`,
+          monthNum,
+          total: 0,
+          posts: []
+        };
+        yearGroup.months.push(monthGroup);
       }
+
+      // 添加文章到月份分组
+      monthGroup.total += 1;
+      monthGroup.posts.push(post);
     });
 
   return Array.from(groups.values())
     .map((group) => ({
       ...group,
-      months: group.months.sort((a, b) => Number.parseInt(b.replace('月', ''), 10) - Number.parseInt(a.replace('月', ''), 10)),
-      categories: group.categories.sort()
+      categories: group.categories.sort(),
+      months: group.months.sort((a, b) => b.monthNum - a.monthNum)
     }))
     .sort((a, b) => Number(b.year) - Number(a.year));
 };
@@ -76,6 +94,8 @@ export const ArchivePage = () => {
   const [allPosts, setAllPosts] = useState<PostMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
   const latestDate = allPosts[0]?.date || '';
   const { searchQuery, isSearching, results, handleSearch, clearSearch, hasSearchQuery } = usePostSearch({
     emptyResults: allPosts
@@ -112,6 +132,89 @@ export const ArchivePage = () => {
 
   const groups = buildArchiveGroups(results);
   const totalPosts = groups.reduce((sum, group) => sum + group.total, 0);
+
+  // 初始化展开状态：默认展开最新的年份
+  useEffect(() => {
+    if (groups.length > 0 && expandedYears.size === 0) {
+      const latestYear = groups[0].year;
+      setExpandedYears(new Set([latestYear]));
+      
+      // 默认展开最新年份的第一个月
+      if (groups[0].months.length > 0) {
+        const latestMonth = `${latestYear}-${groups[0].months[0].monthNum}`;
+        setExpandedMonths(new Set([latestMonth]));
+      }
+    }
+  }, [groups]);
+
+  // 搜索时自动展开所有匹配项
+  useEffect(() => {
+    if (hasSearchQuery && groups.length > 0) {
+      const allYears = new Set(groups.map(g => g.year));
+      const allMonths = new Set<string>();
+      groups.forEach(g => {
+        g.months.forEach(m => {
+          allMonths.add(`${g.year}-${m.monthNum}`);
+        });
+      });
+      setExpandedYears(allYears);
+      setExpandedMonths(allMonths);
+    }
+  }, [hasSearchQuery, groups]);
+
+  // 切换年份展开状态
+  const toggleYear = (year: string) => {
+    setExpandedYears(prev => {
+      const next = new Set(prev);
+      if (next.has(year)) {
+        next.delete(year);
+        // 折叠年份时，同时折叠该年份下的所有月份
+        setExpandedMonths(prevMonths => {
+          const nextMonths = new Set(prevMonths);
+          groups.find(g => g.year === year)?.months.forEach(m => {
+            nextMonths.delete(`${year}-${m.monthNum}`);
+          });
+          return nextMonths;
+        });
+      } else {
+        next.add(year);
+      }
+      return next;
+    });
+  };
+
+  // 切换月份展开状态
+  const toggleMonth = (year: string, monthNum: number) => {
+    const monthKey = `${year}-${monthNum}`;
+    setExpandedMonths(prev => {
+      const next = new Set(prev);
+      if (next.has(monthKey)) {
+        next.delete(monthKey);
+      } else {
+        next.add(monthKey);
+      }
+      return next;
+    });
+  };
+
+  // 全部展开/折叠
+  const toggleAll = () => {
+    const allExpanded = expandedYears.size === groups.length;
+    if (allExpanded) {
+      setExpandedYears(new Set());
+      setExpandedMonths(new Set());
+    } else {
+      const allYears = new Set(groups.map(g => g.year));
+      const allMonths = new Set<string>();
+      groups.forEach(g => {
+        g.months.forEach(m => {
+          allMonths.add(`${g.year}-${m.monthNum}`);
+        });
+      });
+      setExpandedYears(allYears);
+      setExpandedMonths(allMonths);
+    }
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }} className="pb-10 md:pb-20">
@@ -198,61 +301,162 @@ export const ArchivePage = () => {
             <div className="absolute bottom-0 left-[7px] top-0 w-[2px] bg-gradient-to-b from-accent via-zinc-300 to-transparent dark:via-zinc-700 md:left-[9px]" />
 
             <div className="space-y-12">
-              {groups.map((group, groupIndex) => (
-                <motion.div key={group.year} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: groupIndex * 0.08 }}>
-                  <div className="relative mb-8 flex items-center gap-4">
-                    <div className="relative z-10 flex h-4 w-4 items-center justify-center rounded-full bg-accent shadow-lg shadow-accent/30 md:h-5 md:w-5">
-                      <div className="h-2 w-2 rounded-full bg-white md:h-2.5 md:w-2.5" />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="font-serif text-2xl font-bold text-ink dark:text-white md:text-3xl">{group.year}</h2>
-                      <span className="rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
-                        {group.total} 篇
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {group.categories.map((category) => (
-                          <span key={`${group.year}-${category}`} className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                        {category}
-                      </span>
-                        ))}
+              {groups.map((group, groupIndex) => {
+                const isYearExpanded = expandedYears.has(group.year);
+                
+                return (
+                  <motion.div 
+                    key={group.year} 
+                    initial={{ opacity: 0, x: -20 }} 
+                    animate={{ opacity: 1, x: 0 }} 
+                    transition={{ duration: 0.4, delay: groupIndex * 0.08 }}
+                  >
+                    {/* 年份标题 - 可点击折叠 */}
+                    <button
+                      onClick={() => toggleYear(group.year)}
+                      className="relative mb-6 flex w-full items-center gap-4 text-left transition-opacity hover:opacity-80"
+                      aria-expanded={isYearExpanded}
+                      aria-label={`${isYearExpanded ? '折叠' : '展开'} ${group.year} 年的文章`}
+                    >
+                      <div className="relative z-10 flex h-4 w-4 items-center justify-center rounded-full bg-accent shadow-lg shadow-accent/30 md:h-5 md:w-5">
+                        <div className="h-2 w-2 rounded-full bg-white md:h-2.5 md:w-2.5" />
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6 pl-8 md:pl-10">
-                    {group.posts.map((post, postIndex) => (
-                      <motion.div key={post.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: groupIndex * 0.08 + postIndex * 0.03 }} className="relative">
-                        <div className="absolute -left-[30px] top-2 h-2 w-2 rounded-full border-2 border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900 md:-left-[38px]" />
-
-                        <Link to={`/post/${post.id}`} className="group block rounded-xl border border-zinc-200 bg-white/50 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-white hover:shadow-lg hover:shadow-accent/5 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 md:p-5">
-                          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
-                            <time className="font-mono font-semibold">{formatDay(post.date)}</time>
-                            <span className="text-zinc-300 dark:text-zinc-700">•</span>
-                            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                              {post.category}
+                      <div className="flex flex-1 flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <motion.div
+                            animate={{ rotate: isYearExpanded ? 0 : -90 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ChevronDown size={20} className="text-zinc-400" />
+                          </motion.div>
+                          <h2 className="font-serif text-2xl font-bold text-ink dark:text-white md:text-3xl">
+                            {group.year}
+                          </h2>
+                        </div>
+                        <span className="rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
+                          {group.total} 篇
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {group.categories.map((category) => (
+                            <span 
+                              key={`${group.year}-${category}`} 
+                              className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                            >
+                              {category}
                             </span>
-                            <span className="text-zinc-300 dark:text-zinc-700">•</span>
-                            <span>{post.readTime}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* 月份列表 - 带折叠动画 */}
+                    <AnimatePresence>
+                      {isYearExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="space-y-8 pl-8 md:pl-10">
+                            {group.months.map((monthGroup, monthIndex) => {
+                              const monthKey = `${group.year}-${monthGroup.monthNum}`;
+                              const isMonthExpanded = expandedMonths.has(monthKey);
+                              
+                              return (
+                                <motion.div
+                                  key={monthKey}
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ duration: 0.3, delay: monthIndex * 0.05 }}
+                                >
+                                  {/* 月份标题 - 可点击折叠 */}
+                                  <button
+                                    onClick={() => toggleMonth(group.year, monthGroup.monthNum)}
+                                    className="relative mb-4 flex w-full items-center gap-3 text-left transition-opacity hover:opacity-80"
+                                    aria-expanded={isMonthExpanded}
+                                    aria-label={`${isMonthExpanded ? '折叠' : '展开'} ${monthGroup.month}的文章`}
+                                  >
+                                    <div className="absolute -left-[30px] top-1 h-2 w-2 rounded-full border-2 border-accent/40 bg-white dark:border-accent/60 dark:bg-zinc-900 md:-left-[38px]" />
+                                    <motion.div
+                                      animate={{ rotate: isMonthExpanded ? 0 : -90 }}
+                                      transition={{ duration: 0.2 }}
+                                    >
+                                      <ChevronDown size={16} className="text-zinc-400" />
+                                    </motion.div>
+                                    <h3 className="font-serif text-lg font-bold text-ink dark:text-white md:text-xl">
+                                      {monthGroup.month}
+                                    </h3>
+                                    <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                                      {monthGroup.total} 篇
+                                    </span>
+                                  </button>
+
+                                  {/* 文章列表 - 带折叠动画 */}
+                                  <AnimatePresence>
+                                    {isMonthExpanded && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.25 }}
+                                        className="overflow-hidden"
+                                      >
+                                        <div className="space-y-4 pl-6">
+                                          {monthGroup.posts.map((post, postIndex) => (
+                                            <motion.div
+                                              key={post.id}
+                                              initial={{ opacity: 0, x: -10 }}
+                                              animate={{ opacity: 1, x: 0 }}
+                                              transition={{ duration: 0.2, delay: postIndex * 0.03 }}
+                                              className="relative"
+                                            >
+                                              <div className="absolute -left-[22px] top-3 h-1.5 w-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+
+                                              <Link 
+                                                to={`/post/${post.id}`} 
+                                                className="group block rounded-xl border border-zinc-200 bg-white/50 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-white hover:shadow-lg hover:shadow-accent/5 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 md:p-5"
+                                              >
+                                                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
+                                                  <time className="font-mono font-semibold">{formatDay(post.date)}</time>
+                                                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                                                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                                    {post.category}
+                                                  </span>
+                                                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                                                  <span>{post.readTime}</span>
+                                                </div>
+
+                                                <h3 className="mb-2 font-serif text-lg font-bold text-ink transition-colors group-hover:text-accent dark:text-white md:text-xl">
+                                                  {post.title}
+                                                </h3>
+
+                                                <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                                  {post.excerpt}
+                                                </p>
+
+                                                <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-zinc-400 transition-colors group-hover:text-accent">
+                                                  <span>阅读文章</span>
+                                                  <ArrowUpRight size={14} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                                                </div>
+                                              </Link>
+                                            </motion.div>
+                                          ))}
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </motion.div>
+                              );
+                            })}
                           </div>
-
-                          <h3 className="mb-2 font-serif text-lg font-bold text-ink transition-colors group-hover:text-accent dark:text-white md:text-xl">
-                            {post.title}
-                          </h3>
-
-                          <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                            {post.excerpt}
-                          </p>
-
-                          <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-zinc-400 transition-colors group-hover:text-accent">
-                            <span>阅读文章</span>
-                            <ArrowUpRight size={14} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                          </div>
-                        </Link>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         )}
