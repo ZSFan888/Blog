@@ -556,14 +556,6 @@ location / {
 }
 ```
 
-### 性能优化建议
-
-1. **启用 CDN**：利用平台提供的全球 CDN 加速
-2. **配置缓存**：为静态资源设置合理的缓存策略
-3. **启用压缩**：Gzip/Brotli 压缩减小传输体积
-4. **HTTPS**：确保全站 HTTPS 访问
-5. **HTTP/2**：启用 HTTP/2 提升并发性能
-
 ### 持续集成
 
 推荐配置 Git Hooks 或 CI/CD 流程：
@@ -589,10 +581,9 @@ git push
 ### 提交 Pull Request
 
 1. Fork 本仓库
-2. 创建特性分支（`git checkout -b feature/amazing-feature`）
-3. 提交更改（`git commit -m 'Add amazing feature'`）
-4. 推送到分支（`git push origin feature/amazing-feature`）
-5. 创建 Pull Request
+2. 提交更改
+3. 推送到你的 Fork 仓库
+4. 创建 Pull Request
 
 ### 代码规范
 

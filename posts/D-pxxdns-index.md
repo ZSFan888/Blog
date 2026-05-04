@@ -3,7 +3,7 @@ id: D-pxxdns-index
 title: D-pxxdns-index
 excerpt: 为PXXDNS定制的企业级首页模板
 date: 2026-02-22
-updatedAt: 2026-02-22
+updatedAt: 2026-05-03
 category: 分享
 tags:
   - 派小星DNS
@@ -30,11 +30,6 @@ author: 跑路的duck
   
 ## 开源地址  
 ### [Github-ououduck-D-pxxdns-index](https://github.com/ououduck/D-pxxdns-index/)
-
----
-  
-## 演示地址  
-### [Ddomain-dns.3pw.pw](https://dns.3pw.pw)
 
 ---
 
