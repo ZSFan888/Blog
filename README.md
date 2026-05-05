@@ -21,7 +21,6 @@
 - **PWA 支持** - Service Worker 缓存策略，支持离线访问
 - **性能优化** - 预渲染、代码分割、懒加载、图片优化
 - **SEO 友好** - 自动生成 RSS、Sitemap、结构化数据
-- **数据统计** - 集成 Cloudflare Analytics
 - **深色模式** - 支持主题切换
 
 ## 快速开始
@@ -79,9 +78,6 @@ D-blog/
 │   ├── pages/                  # 页面组件
 │   ├── services/               # 数据服务层
 │   └── utils/                  # 工具函数
-└── functions/                   # Cloudflare Pages Functions
-    └── api/
-        └── cloudflare-stats.ts # 实时统计接口
 ```
 
 ## 内容管理
@@ -182,28 +178,6 @@ graph TD
 | Markdown 渲染 | React Markdown + Remark + Rehype |
 | 图表渲染 | Mermaid |
 | SEO 优化 | React Helmet Async |
-
-## Cloudflare Analytics 配置
-
-### 环境变量
-
-在 `.env` 文件中配置：
-
-```bash
-CLOUDFLARE_API_TOKEN=your_api_token_here
-CLOUDFLARE_ZONE_ID=your_zone_id_here
-```
-
-### 获取配置
-
-1. **API Token**：Cloudflare Dashboard → My Profile → API Tokens → 创建 Token（Analytics:Read 权限）
-2. **Zone ID**：站点 Dashboard → 右侧边栏 API 部分
-
-### 工作机制
-
-- **构建阶段**：生成统计数据快照 `generated/cloudflare.json`
-- **运行阶段**：优先使用实时接口，失败时降级至构建快照
-- **降级策略**：环境变量缺失不影响构建，统计功能自动降级
 
 ## 部署指南
 
