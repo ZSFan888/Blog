@@ -15,6 +15,7 @@ const Stats = lazy(() => import('./pages/Stats').then((module) => ({ default: mo
 const Friends = lazy(() => import('./pages/Friends').then((module) => ({ default: module.Friends })));
 const Tags = lazy(() => import('./pages/Tags').then((module) => ({ default: module.Tags })));
 const CoverGenerator = lazy(() => import('./pages/CoverGenerator').then((module) => ({ default: module.CoverGenerator })));
+const Sponsor = lazy(() => import('./pages/Sponsor').then((module) => ({ default: module.Sponsor })));
 const NotFound = lazy(() => import('./pages/NotFound').then((module) => ({ default: module.NotFound })));
 
 const LoadingScreen: React.FC = () => {
@@ -76,6 +77,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/friends" element={<Friends />} />
           <Route path="/about" element={<About />} />
           <Route path="/cover" element={<CoverGenerator />} />
+          <Route path="/sponsor" element={<Sponsor />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

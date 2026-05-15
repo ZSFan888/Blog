@@ -25,6 +25,7 @@ const TEXT = {
   navTags: '\u6807\u7b7e',
   navStats: '\u7edf\u8ba1',
   navFriends: '\u53cb\u94fe',
+  navSponsor: '\u8d5e\u52a9',
   navAbout: '\u5173\u4e8e',
   sourceCode: '\u9879\u76ee\u6e90\u7801',
   resultsSuffix: '\u6761\u7ed3\u679c',
@@ -321,22 +322,15 @@ const ThemeToggle = () => {
 type MobileNavPhase = 'closed' | 'opening' | 'open' | 'closing';
 
 export const MOBILE_NAV_ANIMATION_DURATION_MS = 340;
-export const MOBILE_NAV_SWIPE_CLOSE_THRESHOLD = 64;
-const MOBILE_NAV_MAX_DRAG_OFFSET = 48;
-const MOBILE_NAV_SWIPE_VELOCITY_THRESHOLD = 0.32;
 
 export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
   const [mobileNavPhase, setMobileNavPhase] = useState<MobileNavPhase>('closed');
   const [isMobileNavMounted, setIsMobileNavMounted] = useState(false);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
   const animationFrameRef = useRef<number | null>(null);
   const transitionTimerRef = useRef<number | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartTimeRef = useRef<number | null>(null);
-  const touchDeltaYRef = useRef(0);
   const afterCloseActionRef = useRef<(() => void) | null>(null);
   const mobileNavDuration = shouldReduceMotion ? 1 : MOBILE_NAV_ANIMATION_DURATION_MS;
   const isMobileNavOpen = mobileNavPhase === 'open' || mobileNavPhase === 'opening';
@@ -347,6 +341,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
     { path: '/tags', label: TEXT.navTags, hint: '主题筛选' },
     { path: '/stats', label: TEXT.navStats, hint: '站点数据' },
     { path: '/friends', label: TEXT.navFriends, hint: '友情链接' },
+    { path: '/sponsor', label: TEXT.navSponsor, hint: '赞助支持' },
     { path: '/about', label: TEXT.navAbout, hint: '站点介绍' }
   ];
   const navListVariants = {
@@ -388,24 +383,16 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
     transitionTimerRef.current = null;
   }, []);
 
-  const resetTouchState = useCallback(() => {
-    touchStartYRef.current = null;
-    touchStartTimeRef.current = null;
-    touchDeltaYRef.current = 0;
-    setDragOffsetY(0);
-  }, []);
-
   const finalizeClose = useCallback(() => {
     clearAnimationFrame();
     clearTransitionTimer();
     setIsMobileNavMounted(false);
     setMobileNavPhase('closed');
-    resetTouchState();
 
     const afterCloseAction = afterCloseActionRef.current;
     afterCloseActionRef.current = null;
     afterCloseAction?.();
-  }, [clearAnimationFrame, clearTransitionTimer, resetTouchState]);
+  }, [clearAnimationFrame, clearTransitionTimer]);
 
   const requestCloseMobileNav = useCallback((afterClose?: () => void) => {
     afterCloseActionRef.current = afterClose ?? null;
@@ -423,7 +410,6 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
 
     clearAnimationFrame();
     clearTransitionTimer();
-    resetTouchState();
 
     if (mobileNavDuration <= 1) {
       finalizeClose();
@@ -435,7 +421,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
       transitionTimerRef.current = null;
       finalizeClose();
     }, mobileNavDuration);
-  }, [clearAnimationFrame, clearTransitionTimer, finalizeClose, isMobileNavMounted, mobileNavDuration, mobileNavPhase, resetTouchState]);
+  }, [clearAnimationFrame, clearTransitionTimer, finalizeClose, isMobileNavMounted, mobileNavDuration, mobileNavPhase]);
 
   const openMobileNav = useCallback(() => {
     if (isMobileNavMounted || mobileNavPhase === 'opening' || mobileNavPhase === 'open') {
@@ -445,7 +431,6 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
     afterCloseActionRef.current = null;
     clearAnimationFrame();
     clearTransitionTimer();
-    resetTouchState();
     setIsMobileNavMounted(true);
     setMobileNavPhase('closed');
 
@@ -467,7 +452,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
     animationFrameRef.current = window.requestAnimationFrame(() => {
       animationFrameRef.current = window.requestAnimationFrame(beginOpening);
     });
-  }, [clearAnimationFrame, clearTransitionTimer, isMobileNavMounted, mobileNavDuration, mobileNavPhase, resetTouchState]);
+  }, [clearAnimationFrame, clearTransitionTimer, isMobileNavMounted, mobileNavDuration, mobileNavPhase]);
 
   const handleToggleMobileNav = useCallback(() => {
     if (isMobileNavAnimating) {
@@ -494,44 +479,6 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
 
     requestCloseMobileNav(() => navigate(path));
   }, [isMobileNavAnimating, location.pathname, navigate, requestCloseMobileNav]);
-
-  const handleMobilePanelTouchStart = useCallback((event: React.TouchEvent<HTMLElement>) => {
-    if (isMobileNavAnimating) {
-      return;
-    }
-
-    touchStartYRef.current = event.touches[0]?.clientY ?? null;
-    touchStartTimeRef.current = Date.now();
-    touchDeltaYRef.current = 0;
-  }, [isMobileNavAnimating]);
-
-  const handleMobilePanelTouchMove = useCallback((event: React.TouchEvent<HTMLElement>) => {
-    if (isMobileNavAnimating || touchStartYRef.current === null) {
-      return;
-    }
-
-    const currentY = event.touches[0]?.clientY ?? touchStartYRef.current;
-    const deltaY = Math.max(0, currentY - touchStartYRef.current);
-    touchDeltaYRef.current = deltaY;
-    setDragOffsetY(Math.min(deltaY * 0.32, MOBILE_NAV_MAX_DRAG_OFFSET));
-  }, [isMobileNavAnimating]);
-
-  const handleMobilePanelTouchEnd = useCallback(() => {
-    if (touchStartYRef.current === null) {
-      resetTouchState();
-      return;
-    }
-
-    const elapsed = Math.max(Date.now() - (touchStartTimeRef.current ?? Date.now()), 1);
-    const swipeVelocity = touchDeltaYRef.current / elapsed;
-    const shouldClose = touchDeltaYRef.current >= MOBILE_NAV_SWIPE_CLOSE_THRESHOLD || swipeVelocity >= MOBILE_NAV_SWIPE_VELOCITY_THRESHOLD;
-
-    resetTouchState();
-
-    if (shouldClose) {
-      requestCloseMobileNav();
-    }
-  }, [requestCloseMobileNav, resetTouchState]);
 
   useEffect(() => {
     if (!isMobileNavMounted) {
@@ -590,8 +537,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
     afterCloseActionRef.current = null;
     setIsMobileNavMounted(false);
     setMobileNavPhase('closed');
-    resetTouchState();
-  }, [clearAnimationFrame, clearTransitionTimer, isMobileNavMounted, locationKey, resetTouchState]);
+  }, [clearAnimationFrame, clearTransitionTimer, isMobileNavMounted, locationKey]);
 
   useEffect(() => () => {
     clearAnimationFrame();
@@ -599,12 +545,10 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
   }, [clearAnimationFrame, clearTransitionTimer]);
 
   const mobileNavStyle = {
-    '--mobile-nav-duration': `${mobileNavDuration}ms`,
-    '--mobile-nav-drag-offset': `${dragOffsetY}px`
+    '--mobile-nav-duration': `${mobileNavDuration}ms`
   } as React.CSSProperties;
   const mobileNavPanelStyle = {
     ...mobileNavStyle,
-    touchAction: 'pan-y',
     paddingTop: 'env(safe-area-inset-top, 0px)',
     paddingRight: 'env(safe-area-inset-right, 0px)',
     paddingBottom: 'env(safe-area-inset-bottom, 0px)',
@@ -674,7 +618,10 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
               <Search size={20} />
             </button>
             <button onClick={handleToggleMobileNav} disabled={isMobileNavAnimating} className="z-50 rounded-full border border-zinc-200/70 bg-white/82 p-2.5 text-ink shadow-sm shadow-zinc-200/30 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700/70 dark:bg-zinc-900/82 dark:text-white dark:shadow-black/20" aria-label={isMobileNavOpen ? '关闭导航菜单' : '打开导航菜单'} aria-expanded={isMobileNavOpen} aria-controls="mobile-navigation-panel">
-              {isMobileNavOpen ? <X size={22} /> : <Menu size={22} />}
+              <div className="relative flex h-[22px] w-[22px] items-center justify-center">
+                <Menu size={22} className={`absolute transition-all duration-300 ${isMobileNavOpen ? 'rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100'}`} />
+                <X size={22} className={`absolute transition-all duration-300 ${isMobileNavOpen ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-0 opacity-0'}`} />
+              </div>
             </button>
           </div>
         </motion.div>
@@ -695,12 +642,8 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             data-state={mobileNavPhase}
             data-interaction-locked={isMobileNavAnimating}
             data-locked={isMobileNavAnimating}
-            className="mobile-nav-panel fixed inset-x-0 top-0 z-[80] overflow-hidden rounded-b-[2rem] border-b border-zinc-200/70 bg-paper/92 text-ink shadow-[0_24px_60px_-28px_rgba(28,25,23,0.45)] backdrop-blur-2xl dark:border-zinc-800/80 dark:bg-void/92 dark:text-white"
+            className="mobile-nav-panel fixed inset-x-0 top-0 z-[80] overflow-hidden rounded-b-[1.75rem] border-b border-zinc-200/70 bg-paper/96 text-ink shadow-2xl backdrop-blur-3xl dark:border-zinc-800/80 dark:bg-void/96 dark:text-white"
             style={mobileNavPanelStyle}
-            onTouchStart={handleMobilePanelTouchStart}
-            onTouchMove={handleMobilePanelTouchMove}
-            onTouchEnd={handleMobilePanelTouchEnd}
-            onTouchCancel={handleMobilePanelTouchEnd}
           >
             <div className="flex h-16 items-center justify-between border-b border-zinc-200/70 px-4 sm:h-20 sm:px-6 dark:border-zinc-800/70">
               <button type="button" onClick={() => handleMobileNavItemSelect('/')} disabled={isMobileNavAnimating} className="group flex items-center space-x-3 text-left disabled:cursor-not-allowed disabled:opacity-60" aria-label="返回首页">
@@ -716,11 +659,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
               </button>
             </div>
 
-            <div className="flex max-h-[min(78vh,40rem)] flex-col overflow-y-auto px-4 pb-6 pt-3 sm:px-6">
-              <div className="mb-4 flex justify-center">
-                <span className="h-1.5 w-14 rounded-full bg-zinc-300/90 dark:bg-zinc-700/90" />
-              </div>
-
+            <div className="flex max-h-[min(82vh,42rem)] flex-col overflow-y-auto px-4 pb-8 pt-6 sm:px-6">
               <div className="space-y-2.5">
                 {navItems.map((item) => {
                   const isActive = location.pathname === item.path;
@@ -731,24 +670,24 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                       type="button"
                       onClick={() => handleMobileNavItemSelect(item.path)}
                       disabled={isMobileNavAnimating}
-                      className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                      className={`group flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${
                         isActive
-                          ? 'border-zinc-900/30 bg-zinc-100 text-zinc-900 shadow-lg dark:border-zinc-100/30 dark:bg-zinc-800 dark:text-zinc-100'
+                          ? 'border-zinc-900/30 bg-zinc-100 text-zinc-900 shadow-sm dark:border-zinc-100/30 dark:bg-zinc-800 dark:text-zinc-100'
                           : 'border-zinc-200/80 bg-white/82 text-ink hover:border-zinc-300 hover:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/70 dark:text-white dark:hover:border-zinc-700 dark:hover:bg-zinc-900'
                       }`}
                       aria-current={isActive ? 'page' : undefined}
                     >
-                      <span className="flex flex-col gap-1">
-                        <span className="text-lg font-semibold tracking-tight">{item.label}</span>
-                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{item.hint}</span>
+                      <span className="flex flex-col gap-1.5">
+                        <span className="text-lg font-bold tracking-tight">{item.label}</span>
+                        <span className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400">{item.hint}</span>
                       </span>
-                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${isActive ? 'bg-zinc-900/12 text-zinc-900 dark:bg-zinc-100/18 dark:text-zinc-100' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500'}`}>{isActive ? '当前' : '进入'}</span>
+                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${isActive ? 'bg-zinc-900/12 text-zinc-900 dark:bg-zinc-100/18 dark:text-zinc-100' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500'}`}>{isActive ? '当前' : '进入'}</span>
                     </button>
                   );
                 })}
               </div>
 
-              <div className="mt-4 grid gap-3 border-t border-zinc-200/70 pt-4 dark:border-zinc-800/70">
+              <div className="mt-6 grid gap-3 border-t border-zinc-200/70 pt-6 dark:border-zinc-800/70">
                 <div className="flex items-center justify-between rounded-2xl border border-zinc-200/80 bg-white/82 px-4 py-3 dark:border-zinc-800/80 dark:bg-zinc-900/70">
                   <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{TEXT.theme}</span>
                   <ThemeToggle />

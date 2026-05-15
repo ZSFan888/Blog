@@ -7,7 +7,8 @@ import {
   FileText,
   FolderTree,
   Hash,
-  Type
+  Type,
+  Activity
 } from 'lucide-react';
 
 import { Seo } from '../components/Seo';
@@ -133,6 +134,32 @@ export const Stats = () => {
           >
             <BarChart3 size={20} />
             <span>查看 Umami 统计数据</span>
+          </a>
+        </div>
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5 md:mt-12 md:p-6 lg:mt-14 lg:p-8">
+        <div className="mb-5 flex items-center gap-2.5 md:mb-6">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            <Activity size={18} />
+          </div>
+          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">网站运行状态</h2>
+        </div>
+
+        <p className="mb-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400 md:text-base md:leading-7">
+          实时监控网站的运行状态和可用性，查看历史运行时间和响应速度。
+        </p>
+
+        <div className="flex justify-center">
+          <a
+            href="https://stats.uptimerobot.com/NcIOI9kfVP"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex min-h-14 w-full max-w-xl items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-zinc-900 px-6 py-4 text-base font-bold text-white transition-all hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-white dark:border-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:ring-offset-zinc-950 sm:text-lg"
+            title="查看网站运行状态"
+          >
+            <Activity size={20} />
+            <span>查看网站运行状态</span>
           </a>
         </div>
       </section>

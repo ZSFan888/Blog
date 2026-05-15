@@ -77,6 +77,7 @@ D-blog/
 │   ├── components/             # React 组件
 │   ├── pages/                  # 页面组件
 │   ├── services/               # 数据服务层
+│   ├── config/                 # 前端配置文件
 │   └── utils/                  # 工具函数
 ```
 
@@ -155,6 +156,43 @@ graph TD
   "url": "https://example.com"
 }
 ```
+
+### 赞助页面配置
+
+赞助页面展示了三种非金钱赞助方式。配置文件位于 `src/config/sponsorConfig.ts`。
+
+#### 添加新的赞助选项
+
+编辑 `src/config/sponsorConfig.ts`，在 `sponsorOptions` 数组中添加新选项：
+
+```typescript
+{
+  id: 'new-option',           // 唯一标识符
+  title: '新赞助方式',         // 显示标题
+  description: '赞助方式描述', // 简短描述
+  icon: 'IconName',           // Lucide React 图标名称
+  buttonLabel: '按钮文字',     // 按钮显示文字
+  url: 'https://example.com', // 点击跳转的 URL
+  disabled: false,            // 是否禁用（可选）
+  comingSoon: false           // 是否即将推出（可选）
+}
+```
+
+#### 启用已禁用的赞助选项
+
+找到对应的赞助选项（如广告赞助），修改以下字段：
+
+```typescript
+{
+  id: 'ad',
+  // ... 其他字段
+  url: 'https://your-ad-platform.com', // 设置实际的 URL
+  disabled: false,                      // 改为 false 启用
+  comingSoon: false                     // 改为 false
+}
+```
+
+**注意**：启用赞助选项后，需要确保 `url` 字段指向有效的链接。
 
 ### 站点配置
 
