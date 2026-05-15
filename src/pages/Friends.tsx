@@ -123,7 +123,7 @@ export const Friends = () => {
               href={friend.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative block overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 transition-all duration-300 hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+              className="group relative block overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 transition-all duration-300 hover:border-zinc-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)]"
             >
               <div className="absolute right-0 top-0 p-4 text-zinc-400 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 dark:text-zinc-500">
                 <ExternalLink size={16} />

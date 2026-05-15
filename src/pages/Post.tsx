@@ -371,9 +371,12 @@ export const Post = () => {
 
       if (hasCodeBlocks(post.content)) {
         tasks.push((async () => {
+          const isDark = document.documentElement.classList.contains('dark');
+          const highlightCss = isDark ? import('highlight.js/styles/github-dark.css') : import('highlight.js/styles/github.css');
+          
           const [{ default: rehypeHighlight }] = await Promise.all([
             import('rehype-highlight'),
-            import('highlight.js/styles/github-dark.css')
+            highlightCss
           ]);
 
           nextRehypePlugins.push(rehypeHighlight);
@@ -435,31 +438,27 @@ export const Post = () => {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl animate-pulse pt-10">
+      <div className="mx-auto max-w-4xl pt-10">
         <div className="mb-16 text-center">
-          <div className="mb-10 inline-block h-4 w-20 rounded bg-zinc-200 dark:bg-zinc-800" />
-          <div className="mb-8 flex flex-col items-center gap-4">
-            <div className="h-6 w-16 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-          </div>
-          <div className="mx-auto mb-8 h-12 w-3/4 rounded-lg bg-zinc-200 dark:bg-zinc-800 md:h-16" />
+          <div className="mx-auto mb-10 h-6 w-24 overflow-hidden rounded-md shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+          <div className="mx-auto mb-8 h-12 w-3/4 md:h-16 overflow-hidden rounded-lg shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
           <div className="flex justify-center space-x-6">
-            <div className="h-4 w-24 rounded bg-zinc-200 dark:bg-zinc-800" />
-            <div className="h-4 w-24 rounded bg-zinc-200 dark:bg-zinc-800" />
-            <div className="h-4 w-16 rounded bg-zinc-200 dark:bg-zinc-800" />
+            <div className="h-4 w-28 overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+            <div className="h-4 w-32 overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+            <div className="h-4 w-20 overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
           </div>
         </div>
 
-        <div className="mb-20 aspect-[21/9] w-full rounded-3xl bg-zinc-200 shadow-sm dark:bg-zinc-800" />
+        <div className="mb-20 aspect-[21/9] w-full overflow-hidden rounded-3xl shadow-sm shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
 
         <div className="mx-auto max-w-3xl space-y-6 pb-32">
-          <div className="h-4 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
-          <div className="h-4 w-11/12 rounded bg-zinc-200 dark:bg-zinc-800" />
-          <div className="h-4 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
-          <div className="h-4 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800" />
-          <div className="h-4 w-5/6 rounded bg-zinc-200 dark:bg-zinc-800" />
-          <div className="my-8 h-32 w-full rounded-xl bg-zinc-200 dark:bg-zinc-800" />
-          <div className="h-4 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
-          <div className="h-4 w-4/5 rounded bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-5 w-full overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-5 w-11/12 overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-5 w-full overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-5 w-4/5 overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+          <div className="my-10 h-40 w-full overflow-hidden rounded-xl shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-5 w-full overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-5 w-5/6 overflow-hidden rounded shimmer-mask bg-zinc-200 dark:bg-zinc-800" />
         </div>
       </div>
     );
@@ -588,7 +587,7 @@ export const Post = () => {
 
         <div ref={articleBodyRef} className="mx-auto flex max-w-3xl flex-col gap-8 px-4 pb-16 md:px-0 md:pb-24">
           <div className="flex-1 rounded-2xl bg-white px-6 py-8 shadow-sm dark:bg-zinc-900 md:px-12 md:py-12">
-            <div className="prose prose-base max-w-none prose-stone dark:prose-invert md:prose-lg prose-headings:scroll-mt-24 prose-headings:font-serif prose-headings:font-bold prose-headings:text-ink dark:prose-headings:text-white prose-h1:mb-8 prose-h1:mt-12 prose-h1:text-4xl md:prose-h1:mb-10 md:prose-h1:mt-16 md:prose-h1:text-5xl prose-h2:mb-5 prose-h2:mt-10 prose-h2:text-3xl md:prose-h2:mb-6 md:prose-h2:mt-12 md:prose-h2:text-4xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-2xl md:prose-h3:mb-5 md:prose-h3:mt-10 md:prose-h3:text-3xl prose-h4:mb-3 prose-h4:mt-6 md:prose-h4:mb-4 md:prose-h4:mt-8 prose-p:mb-5 prose-p:font-sans prose-p:text-[17px] prose-p:leading-[1.9] prose-p:tracking-[0.01em] md:prose-p:mb-6 md:prose-p:text-[19px] md:prose-p:leading-[1.95] prose-a:break-words prose-a:text-zinc-900 prose-a:font-semibold prose-a:underline prose-a:decoration-zinc-300 prose-a:decoration-2 prose-a:underline-offset-[3px] prose-a:transition-all hover:prose-a:decoration-zinc-900 hover:prose-a:underline-offset-[5px] dark:prose-a:text-zinc-100 dark:prose-a:decoration-zinc-700 dark:hover:prose-a:decoration-zinc-400 prose-strong:font-bold prose-strong:text-ink dark:prose-strong:text-white prose-img:my-6 prose-img:h-auto prose-img:w-full prose-img:max-w-full prose-img:cursor-zoom-in prose-img:rounded-xl prose-img:shadow-lg prose-img:transition-transform hover:prose-img:scale-[1.01] dark:prose-img:rounded-2xl md:prose-img:my-10 md:prose-img:rounded-2xl prose-blockquote:my-7 prose-blockquote:rounded-r-xl prose-blockquote:border-l-4 prose-blockquote:border-l-zinc-900 prose-blockquote:bg-zinc-50 prose-blockquote:px-7 prose-blockquote:py-6 prose-blockquote:font-serif prose-blockquote:not-italic prose-blockquote:text-[17px] prose-blockquote:leading-[1.85] dark:prose-blockquote:border-l-zinc-100 dark:prose-blockquote:bg-zinc-900 md:prose-blockquote:my-9 md:prose-blockquote:rounded-r-2xl md:prose-blockquote:px-10 md:prose-blockquote:py-8 md:prose-blockquote:text-[19px] prose-code:font-mono prose-code:text-[13px] prose-code:font-medium md:prose-code:text-[14px] prose-pre:overflow-hidden prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-[#0d1117] prose-pre:p-0 prose-pre:shadow-xl md:prose-pre:rounded-2xl prose-ul:my-6 prose-ul:space-y-3 md:prose-ul:my-8 md:prose-ul:space-y-4 prose-ol:my-6 prose-ol:space-y-3 md:prose-ol:my-8 md:prose-ol:space-y-4 prose-li:text-[17px] prose-li:leading-[1.85] prose-li:marker:text-zinc-500 dark:prose-li:marker:text-zinc-500 md:prose-li:text-[19px] md:prose-li:leading-[1.9] prose-hr:my-10 prose-hr:border-zinc-200 dark:prose-hr:border-zinc-800 md:prose-hr:my-14 prose-table:my-8 md:prose-table:my-10">
+            <div className="prose prose-base mx-auto max-w-[72ch] prose-stone dark:prose-invert md:prose-lg prose-headings:scroll-mt-24 prose-headings:font-serif prose-headings:font-bold prose-headings:text-ink dark:prose-headings:text-white prose-h1:mb-8 prose-h1:mt-12 prose-h1:text-4xl md:prose-h1:mb-10 md:prose-h1:mt-16 md:prose-h1:text-5xl prose-h2:mb-5 prose-h2:mt-10 prose-h2:text-3xl md:prose-h2:mb-6 md:prose-h2:mt-12 md:prose-h2:text-4xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-2xl md:prose-h3:mb-5 md:prose-h3:mt-10 md:prose-h3:text-3xl prose-h4:mb-3 prose-h4:mt-6 md:prose-h4:mb-4 md:prose-h4:mt-8 prose-p:mb-5 prose-p:font-sans prose-p:text-[16px] md:prose-p:text-[18px] prose-p:leading-[1.8] md:prose-p:leading-[1.9] prose-p:tracking-[0.01em] prose-a:break-words prose-a:text-zinc-900 prose-a:font-semibold prose-a:underline prose-a:decoration-zinc-300 prose-a:decoration-2 prose-a:underline-offset-[3px] prose-a:transition-all hover:prose-a:decoration-zinc-900 hover:prose-a:underline-offset-[5px] dark:prose-a:text-zinc-100 dark:prose-a:decoration-zinc-700 dark:hover:prose-a:decoration-zinc-400 prose-strong:font-bold prose-strong:text-ink dark:prose-strong:text-white prose-img:my-6 prose-img:h-auto prose-img:w-full prose-img:max-w-full prose-img:cursor-zoom-in prose-img:rounded-xl prose-img:shadow-lg prose-img:transition-transform hover:prose-img:scale-[1.01] dark:prose-img:rounded-2xl md:prose-img:my-10 md:prose-img:rounded-2xl prose-blockquote:my-7 prose-blockquote:rounded-r-xl prose-blockquote:border-l-4 prose-blockquote:border-l-zinc-900 prose-blockquote:bg-zinc-50 prose-blockquote:px-7 prose-blockquote:py-6 prose-blockquote:font-serif prose-blockquote:not-italic prose-blockquote:text-[16px] md:prose-blockquote:text-[18px] prose-blockquote:leading-[1.8] dark:prose-blockquote:border-l-zinc-100 dark:prose-blockquote:bg-zinc-900 md:prose-blockquote:my-9 md:prose-blockquote:rounded-r-2xl md:prose-blockquote:px-10 md:prose-blockquote:py-8 prose-code:font-mono prose-code:text-[13px] prose-code:font-medium md:prose-code:text-[14px] prose-pre:overflow-hidden prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-[#0d1117] prose-pre:p-0 prose-pre:shadow-xl md:prose-pre:rounded-2xl prose-ul:my-6 prose-ul:space-y-3 md:prose-ul:my-8 md:prose-ul:space-y-4 prose-ol:my-6 prose-ol:space-y-3 md:prose-ol:my-8 md:prose-ol:space-y-4 prose-li:text-[17px] prose-li:leading-[1.85] prose-li:marker:text-zinc-500 dark:prose-li:marker:text-zinc-500 md:prose-li:text-[19px] md:prose-li:leading-[1.9] prose-hr:my-10 prose-hr:border-zinc-200 dark:prose-hr:border-zinc-800 md:prose-hr:my-14 prose-table:my-8 md:prose-table:my-10">
               <ReactMarkdown
                 remarkPlugins={remarkPlugins}
                 rehypePlugins={rehypePlugins}

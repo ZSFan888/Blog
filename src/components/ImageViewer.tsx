@@ -58,7 +58,15 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({ src, alt, onClose }) =
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             src={src}
             alt={alt || ''}
-            className="max-h-[90vh] max-w-full rounded-lg object-contain shadow-2xl"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.8}
+            onDragEnd={(_, info) => {
+              if (Math.abs(info.offset.y) > 100 || Math.abs(info.velocity.y) > 500) {
+                onClose();
+              }
+            }}
+            className="max-h-[90vh] max-w-full cursor-grab active:cursor-grabbing rounded-lg object-contain shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           />
 

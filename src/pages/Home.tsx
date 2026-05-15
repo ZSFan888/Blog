@@ -156,7 +156,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
         transition={springCardLayout}
         className="col-span-full w-full"
       >
-        <div className="relative flex h-auto flex-col overflow-hidden rounded-[2rem] border border-zinc-200 bg-white transition-all duration-500 hover:shadow-2xl hover:shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700 md:h-[480px] md:flex-row">
+        <div className="relative flex h-auto flex-col overflow-hidden rounded-[2rem] border border-zinc-200 bg-white transition-all duration-500 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] hover:-translate-y-1 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700 dark:hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] md:h-[480px] md:flex-row">
           <Link to={`/post/${post.id}`} className="group relative block h-64 w-full overflow-hidden md:h-full md:w-7/12" aria-label={`阅读文章：${post.title}`}>
             <div className="absolute inset-0 animate-pulse bg-zinc-200 dark:bg-zinc-800" />
             {post.coverImage ? (
@@ -213,7 +213,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
 
   return (
     <motion.article layout variants={cardVariants} whileHover={hoverMotion} transition={springCardLayout} className="flex h-full flex-col min-w-0">
-      <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white backdrop-blur-md transition-all duration-500 hover:border-zinc-300 hover:shadow-2xl hover:shadow-zinc-200/50 dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:hover:border-zinc-700 md:rounded-3xl">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white backdrop-blur-md transition-all duration-500 hover:border-zinc-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] hover:-translate-y-1 dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:hover:border-zinc-700 dark:hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] md:rounded-3xl">
         <Link to={`/post/${post.id}`} className="group/image relative aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800" aria-label={`阅读文章：${post.title}`}>
           {post.coverImage ? (
             <ProgressiveImage src={post.coverImage} alt={post.title} loading="lazy" width={1600} height={1000} wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover/image:scale-110" />
@@ -326,7 +326,7 @@ const Hero = ({ onSearch, searchQuery, onClearSearch }: { onSearch: (val: string
           transition={shouldReduceMotion ? undefined : { duration: 8.6, repeat: Infinity, ease: 'easeInOut' }}
         />
       </motion.div>
-      <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.82, ease: [0.16, 1, 0.3, 1] }} className="mb-6 font-serif text-5xl font-bold leading-[1.05] tracking-tight text-ink drop-shadow-[0_10px_24px_rgba(28,25,23,0.14)] dark:text-white dark:drop-shadow-[0_10px_28px_rgba(255,255,255,0.08)] sm:text-6xl md:mb-8 md:text-7xl lg:text-8xl">
+      <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.82, ease: [0.16, 1, 0.3, 1] }} className="mb-6 font-serif text-5xl font-extrabold leading-[1.05] tracking-tight bg-gradient-to-br from-ink to-zinc-600 bg-clip-text text-transparent drop-shadow-[0_10px_24px_rgba(28,25,23,0.14)] dark:from-white dark:to-zinc-400 dark:drop-shadow-[0_10px_28px_rgba(255,255,255,0.08)] sm:text-6xl md:mb-8 md:text-7xl lg:text-8xl">
         {siteConfig.title}
       </motion.h1>
       <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.72, ease: [0.16, 1, 0.3, 1] }} className="mx-auto mb-12 max-w-2xl font-sans text-base leading-relaxed text-zinc-600 dark:text-zinc-300 md:text-xl">
@@ -349,7 +349,7 @@ const Hero = ({ onSearch, searchQuery, onClearSearch }: { onSearch: (val: string
             placeholder="搜索文章..."
             value={searchQuery}
             onChange={(event) => onSearch(event.target.value)}
-            className="w-full rounded-full border border-zinc-200/90 bg-white/90 py-4 pl-12 pr-12 text-base text-ink shadow-[0_18px_40px_-28px_rgba(28,25,23,0.35)] outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-4 ring-zinc-900/10 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-white dark:focus:border-zinc-100 dark:ring-zinc-100/10"
+            className="w-full rounded-full border border-zinc-200/90 bg-white/90 py-4 pl-12 pr-12 text-base text-ink shadow-[0_18px_40px_-28px_rgba(28,25,23,0.35)] outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-4 focus:ring-zinc-900/5 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-white dark:focus:border-zinc-600 dark:focus:ring-zinc-100/5 hover:border-zinc-300 dark:hover:border-zinc-700"
             aria-label="搜索文章"
           />
           <AnimatePresence initial={false}>

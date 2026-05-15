@@ -416,7 +416,7 @@ export const ArchivePage = () => {
 
                                               <Link 
                                                 to={`/post/${post.id}`} 
-                                                className="group block rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 md:p-5"
+                                                className="group block rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:border-zinc-300 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] md:p-5"
                                               >
                                                 <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
                                                   <time className="font-mono font-semibold">{formatDay(post.date)}</time>

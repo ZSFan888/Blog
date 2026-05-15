@@ -32,11 +32,11 @@ export const NotFoundState: React.FC<NotFoundStateProps> = React.memo(({
 
           <div className="relative">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
-              <Compass size={14} />
+              <Compass size={14} className="animate-[spin_4s_linear_infinite]" />
               Page Missing
             </div>
 
-            <div className="mb-5 font-serif text-7xl font-bold leading-none text-zinc-200 dark:text-zinc-800 md:text-8xl">
+            <div className="mb-5 font-serif text-7xl font-black leading-none bg-gradient-to-br from-zinc-300 to-zinc-200 bg-clip-text text-transparent dark:from-zinc-700 dark:to-zinc-800 md:text-8xl">
               404
             </div>
 

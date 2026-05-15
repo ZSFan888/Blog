@@ -387,9 +387,9 @@ export const TableOfContents: React.FC<{
           return (
             <li key={item.id} ref={isActive ? activeItemRef : undefined}>
               <div
-                className={`rounded-2xl transition-colors duration-200 ${
+                className={`rounded-2xl transition-all duration-200 ${
                   isActive
-                    ? 'bg-zinc-100 dark:bg-zinc-800'
+                    ? 'bg-zinc-100 dark:bg-zinc-800 scale-[0.98]'
                     : isInActiveBranch
                       ? 'bg-zinc-100/80 dark:bg-zinc-900/70'
                       : 'bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60'

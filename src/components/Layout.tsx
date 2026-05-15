@@ -9,7 +9,7 @@ import { ProgressiveImage } from './ProgressiveImage';
 import type { PostSearchScope } from '@/services/posts';
 
 const TEXT = {
-  searchPlaceholder: '\u641c\u7d22\u6587\u7ae0...',
+  searchPlaceholder: '\u641c\u7d22\u6587\u7ae0... (\u2318K)',
   searchEmpty: '\u8f93\u5165\u5173\u952e\u8bcd\u5f00\u59cb\u641c\u7d22',
   searchHint: '\u652f\u6301\u6309\u6807\u9898\u3001\u6807\u7b7e\u3001\u5206\u7c7b\u641c\u7d22',
   searchScopeLabel: '\u641c\u7d22\u8303\u56f4',
@@ -62,12 +62,36 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
   const [searchScope, setSearchScope] = useState<PostSearchScope>('content');
+  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
   const { searchQuery, isSearching, results, handleSearch, clearSearch, hasSearchQuery } = usePostSearch({
     scope: searchScope
   });
   const visibleResults = results.slice(0, 8);
   const activeScopeHint = SEARCH_SCOPE_HINTS[searchScope];
   const modalEase = [0.16, 1, 0.3, 1] as const;
+
+  const saveHistory = (query: string) => {
+    if (!query.trim()) return;
+    const newHistory = [query, ...searchHistory.filter(q => q !== query)].slice(0, 5);
+    setSearchHistory(newHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+  };
+
+  const removeHistory = (query: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newHistory = searchHistory.filter(q => q !== query);
+    setSearchHistory(newHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -130,6 +154,7 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   }, [isOpen, onClose]);
 
   const handleSelect = (id: string) => {
+    saveHistory(searchQuery);
     navigate(`/post/${id}`);
     onClose();
   };
@@ -213,11 +238,27 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                   ))}
                 </motion.div>
               ) : hasSearchQuery ? (
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, ease: modalEase }} className="p-12 text-center text-zinc-400">
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, ease: modalEase }} className="flex flex-col items-center justify-center p-12 text-center text-zinc-400">
+                  <Search size={48} strokeWidth={1} className="mb-4 text-zinc-300 dark:text-zinc-700" />
                   <p>{`${TEXT.notFoundPrefix} “${searchQuery}” ${TEXT.notFoundSuffix}`}</p>
                 </motion.div>
+              ) : searchHistory.length > 0 ? (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, ease: modalEase }} className="p-4">
+                  <div className="mb-3 px-2 text-xs font-medium uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">搜索历史</div>
+                  <div className="flex flex-wrap gap-2">
+                    {searchHistory.map((query) => (
+                      <div key={query} className="group flex items-center rounded-full border border-zinc-200 bg-zinc-50 pl-3 pr-1 py-1 text-sm text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-800">
+                        <button type="button" className="mr-1 hover:text-zinc-900 dark:hover:text-white" onClick={() => handleSearch(query)}>{query}</button>
+                        <button type="button" className="rounded-full p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200" onClick={(e) => removeHistory(query, e)}>
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
               ) : (
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, ease: modalEase }} className="p-12 text-center text-zinc-400">
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, ease: modalEase }} className="flex flex-col items-center justify-center p-12 text-center text-zinc-400">
+                  <Box size={48} strokeWidth={1} className="mb-4 text-zinc-300 dark:text-zinc-700" />
                   <p className="text-sm font-medium">{TEXT.searchEmpty}</p>
                 </motion.div>
               )}
@@ -253,15 +294,24 @@ const ThemeToggle = () => {
     const systemQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const applyTheme = (nextTheme: Theme) => {
-      if (hasInitializedThemeRef.current) {
-        root.classList.add('theme-switching');
-        window.setTimeout(() => root.classList.remove('theme-switching'), 260);
-      }
+      const applyChanges = () => {
+        if (nextTheme === 'dark' || (nextTheme === 'system' && systemQuery.matches)) {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+      };
 
-      if (nextTheme === 'dark' || (nextTheme === 'system' && systemQuery.matches)) {
-        root.classList.add('dark');
+      if (hasInitializedThemeRef.current && document.startViewTransition) {
+        document.startViewTransition(() => {
+          applyChanges();
+        });
       } else {
-        root.classList.remove('dark');
+        if (hasInitializedThemeRef.current) {
+          root.classList.add('theme-switching');
+          window.setTimeout(() => root.classList.remove('theme-switching'), 260);
+        }
+        applyChanges();
       }
     };
 
@@ -557,7 +607,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
 
   return (
     <>
-      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-zinc-200/70 bg-paper/88 shadow-[0_16px_40px_-34px_rgba(28,25,23,0.5)] backdrop-blur-2xl transition-all duration-500 supports-[backdrop-filter]:bg-paper/72 dark:border-zinc-800/70 dark:bg-void/86">
+      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-zinc-200/50 bg-white/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] backdrop-blur-xl transition-all duration-500 supports-[backdrop-filter]:bg-white/60 dark:border-white/[0.08] dark:bg-zinc-950/80 dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 md:h-20">
           <Link to="/" className="group z-50 flex items-center space-x-3">
             <div className="relative">
@@ -578,7 +628,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                   <Link
                     to={item.path}
                     aria-current={location.pathname === item.path ? 'page' : undefined}
-                    className={`group relative inline-flex h-10 items-center px-2 py-1 text-sm font-semibold uppercase tracking-wider transition-colors ${
+                    className={`group relative inline-flex h-10 items-center px-2 py-1 text-sm font-semibold uppercase tracking-wider transition-all active:scale-95 ${
                       location.pathname === item.path
                         ? 'text-ink dark:text-white'
                         : 'text-zinc-700 hover:text-ink dark:text-zinc-300 dark:hover:text-white'
@@ -599,15 +649,15 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             </motion.div>
 
             <motion.div className="flex items-center space-x-3 border-l border-zinc-300 pl-6 dark:border-zinc-700" variants={navListVariants} initial="hidden" animate="visible">
-              <motion.button variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} onClick={onSearchClick} className="group flex items-center space-x-2 rounded-lg border border-transparent bg-zinc-100 px-3 py-2 text-zinc-700 transition-all duration-300 hover:border-zinc-200 hover:bg-white dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900" aria-label="打开站内搜索">
+              <motion.button variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.94 }} onClick={onSearchClick} className="group flex items-center space-x-2 rounded-lg border border-transparent bg-zinc-100 px-3 py-2 text-zinc-700 transition-all duration-300 hover:border-zinc-200 hover:bg-white dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 active:scale-95" aria-label="打开站内搜索">
                 <Search size={16} />
                 <span className="text-xs font-medium text-zinc-600 transition-colors group-hover:text-zinc-700 dark:text-zinc-400 dark:group-hover:text-zinc-300">Ctrl+K</span>
               </motion.button>
-              <motion.a variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group flex items-center space-x-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+              <motion.a variants={navItemVariants} whileHover={{ y: -2 }} whileTap={{ scale: 0.94 }} href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group flex items-center space-x-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 active:scale-95">
                 <Rss size={16} />
                 <span className="text-xs font-medium">{TEXT.rssFeed}</span>
               </motion.a>
-              <motion.div variants={navItemVariants}>
+              <motion.div variants={navItemVariants} whileTap={{ scale: 0.94 }} className="active:scale-95 transition-transform">
                 <ThemeToggle />
               </motion.div>
             </motion.div>
@@ -631,7 +681,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
         <div className="mobile-nav-root md:hidden">
           <div data-testid="mobile-nav-backdrop" data-open={isMobileNavOpen} data-locked={isMobileNavAnimating} className="mobile-nav-backdrop fixed inset-0 z-[70] bg-void/58 backdrop-blur-sm" style={mobileNavStyle} onClick={() => requestCloseMobileNav()} />
 
-          <aside
+          <motion.aside
             id="mobile-navigation-panel"
             role="dialog"
             aria-modal="true"
@@ -644,6 +694,14 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             data-locked={isMobileNavAnimating}
             className="mobile-nav-panel fixed inset-x-0 top-0 z-[80] overflow-hidden rounded-b-[1.75rem] border-b border-zinc-200/70 bg-paper/96 text-ink shadow-2xl backdrop-blur-3xl dark:border-zinc-800/80 dark:bg-void/96 dark:text-white"
             style={mobileNavPanelStyle}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.4}
+            onDragEnd={(_, info) => {
+              if (info.offset.y < -50 || info.velocity.y < -300) {
+                requestCloseMobileNav();
+              }
+            }}
           >
             <div className="flex h-16 items-center justify-between border-b border-zinc-200/70 px-4 sm:h-20 sm:px-6 dark:border-zinc-800/70">
               <button type="button" onClick={() => handleMobileNavItemSelect('/')} disabled={isMobileNavAnimating} className="group flex items-center space-x-3 text-left disabled:cursor-not-allowed disabled:opacity-60" aria-label="返回首页">
@@ -699,7 +757,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                 </a>
               </div>
             </div>
-          </aside>
+          </motion.aside>
         </div>
       )}
     </>
