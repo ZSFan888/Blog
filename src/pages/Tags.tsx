@@ -109,7 +109,7 @@ export const Tags = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-10 md:pb-20">
-      <Seo title="标签" description="按标签浏览文章" />
+      <Seo title="标签云" description="按标签浏览 D-blog 文章，通过标签快速筛选感兴趣的技术主题与内容。" />
 
       <section className="relative mb-10 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900 md:p-12">
         <div className="absolute right-6 top-6 rounded-lg border border-zinc-200 bg-zinc-100 p-3 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">

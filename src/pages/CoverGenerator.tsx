@@ -629,7 +629,7 @@ export const CoverGenerator: React.FC = () => {
 
   return (
     <motion.div variants={pageVariants} initial="hidden" animate="visible" className="pb-20">
-      <Seo title="封面生成器" description="在线生成精美的博客文章封面图片" />
+      <Seo title="封面生成器" description="在线生成精美博客文章封面图片，支持自定义文字、图标、渐变背景与多种导出比例。" />
 
       <div className="mb-8 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
@@ -667,7 +667,7 @@ export const CoverGenerator: React.FC = () => {
               <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="mb-4 flex items-center gap-2">
                   <Type className="text-ink dark:text-white" size={20} />
-                  <h3 className="font-bold text-ink dark:text-white">文字内容</h3>
+                  <h2 className="font-bold text-ink dark:text-white">文字内容</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -699,7 +699,7 @@ export const CoverGenerator: React.FC = () => {
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <ImageIcon className="text-ink dark:text-white" size={20} />
-                    <h3 className="font-bold text-ink dark:text-white">图标</h3>
+                    <h2 className="font-bold text-ink dark:text-white">图标</h2>
                   </div>
                   <label className="flex items-center gap-2">
                     <input
@@ -745,7 +745,7 @@ export const CoverGenerator: React.FC = () => {
               <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="mb-4 flex items-center gap-2">
                   <Palette className="text-ink dark:text-white" size={20} />
-                  <h3 className="font-bold text-ink dark:text-white">背景模板</h3>
+                  <h2 className="font-bold text-ink dark:text-white">背景模板</h2>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
@@ -797,7 +797,7 @@ export const CoverGenerator: React.FC = () => {
               <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="mb-4 flex items-center gap-2">
                   <Sparkles className="text-accent" size={20} />
-                  <h3 className="font-bold text-ink dark:text-white">快捷预设</h3>
+                  <h2 className="font-bold text-ink dark:text-white">快捷预设</h2>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -870,7 +870,7 @@ export const CoverGenerator: React.FC = () => {
               <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="mb-4 flex items-center gap-2">
                   <Type className="text-ink dark:text-white" size={20} />
-                  <h3 className="font-bold text-ink dark:text-white">文字样式</h3>
+                  <h2 className="font-bold text-ink dark:text-white">文字样式</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -968,7 +968,7 @@ export const CoverGenerator: React.FC = () => {
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Type className="text-ink dark:text-white" size={20} />
-                    <h3 className="font-bold text-ink dark:text-white">文字描边</h3>
+                    <h2 className="font-bold text-ink dark:text-white">文字描边</h2>
                   </div>
                   <label className="flex items-center gap-2">
                     <input
@@ -1015,7 +1015,7 @@ export const CoverGenerator: React.FC = () => {
               <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="mb-4 flex items-center gap-2">
                   <Type className="text-ink dark:text-white" size={20} />
-                  <h3 className="font-bold text-ink dark:text-white">文字阴影</h3>
+                  <h2 className="font-bold text-ink dark:text-white">文字阴影</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -1102,7 +1102,7 @@ export const CoverGenerator: React.FC = () => {
                 <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                   <div className="mb-4 flex items-center gap-2">
                     <ImageIcon className="text-ink dark:text-white" size={20} />
-                    <h3 className="font-bold text-ink dark:text-white">图标样式</h3>
+                    <h2 className="font-bold text-ink dark:text-white">图标样式</h2>
                   </div>
 
                   <div className="space-y-4">
@@ -1166,7 +1166,7 @@ export const CoverGenerator: React.FC = () => {
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Palette className="text-ink dark:text-white" size={20} />
-                    <h3 className="font-bold text-ink dark:text-white">背景遮罩</h3>
+                    <h2 className="font-bold text-ink dark:text-white">背景遮罩</h2>
                   </div>
                   <label className="flex items-center gap-2">
                     <input
@@ -1218,7 +1218,7 @@ export const CoverGenerator: React.FC = () => {
                 <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                   <div className="mb-4 flex items-center gap-2">
                     <ImageIcon className="text-ink dark:text-white" size={20} />
-                    <h3 className="font-bold text-ink dark:text-white">背景图片</h3>
+                    <h2 className="font-bold text-ink dark:text-white">背景图片</h2>
                   </div>
 
                   <div className="space-y-4">
@@ -1271,7 +1271,7 @@ export const CoverGenerator: React.FC = () => {
               <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="mb-4 flex items-center gap-2">
                   <ImageIcon className="text-ink dark:text-white" size={20} />
-                  <h3 className="font-bold text-ink dark:text-white">导出设置</h3>
+                  <h2 className="font-bold text-ink dark:text-white">导出设置</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -1368,7 +1368,7 @@ export const CoverGenerator: React.FC = () => {
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="mb-4 flex items-center gap-2">
               <ImageIcon className="text-ink dark:text-white" size={20} />
-              <h3 className="font-bold text-ink dark:text-white">实时预览</h3>
+              <h2 className="font-bold text-ink dark:text-white">实时预览</h2>
               <span className="ml-auto text-xs text-zinc-400">{canvasSize.width} × {canvasSize.height} px</span>
             </div>
 
@@ -1425,7 +1425,7 @@ export const CoverGenerator: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-xl font-bold text-ink dark:text-white">搜索 Iconify 图标</h3>
+                <h2 className="text-xl font-bold text-ink dark:text-white">搜索 Iconify 图标</h2>
                 <button
                   onClick={() => setShowIconifyModal(false)}
                   className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"

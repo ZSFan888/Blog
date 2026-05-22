@@ -280,17 +280,19 @@ const createMarkdownComponents = (
         </code>
       );
     },
+    // Markdown 标题降级渲染：h1→h2, h2→h3, h3→h4
+    // 确保文章正文标题不会与页面主标题(h1)冲突
     h1: ({ children, ...props }) => {
       const id = resolveHeadingId(1, children);
-      return <h1 id={id} {...props}>{children}</h1>;
+      return <h2 id={id} {...props}>{children}</h2>;
     },
     h2: ({ children, ...props }) => {
       const id = resolveHeadingId(2, children);
-      return <h2 id={id} {...props}>{children}</h2>;
+      return <h3 id={id} {...props}>{children}</h3>;
     },
     h3: ({ children, ...props }) => {
       const id = resolveHeadingId(3, children);
-      return <h3 id={id} {...props}>{children}</h3>;
+      return <h4 id={id} {...props}>{children}</h4>;
     }
   };
 };
@@ -481,7 +483,7 @@ export const Post = () => {
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt,
-    image: post.coverImage ? [new URL(post.coverImage, siteConfig.url).toString()] : undefined,
+    image: post.coverImage ? [new URL(post.coverImage, siteConfig.url).toString()] : [siteConfig.seoImage],
     datePublished: post.date,
     dateModified: post.updatedAt || post.date,
     author: authors.map((author) => ({
@@ -494,8 +496,22 @@ export const Post = () => {
       '@type': 'Organization',
       name: siteConfig.title,
       url: siteConfig.url,
-      logo: post.coverImage ? undefined : undefined
-    }
+      logo: {
+        '@type': 'ImageObject',
+        url: siteConfig.logo
+      }
+    },
+    keywords: post.tags?.join(', ')
+  };
+
+  const breadcrumbData = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '首页', item: siteConfig.url },
+      { '@type': 'ListItem', position: 2, name: post.category, item: `${siteConfig.url}/?category=${encodeURIComponent(post.category)}` },
+      { '@type': 'ListItem', position: 3, name: post.title, item: `${siteConfig.url}/post/${post.id}` }
+    ]
   };
 
   return (
@@ -518,7 +534,10 @@ export const Post = () => {
           publishedTime={post.date}
           modifiedTime={post.updatedAt || post.date}
           authors={authors.map((author) => author.name)}
-          structuredData={postStructuredData}
+          section={post.category}
+          tags={post.tags}
+          keywords={post.tags?.join(', ')}
+          structuredData={[postStructuredData, breadcrumbData]}
         />
 
         <header className="mx-auto mb-10 max-w-4xl pt-6 text-center md:mb-16 md:pt-10">
@@ -587,7 +606,7 @@ export const Post = () => {
 
         <div ref={articleBodyRef} className="mx-auto flex max-w-3xl flex-col gap-8 px-4 pb-16 md:px-0 md:pb-24">
           <div className="flex-1 rounded-2xl bg-white px-6 py-8 shadow-sm dark:bg-zinc-900 md:px-12 md:py-12">
-            <div className="prose prose-base mx-auto max-w-[72ch] prose-stone dark:prose-invert md:prose-lg prose-headings:scroll-mt-24 prose-headings:font-serif prose-headings:font-bold prose-headings:text-ink dark:prose-headings:text-white prose-h1:mb-8 prose-h1:mt-12 prose-h1:text-4xl md:prose-h1:mb-10 md:prose-h1:mt-16 md:prose-h1:text-5xl prose-h2:mb-5 prose-h2:mt-10 prose-h2:text-3xl md:prose-h2:mb-6 md:prose-h2:mt-12 md:prose-h2:text-4xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-2xl md:prose-h3:mb-5 md:prose-h3:mt-10 md:prose-h3:text-3xl prose-h4:mb-3 prose-h4:mt-6 md:prose-h4:mb-4 md:prose-h4:mt-8 prose-p:mb-5 prose-p:font-sans prose-p:text-[16px] md:prose-p:text-[18px] prose-p:leading-[1.8] md:prose-p:leading-[1.9] prose-p:tracking-[0.01em] prose-a:break-words prose-a:text-zinc-900 prose-a:font-semibold prose-a:underline prose-a:decoration-zinc-300 prose-a:decoration-2 prose-a:underline-offset-[3px] prose-a:transition-all hover:prose-a:decoration-zinc-900 hover:prose-a:underline-offset-[5px] dark:prose-a:text-zinc-100 dark:prose-a:decoration-zinc-700 dark:hover:prose-a:decoration-zinc-400 prose-strong:font-bold prose-strong:text-ink dark:prose-strong:text-white prose-img:my-6 prose-img:h-auto prose-img:w-full prose-img:max-w-full prose-img:cursor-zoom-in prose-img:rounded-xl prose-img:shadow-lg prose-img:transition-transform hover:prose-img:scale-[1.01] dark:prose-img:rounded-2xl md:prose-img:my-10 md:prose-img:rounded-2xl prose-blockquote:my-7 prose-blockquote:rounded-r-xl prose-blockquote:border-l-4 prose-blockquote:border-l-zinc-900 prose-blockquote:bg-zinc-50 prose-blockquote:px-7 prose-blockquote:py-6 prose-blockquote:font-serif prose-blockquote:not-italic prose-blockquote:text-[16px] md:prose-blockquote:text-[18px] prose-blockquote:leading-[1.8] dark:prose-blockquote:border-l-zinc-100 dark:prose-blockquote:bg-zinc-900 md:prose-blockquote:my-9 md:prose-blockquote:rounded-r-2xl md:prose-blockquote:px-10 md:prose-blockquote:py-8 prose-code:font-mono prose-code:text-[13px] prose-code:font-medium md:prose-code:text-[14px] prose-pre:overflow-hidden prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-[#0d1117] prose-pre:p-0 prose-pre:shadow-xl md:prose-pre:rounded-2xl prose-ul:my-6 prose-ul:space-y-3 md:prose-ul:my-8 md:prose-ul:space-y-4 prose-ol:my-6 prose-ol:space-y-3 md:prose-ol:my-8 md:prose-ol:space-y-4 prose-li:text-[17px] prose-li:leading-[1.85] prose-li:marker:text-zinc-500 dark:prose-li:marker:text-zinc-500 md:prose-li:text-[19px] md:prose-li:leading-[1.9] prose-hr:my-10 prose-hr:border-zinc-200 dark:prose-hr:border-zinc-800 md:prose-hr:my-14 prose-table:my-8 md:prose-table:my-10">
+            <div className="prose prose-base mx-auto max-w-[72ch] prose-stone dark:prose-invert md:prose-lg prose-headings:scroll-mt-24 prose-headings:font-serif prose-headings:font-bold prose-headings:text-ink dark:prose-headings:text-white prose-h2:mb-8 prose-h2:mt-12 prose-h2:text-4xl md:prose-h2:mb-10 md:prose-h2:mt-16 md:prose-h2:text-5xl prose-h3:mb-5 prose-h3:mt-10 prose-h3:text-3xl md:prose-h3:mb-6 md:prose-h3:mt-12 md:prose-h3:text-4xl prose-h4:mb-4 prose-h4:mt-8 prose-h4:text-2xl md:prose-h4:mb-5 md:prose-h4:mt-10 md:prose-h4:text-3xl prose-p:mb-5 prose-p:font-sans prose-p:text-[16px] md:prose-p:text-[18px] prose-p:leading-[1.8] md:prose-p:leading-[1.9] prose-p:tracking-[0.01em] prose-a:break-words prose-a:text-zinc-900 prose-a:font-semibold prose-a:underline prose-a:decoration-zinc-300 prose-a:decoration-2 prose-a:underline-offset-[3px] prose-a:transition-all hover:prose-a:decoration-zinc-900 hover:prose-a:underline-offset-[5px] dark:prose-a:text-zinc-100 dark:prose-a:decoration-zinc-700 dark:hover:prose-a:decoration-zinc-400 prose-strong:font-bold prose-strong:text-ink dark:prose-strong:text-white prose-img:my-6 prose-img:h-auto prose-img:w-full prose-img:max-w-full prose-img:cursor-zoom-in prose-img:rounded-xl prose-img:shadow-lg prose-img:transition-transform hover:prose-img:scale-[1.01] dark:prose-img:rounded-2xl md:prose-img:my-10 md:prose-img:rounded-2xl prose-blockquote:my-7 prose-blockquote:rounded-r-xl prose-blockquote:border-l-4 prose-blockquote:border-l-zinc-900 prose-blockquote:bg-zinc-50 prose-blockquote:px-7 prose-blockquote:py-6 prose-blockquote:font-serif prose-blockquote:not-italic prose-blockquote:text-[16px] md:prose-blockquote:text-[18px] prose-blockquote:leading-[1.8] dark:prose-blockquote:border-l-zinc-100 dark:prose-blockquote:bg-zinc-900 md:prose-blockquote:my-9 md:prose-blockquote:rounded-r-2xl md:prose-blockquote:px-10 md:prose-blockquote:py-8 prose-code:font-mono prose-code:text-[13px] prose-code:font-medium md:prose-code:text-[14px] prose-pre:overflow-hidden prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-[#0d1117] prose-pre:p-0 prose-pre:shadow-xl md:prose-pre:rounded-2xl prose-ul:my-6 prose-ul:space-y-3 md:prose-ul:my-8 md:prose-ul:space-y-4 prose-ol:my-6 prose-ol:space-y-3 md:prose-ol:my-8 md:prose-ol:space-y-4 prose-li:text-[17px] prose-li:leading-[1.85] prose-li:marker:text-zinc-500 dark:prose-li:marker:text-zinc-500 md:prose-li:text-[19px] md:prose-li:leading-[1.9] prose-hr:my-10 prose-hr:border-zinc-200 dark:prose-hr:border-zinc-800 md:prose-hr:my-14 prose-table:my-8 md:prose-table:my-10">
               <ReactMarkdown
                 remarkPlugins={remarkPlugins}
                 rehypePlugins={rehypePlugins}
@@ -608,7 +627,7 @@ export const Post = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="mb-2 text-lg font-serif font-bold text-ink dark:text-white">CC BY-SA 4.0 许可协议</h3>
+                  <h2 className="mb-2 text-lg font-serif font-bold text-ink dark:text-white">CC BY-SA 4.0 许可协议</h2>
                   <p className="mb-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                     本文由 <strong className="text-ink dark:text-zinc-200">{authorsLabel}</strong> 原创。除非另有声明，本站文章采用
                     <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="noopener noreferrer" className="mx-1 font-medium text-zinc-900 hover:underline dark:text-zinc-100">

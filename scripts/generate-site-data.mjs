@@ -6,7 +6,8 @@ import { fileURLToPath } from 'url';
 
 const SITE_URL = 'https://blog.pldduck.com';
 const SITE_TITLE = 'D-blog';
-const SITE_DESCRIPTION = '跑路的duck的技术分享和生活随笔';
+const SITE_DESCRIPTION = '跑路的duck的个人博客，分享前端技术、编程教程与生活感悟，探索极致的静态页面体验。';
+const AUTHOR_NAME = '跑路的duck';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -195,18 +196,19 @@ const postsWithSearch = files
       readTime: calculateReadTime(content),
       wordCount,
       imageCount,
+      content,
       searchText: markdownToSearchText(content)
     };
   })
   .filter(Boolean)
   .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-const posts = postsWithSearch.map(({ searchText, ...post }) => post);
+const posts = postsWithSearch.map(({ searchText, content, ...post }) => post);
 
 generateSiteStats(postsWithSearch);
 
 fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts.json'), JSON.stringify(posts, null, 2));
-fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts-search.json'), JSON.stringify(postsWithSearch, null, 2));
+fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts-search.json'), JSON.stringify(postsWithSearch.map(({ content, ...rest }) => rest), null, 2));
 console.log(`JSON generated: ${posts.length} posts`);
 
 const requiredFriendFields = ['name', 'description', 'avatar', 'url'];
@@ -247,7 +249,18 @@ fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'friends.json'), JSON.stringify(frie
 console.log(`JSON generated: ${friends.length} friends`);
 
 const generateSitemap = () => {
-  const staticPages = ['', 'archive', 'tags', 'stats', 'friends', 'about'];
+  const today = new Date().toISOString().split('T')[0];
+
+  const staticPages = [
+    { path: '', changefreq: 'daily', priority: '1.0', lastmod: today },
+    { path: 'archive', changefreq: 'daily', priority: '0.9', lastmod: today },
+    { path: 'tags', changefreq: 'weekly', priority: '0.8', lastmod: today },
+    { path: 'stats', changefreq: 'weekly', priority: '0.6', lastmod: today },
+    { path: 'friends', changefreq: 'weekly', priority: '0.7', lastmod: today },
+    { path: 'about', changefreq: 'monthly', priority: '0.7', lastmod: today },
+    { path: 'cover', changefreq: 'monthly', priority: '0.5', lastmod: today },
+    { path: 'sponsor', changefreq: 'monthly', priority: '0.5', lastmod: today }
+  ];
 
   const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -255,9 +268,10 @@ const generateSitemap = () => {
     .map(
       (page) => `
   <url>
-    <loc>${SITE_URL}/${page}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>${page === '' ? '1.0' : '0.8'}</priority>
+    <loc>${SITE_URL}/${page.path}</loc>
+    <lastmod>${page.lastmod}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
   </url>`
     )
     .join('')}
@@ -268,7 +282,7 @@ const generateSitemap = () => {
     <loc>${SITE_URL}/post/${post.id}</loc>
     <lastmod>${new Date(post.updatedAt || post.date).toISOString().split('T')[0]}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>`
     )
     .join('')}
@@ -279,13 +293,35 @@ const generateSitemap = () => {
 };
 
 const generateRss = () => {
-  const latestUpdate = posts[0] ? new Date(posts.reduce((latest, post) => {
+  const latestUpdate = postsWithSearch[0] ? new Date(postsWithSearch.reduce((latest, post) => {
     const current = new Date(post.updatedAt || post.date);
     return current > latest ? current : latest;
-  }, new Date(posts[0].updatedAt || posts[0].date))) : new Date();
+  }, new Date(postsWithSearch[0].updatedAt || postsWithSearch[0].date))) : new Date();
+
+  // 简单的 Markdown 转 HTML（用于 RSS 全文内容）
+  const simpleMarkdownToHtml = (md) => {
+    return md
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2" />')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+      .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+      .replace(/\n{2,}/g, '</p><p>')
+      .replace(/^(?!<[hluoi])/gm, '<p>')
+      .replace(/(?<![>])$/gm, '</p>')
+      .replace(/<p><\/p>/g, '');
+  };
 
   const rssContent = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${SITE_TITLE}</title>
     <link>${SITE_URL}</link>
@@ -293,7 +329,7 @@ const generateRss = () => {
     <language>zh-CN</language>
     <lastBuildDate>${latestUpdate.toUTCString()}</lastBuildDate>
     <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
-    ${posts
+    ${postsWithSearch
       .map(
         (post) => `
     <item>
@@ -301,8 +337,12 @@ const generateRss = () => {
       <link>${SITE_URL}/post/${post.id}</link>
       <guid isPermaLink="true">${SITE_URL}/post/${post.id}</guid>
       <description><![CDATA[${post.excerpt}]]></description>
+      <content:encoded><![CDATA[<article>${simpleMarkdownToHtml(post.content || '')}</article>]]></content:encoded>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
+      ${post.updatedAt ? `<atom:updated>${new Date(post.updatedAt).toISOString()}</atom:updated>` : ''}
       <category>${post.category}</category>
+      ${(post.tags || []).map((tag) => `<category>${tag}</category>`).join('\n      ')}
+      <author>${post.authors?.[0]?.name || AUTHOR_NAME}</author>
     </item>`
       )
       .join('')}

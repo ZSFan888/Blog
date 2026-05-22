@@ -13,6 +13,9 @@ interface SeoProps {
   publishedTime?: string;
   modifiedTime?: string;
   authors?: string[];
+  section?: string;
+  tags?: string[];
+  keywords?: string;
   structuredData?: StructuredData;
   noindex?: boolean;
 }
@@ -38,11 +41,14 @@ export const Seo: React.FC<SeoProps> = ({
   publishedTime,
   modifiedTime,
   authors = [],
+  section,
+  tags = [],
+  keywords,
   structuredData,
   noindex = false
 }) => {
   const siteTitle = `${siteConfig.title} | ${siteConfig.author.name}`;
-  const fullTitle = title === siteConfig.title ? siteTitle : `${title} - ${siteTitle}`;
+  const fullTitle = title === siteConfig.title ? siteTitle : `${title} | ${siteTitle}`;
   const canonicalUrl = toAbsoluteUrl(url);
   const imageUrl = toAbsoluteUrl(image);
   const schema = structuredData
@@ -66,6 +72,7 @@ export const Seo: React.FC<SeoProps> = ({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <meta name="robots" content={noindex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large'} />
+      {keywords && <meta name="keywords" content={keywords} />}
       <link rel="canonical" href={canonicalUrl} />
       <link rel="alternate" type="application/rss+xml" title={`${siteConfig.title} RSS`} href={`${siteConfig.url}/feed.xml`} />
 
@@ -79,6 +86,8 @@ export const Seo: React.FC<SeoProps> = ({
       {type === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
       {type === 'article' && modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
       {type === 'article' && authors.map((author) => <meta key={author} property="article:author" content={author} />)}
+      {type === 'article' && section && <meta property="article:section" content={section} />}
+      {type === 'article' && tags.map((tag) => <meta key={tag} property="article:tag" content={tag} />)}
 
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />

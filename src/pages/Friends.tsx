@@ -68,7 +68,7 @@ export const Friends = () => {
 
   return (
     <div className="py-12 md:py-20">
-      <Seo title="友情链接" description="我的朋友们和推荐的网站" />
+      <Seo title="友情链接" description="D-blog 友情链接汇集优秀技术博客与趣味网站，欢迎通过 GitHub PR 申请交换友链。" />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-16 text-center">
         <h1 className="mb-6 font-serif text-4xl font-bold text-zinc-900 dark:text-zinc-100 md:text-5xl">友情链接</h1>
@@ -102,7 +102,7 @@ export const Friends = () => {
                   <ProgressiveImage src={friend.avatar} alt={friend.name} wrapperClassName="h-full w-full" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="mb-1 truncate font-serif text-lg font-bold text-zinc-900 transition-colors group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">{friend.name}</h3>
+                  <h2 className="mb-1 truncate font-serif text-lg font-bold text-zinc-900 transition-colors group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">{friend.name}</h2>
                   <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{friend.description}</p>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export const Friends = () => {
               <div className="p-5 sm:p-6">
                 <div className="mb-5">
                   <p className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">FRIEND LINK</p>
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">按模板提交 PR，就能更快完成收录</h3>
+                  <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">按模板提交 PR，就能更快完成收录</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -181,7 +181,7 @@ export const Friends = () => {
                   </div>
 
                   <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                    <h4 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">本站信息（提交前请先添加本站友链）</h4>
+                    <h3 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">本站信息（提交前请先添加本站友链）</h3>
                     <div className="flex flex-col items-start gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-800 sm:flex-row sm:items-center">
                       <ProgressiveImage src={siteInfo.avatar} alt={siteInfo.name} wrapperClassName="h-12 w-12 flex-shrink-0 rounded-full border border-zinc-200 bg-white dark:border-zinc-700" className="h-12 w-12 rounded-full object-cover object-center" />
                       <div className="w-full flex-1 space-y-1">
@@ -195,7 +195,7 @@ export const Friends = () => {
 
                   <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
                     <div className="mb-3 flex items-center justify-between gap-3">
-                      <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">友链 JSON 模板</h4>
+                      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">友链 JSON 模板</h3>
                       <button onClick={handleCopyTemplate} className="flex items-center gap-1.5 rounded-md border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700">
                         {isCopied ? <Check size={14} /> : <Copy size={14} />}
                         {isCopied ? '已复制' : '复制模板'}

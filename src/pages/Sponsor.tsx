@@ -95,7 +95,7 @@ export const Sponsor: React.FC<SponsorPageProps> = () => {
       className="mx-auto max-w-4xl py-12 md:py-20"
     >
       {/* SEO metadata for the sponsor page */}
-      <Seo title="赞助" description="支持 D-blog 的多种方式" />
+      <Seo title="赞助支持" description="支持 D-blog 的多种方式：通过贡献代码、撰写文章或浏览广告来帮助博客持续成长。" />
 
       {/* Header Section */}
       <div className="mb-12 text-center">
@@ -126,9 +126,9 @@ export const Sponsor: React.FC<SponsorPageProps> = () => {
               </div>
               
               {/* Card title */}
-              <h3 className="mb-2 font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">
+              <h2 className="mb-2 font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">
                 {option.title}
-              </h3>
+              </h2>
               
               {/* Card description */}
               <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400">

@@ -1,12 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Compass } from 'lucide-react';
-import { Seo } from './Seo';
 
 interface NotFoundStateProps {
   title: string;
   description: string;
-  seoTitle?: string;
   backTo?: string;
   backLabel?: string;
   debugLabel?: string;
@@ -15,14 +13,11 @@ interface NotFoundStateProps {
 export const NotFoundState: React.FC<NotFoundStateProps> = React.memo(({
   title,
   description,
-  seoTitle = '404 Not Found',
   backTo = '/',
   backLabel = '返回首页',
   debugLabel
 }) => {
   return (
-    <>
-      <Seo title={seoTitle} description={description} />
       <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center px-4 py-10">
         <div className="relative w-full overflow-hidden rounded-[2rem] border border-zinc-200/80 bg-white/75 p-8 shadow-[0_24px_80px_-36px_rgba(24,24,27,0.28)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/70 md:p-12">
           <div className="pointer-events-none absolute inset-0">
@@ -66,6 +61,5 @@ export const NotFoundState: React.FC<NotFoundStateProps> = React.memo(({
           </div>
         </div>
       </div>
-    </>
   );
 });

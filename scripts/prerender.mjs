@@ -54,7 +54,7 @@ if (!fs.existsSync(POSTS_FILE)) {
 }
 const posts = JSON.parse(fs.readFileSync(POSTS_FILE, 'utf-8'));
 
-const injectSeoMeta = (htmlTemplate, title, description) => {
+const injectSeoMeta = (htmlTemplate, title, description, extraMeta = '') => {
   let html = htmlTemplate.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
 
   if (description) {
@@ -68,11 +68,16 @@ const injectSeoMeta = (htmlTemplate, title, description) => {
     }
   }
 
+  if (extraMeta) {
+    // Insert extra meta tags before closing </head>
+    html = html.replace('</head>', `${extraMeta}\n</head>`);
+  }
+
   return html;
 };
 
 // Helper to write route file
-const writeHtml = (relativePath, title, description) => {
+const writeHtml = (relativePath, title, description, extraMeta = '') => {
   const filePath = path.join(DIST_DIR, relativePath, 'index.html');
   const dir = path.dirname(filePath);
 
@@ -80,15 +85,15 @@ const writeHtml = (relativePath, title, description) => {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  const html = injectSeoMeta(template, title, description);
+  const html = injectSeoMeta(template, title, description, extraMeta);
 
   fs.writeFileSync(filePath, html);
   console.log(`✅ Generated: ${relativePath}/index.html`);
 };
 
-const writeStandaloneHtml = (filename, title, description) => {
+const writeStandaloneHtml = (filename, title, description, extraMeta = '') => {
   const filePath = path.join(DIST_DIR, filename);
-  const html = injectSeoMeta(template, title, description);
+  const html = injectSeoMeta(template, title, description, extraMeta);
 
   fs.writeFileSync(filePath, html);
   console.log(`✅ Generated: ${filename}`);
@@ -97,26 +102,78 @@ const writeStandaloneHtml = (filename, title, description) => {
 console.log('🚀 Starting Pre-rendering...');
 
 // 1. Process Blog Posts
+const SITE_URL = 'https://blog.pldduck.com';
+
 posts.forEach(post => {
   // URL structure: /post/:id
-  const title = `${post.title} - ${SITE_SUFFIX}`;
+  const title = `${post.title} | ${SITE_SUFFIX}`;
   const description = post.excerpt || post.title;
-  writeHtml(`post/${post.id}`, title, description);
+  const postUrl = `${SITE_URL}/post/${post.id}`;
+  const coverImage = post.coverImage ? new URL(post.coverImage, SITE_URL).toString() : `${SITE_URL}/logo.png`;
+  const publishDate = post.date;
+  const modifiedDate = post.updatedAt || post.date;
+
+  const ogMeta = `
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="${title.replace(/"/g, '&quot;')}">
+    <meta property="og:description" content="${description.replace(/"/g, '&quot;')}">
+    <meta property="og:url" content="${postUrl}">
+    <meta property="og:image" content="${coverImage}">
+    <meta property="article:published_time" content="${publishDate}">
+    <meta property="article:modified_time" content="${modifiedDate}">
+    <meta property="article:section" content="${post.category || ''}">
+    ${(post.tags || []).map(tag => `<meta property="article:tag" content="${tag}">`).join('\n    ')}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${title.replace(/"/g, '&quot;')}">
+    <meta name="twitter:description" content="${description.replace(/"/g, '&quot;')}">
+    <meta name="twitter:image" content="${coverImage}">`;
+
+  const authorName = post.authors?.[0]?.name || '跑路的duck';
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: description,
+    image: coverImage,
+    datePublished: publishDate,
+    dateModified: modifiedDate,
+    author: { '@type': 'Person', name: authorName },
+    mainEntityOfPage: postUrl,
+    publisher: { '@type': 'Organization', name: siteTitle, url: SITE_URL, logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png` } }
+  };
+
+  const breadcrumbData = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '首页', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: post.category || '', item: `${SITE_URL}/?category=${encodeURIComponent(post.category || '')}` },
+      { '@type': 'ListItem', position: 3, name: post.title, item: postUrl }
+    ]
+  };
+
+  const jsonLd = `\n    <script type="application/ld+json">${JSON.stringify([structuredData, breadcrumbData])}</script>`;
+
+  const extraMeta = `${ogMeta}${jsonLd}`;
+
+  writeHtml(`post/${post.id}`, title, description, extraMeta);
 });
 
 // 2. Process Static Pages
 const staticPages = [
-  { path: 'archive', title: `归档 - ${SITE_SUFFIX}`, description: `按年份整理 ${siteTitle} 的全部文章归档` },
-  { path: 'tags', title: `标签 - ${SITE_SUFFIX}`, description: `按标签浏览 ${siteTitle} 的文章` },
-  { path: 'stats', title: `统计 - ${SITE_SUFFIX}`, description: `${siteTitle} 的站点统计信息` },
-  { path: 'about', title: `关于${siteTitle} - ${SITE_SUFFIX}`, description: `关于${siteTitle}的介绍` },
-  { path: 'friends', title: `友情链接 - ${SITE_SUFFIX}`, description: `我的朋友们和推荐的网站` }
+  { path: 'archive', title: `文章归档 - ${SITE_SUFFIX}`, description: `按年份归档 ${siteTitle} 全部历史文章，快速查看发布时间与更新轨迹。` },
+  { path: 'tags', title: `标签云 - ${SITE_SUFFIX}`, description: `按标签浏览 ${siteTitle} 文章，通过标签快速筛选感兴趣的技术主题。` },
+  { path: 'stats', title: `站点统计 - ${SITE_SUFFIX}`, description: `${siteTitle} 站点统计概览：文章数、总字数、分类标签等核心数据。` },
+  { path: 'about', title: `关于我 - ${SITE_SUFFIX}`, description: `关于跑路的duck：前端开发者，热爱探索 Web 技术与极致性能体验。` },
+  { path: 'friends', title: `友情链接 - ${SITE_SUFFIX}`, description: `${siteTitle} 友情链接汇集优秀技术博客，欢迎通过 GitHub PR 申请交换友链。` },
+  { path: 'cover', title: `封面生成器 - ${SITE_SUFFIX}`, description: `在线生成精美博客封面图片，支持自定义文字、图标与多种导出比例。` },
+  { path: 'sponsor', title: `赞助支持 - ${SITE_SUFFIX}`, description: `支持 ${siteTitle} 的多种方式：贡献代码、撰写文章帮助博客持续成长。` }
 ];
 
 staticPages.forEach(page => {
   writeHtml(page.path, page.title, page.description);
 });
 
-writeStandaloneHtml('404.html', `页面不存在 - ${SITE_SUFFIX}`, '你访问的页面不存在，可能已经移动或删除。');
+writeStandaloneHtml('404.html', `页面不存在 - ${SITE_SUFFIX}`, '你访问的页面不存在，可能已经移动、重命名或链接已失效。');
 
 console.log(`✨ Prerendering complete! Generated ${posts.length + staticPages.length + 1} pages.`);

@@ -93,14 +93,14 @@ export const Stats = () => {
       transition={{ duration: 0.28, ease: 'easeOut' }}
       className="pb-10 md:pb-20"
     >
-      <Seo title="统计" description="站点统计页面，展示文章数、字数、分类、标签等站点概览信息。" />
+      <Seo title="站点统计" description="D-blog 站点统计概览：文章数、总字数、分类标签、图片数量等核心数据一目了然。" />
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5 md:p-6 lg:p-8">
         <div className="mb-5 flex items-center gap-2.5 md:mb-6">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
             <Database size={18} />
           </div>
-          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">站点概览</h2>
+          <h1 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">站点概览</h1>
         </div>
 
         <div className="grid gap-4 sm:gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -117,7 +117,7 @@ export const Stats = () => {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
             <BarChart3 size={18} />
           </div>
-          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">Umami 访问统计</h2>
+          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">访问统计</h2>
         </div>
 
         <p className="mb-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400 md:text-base md:leading-7">
@@ -143,7 +143,7 @@ export const Stats = () => {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
             <Activity size={18} />
           </div>
-          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">网站运行状态</h2>
+          <h2 className="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100 md:text-2xl">运行状态</h2>
         </div>
 
         <p className="mb-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400 md:text-base md:leading-7">
