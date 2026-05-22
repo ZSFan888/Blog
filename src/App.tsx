@@ -65,6 +65,10 @@ const AppRoutes: React.FC = () => {
   const location = useLocation();
   const routeKey = location.pathname;
 
+  useEffect(() => {
+    document.title = siteConfig.title;
+  }, [location.pathname]);
+
   return (
     <Layout>
       <Suspense fallback={<RouteFallback />}>
