@@ -182,17 +182,6 @@ export const Sponsor: React.FC<SponsorPageProps> = () => {
             className="h-auto w-full max-w-2xl"
           />
         </a>
-        <a
-          href="https://1sdun.cn"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="/ads-img/fynxscdn.jpg"
-            alt="1sudun 广告"
-            className="h-auto w-full max-w-2xl"
-          />
-        </a>
       </div>
     </motion.div>
   );
