@@ -694,14 +694,6 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             data-locked={isMobileNavAnimating}
             className="mobile-nav-panel fixed inset-x-0 top-0 z-[80] overflow-hidden rounded-b-[1.75rem] border-b border-zinc-200/70 bg-paper/96 text-ink shadow-2xl backdrop-blur-3xl dark:border-zinc-800/80 dark:bg-void/96 dark:text-white"
             style={mobileNavPanelStyle}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0.4}
-            onDragEnd={(_, info) => {
-              if (info.offset.y < -50 || info.velocity.y < -300) {
-                requestCloseMobileNav();
-              }
-            }}
           >
             <div className="flex h-16 items-center justify-between border-b border-zinc-200/70 px-4 sm:h-20 sm:px-6 dark:border-zinc-800/70">
               <button type="button" onClick={() => handleMobileNavItemSelect('/')} disabled={isMobileNavAnimating} className="group flex items-center space-x-3 text-left disabled:cursor-not-allowed disabled:opacity-60" aria-label="返回首页">
