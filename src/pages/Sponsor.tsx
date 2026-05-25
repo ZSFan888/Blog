@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Code2, FileText, TrendingUp } from 'lucide-react';
 import { Seo } from '../components/Seo';
+import { adsConfig } from '../../config/ads.config';
 
 /**
  * Represents a single sponsor option displayed on the sponsor page.
@@ -166,17 +167,20 @@ export const Sponsor: React.FC<SponsorPageProps> = () => {
 
       {/* Sponsor Ads */}
       <div className="mt-12 flex flex-col items-center gap-6">
-        <a
-          href="https://curl.qcloud.com/fBu6YgLR"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="/ads-img/tencent-cloud.png"
-            alt="腾讯云广告"
-            className="h-auto w-full max-w-2xl"
-          />
-        </a>
+        {adsConfig.map((ad) => (
+          <a
+            key={ad.id}
+            href={ad.link}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={ad.image}
+              alt={ad.alt}
+              className="h-auto w-full max-w-2xl"
+            />
+          </a>
+        ))}
       </div>
     </div>
   );
