@@ -4,7 +4,7 @@ import { Sun, Moon, Github, Menu, X, Search, Mail, Heart, Zap, Coffee, Code2, La
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { preloadPage } from '@/utils/preload';
 import { siteConfig } from '@config/site.config';
-import { BackToTop } from './BackToTop';
+
 import { usePostSearch } from '@/hooks/usePostSearch';
 import { ProgressiveImage } from './ProgressiveImage';
 import { GlobalLiquidGlass } from './GlobalLiquidGlass';
@@ -1037,7 +1037,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, hasViewTransition }) =
           </AnimatePresence>
         )}
       </main>
-      <BackToTop />
       <Footer />
     </div>
   );
