@@ -59,19 +59,17 @@ export const chipHover = {
   },
 };
 
-/** 路由切换变体 — 带微妙的方向感和层次感 */
+/** 路由切换变体 — 轻柔方向感淡入 */
 export const routeTransition = {
-  initial: { opacity: 0, y: 12, scale: 0.995 },
+  initial: { opacity: 0, y: 6 },
   animate: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: { duration: 0.32, ease: easeSmooth },
+    transition: { duration: 0.28, ease: easeSmooth },
   },
   exit: {
     opacity: 0,
-    y: -6,
-    scale: 0.998,
-    transition: { duration: 0.18, ease: easeSmooth },
+    y: -4,
+    transition: { duration: 0.14, ease: easeSmooth },
   },
 } as const;

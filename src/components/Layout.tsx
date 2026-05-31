@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Sun, Moon, Github, Menu, X, Search, Mail, Heart, Zap, Coffee, Code2, Layers, GitBranch, Box, Monitor, Rss, Image } from 'lucide-react';
+import { Sun, Moon, Github, Menu, X, Search, Mail, Heart, Zap, Coffee, Code2, Layers, GitBranch, Box, Monitor, Rss, Image, BookOpen, Archive, Tag, BarChart3, Users, Info } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { preloadPage } from '@/utils/preload';
 import { siteConfig } from '@config/site.config';
 import { BackToTop } from './BackToTop';
 import { usePostSearch } from '@/hooks/usePostSearch';
@@ -384,17 +385,21 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
   const animationFrameRef = useRef<number | null>(null);
   const transitionTimerRef = useRef<number | null>(null);
   const afterCloseActionRef = useRef<(() => void) | null>(null);
+  const mobileNavPanelRef = useRef<HTMLElement | null>(null);
+  const touchStartYRef = useRef<number>(0);
+  const touchCurrentYRef = useRef<number>(0);
+  const isSwipingRef = useRef(false);
   const mobileNavDuration = shouldReduceMotion ? 1 : MOBILE_NAV_ANIMATION_DURATION_MS;
   const isMobileNavOpen = mobileNavPhase === 'open' || mobileNavPhase === 'opening';
   const isMobileNavAnimating = mobileNavPhase === 'opening' || mobileNavPhase === 'closing';
   const navItems = [
-    { path: '/', label: TEXT.navPosts, hint: '最新内容' },
-    { path: '/archive', label: TEXT.navArchive, hint: '时间归档' },
-    { path: '/tags', label: TEXT.navTags, hint: '主题筛选' },
-    { path: '/stats', label: TEXT.navStats, hint: '站点数据' },
-    { path: '/friends', label: TEXT.navFriends, hint: '友情链接' },
-    { path: '/sponsor', label: TEXT.navSponsor, hint: '赞助支持' },
-    { path: '/about', label: TEXT.navAbout, hint: '站点介绍' }
+    { path: '/', label: TEXT.navPosts, hint: '最新内容', icon: BookOpen },
+    { path: '/archive', label: TEXT.navArchive, hint: '时间归档', icon: Archive },
+    { path: '/tags', label: TEXT.navTags, hint: '主题筛选', icon: Tag },
+    { path: '/stats', label: TEXT.navStats, hint: '站点数据', icon: BarChart3 },
+    { path: '/friends', label: TEXT.navFriends, hint: '友情链接', icon: Users },
+    { path: '/sponsor', label: TEXT.navSponsor, hint: '赞助支持', icon: Heart },
+    { path: '/about', label: TEXT.navAbout, hint: '站点介绍', icon: Info }
   ];
   const navListVariants = {
     hidden: {},
@@ -532,6 +537,57 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
     requestCloseMobileNav(() => navigate(path));
   }, [isMobileNavAnimating, location.pathname, navigate, requestCloseMobileNav]);
 
+  // Swipe-to-close gesture handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartYRef.current = e.touches[0].clientY;
+    touchCurrentYRef.current = e.touches[0].clientY;
+    isSwipingRef.current = false;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - touchStartYRef.current;
+    touchCurrentYRef.current = currentY;
+
+    // Only allow downward swipe
+    if (deltaY <= 0) return;
+
+    isSwipingRef.current = true;
+    const panel = mobileNavPanelRef.current;
+    if (panel) {
+      panel.dataset.swiping = 'true';
+      panel.style.transform = `translate3d(0, ${deltaY}px, 0)`;
+      // Dim backdrop proportionally
+      const backdrop = panel.parentElement?.querySelector('.mobile-nav-backdrop') as HTMLElement;
+      if (backdrop) {
+        const panelHeight = panel.offsetHeight;
+        const progress = Math.min(deltaY / panelHeight, 1);
+        backdrop.style.opacity = String(1 - progress * 0.6);
+      }
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const deltaY = touchCurrentYRef.current - touchStartYRef.current;
+    const panel = mobileNavPanelRef.current;
+
+    if (panel) {
+      panel.dataset.swiping = 'false';
+      panel.style.transform = '';
+    }
+    // Reset backdrop opacity
+    const backdrop = panel?.parentElement?.querySelector('.mobile-nav-backdrop') as HTMLElement;
+    if (backdrop) {
+      backdrop.style.opacity = '';
+    }
+
+    if (isSwipingRef.current && deltaY > 80) {
+      requestCloseMobileNav();
+    }
+
+    isSwipingRef.current = false;
+  }, [requestCloseMobileNav]);
+
   useEffect(() => {
     if (!isMobileNavMounted) {
       return;
@@ -601,17 +657,16 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
   } as React.CSSProperties;
   const mobileNavPanelStyle = {
     ...mobileNavStyle,
-    paddingTop: 'env(safe-area-inset-top, 0px)',
-    paddingRight: 'env(safe-area-inset-right, 0px)',
     paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-    paddingLeft: 'env(safe-area-inset-left, 0px)'
+    paddingLeft: 'env(safe-area-inset-left, 0px)',
+    paddingRight: 'env(safe-area-inset-right, 0px)'
   } as React.CSSProperties;
 
   return (
     <>
       <nav className="fixed left-0 right-0 top-0 z-50 liquid-glass-nav backdrop-blur-xl transition-all duration-500">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: easeSmooth }} className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:h-16 sm:px-6 md:h-20">
-          <Link to="/" className="group z-50 flex items-center space-x-2.5 sm:space-x-3">
+          <Link to="/" onMouseEnter={() => preloadPage('/')} className="group z-50 flex items-center space-x-2.5 sm:space-x-3">
             <div className="relative">
               <div
                 className="absolute inset-0 bg-zinc-900/20 opacity-20 blur-md transition-opacity group-hover:opacity-40 dark:bg-zinc-100/20"
@@ -627,6 +682,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
                 <motion.div key={item.path} variants={navItemVariants}>
                   <Link
                     to={item.path}
+                    onMouseEnter={() => preloadPage(item.path)}
                     aria-current={location.pathname === item.path ? 'page' : undefined}
                     className={`group relative inline-flex h-10 items-center px-2 py-1 text-sm font-semibold uppercase tracking-wider transition-all active:scale-95 ${
                       location.pathname === item.path
@@ -663,11 +719,11 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             </motion.div>
           </div>
 
-          <div className="flex items-center gap-1.5 md:hidden">
-            <button onClick={onSearchClick} className="rounded-full border border-zinc-200/60 bg-white/70 p-2 text-zinc-600 transition-all active:scale-90 dark:border-zinc-700/60 dark:bg-zinc-900/70 dark:text-zinc-300" aria-label="打开站内搜索">
-              <Search size={17} />
+          <div className="flex items-center gap-2 md:hidden">
+            <button onClick={onSearchClick} className="rounded-xl bg-zinc-100/80 p-2.5 text-zinc-500 transition-all hover:bg-zinc-200/80 hover:text-ink active:scale-90 dark:bg-zinc-800/80 dark:text-zinc-400 dark:hover:bg-zinc-700/80 dark:hover:text-white" aria-label="打开站内搜索">
+              <Search size={18} />
             </button>
-            <button onClick={handleToggleMobileNav} disabled={isMobileNavAnimating} className="z-50 rounded-full border border-zinc-200/60 bg-white/70 p-2 text-ink transition-all active:scale-90 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700/60 dark:bg-zinc-900/70 dark:text-white" aria-label={isMobileNavOpen ? '关闭导航菜单' : '打开导航菜单'} aria-expanded={isMobileNavOpen} aria-controls="mobile-navigation-panel">
+            <button onClick={handleToggleMobileNav} disabled={isMobileNavAnimating} className="z-50 rounded-xl bg-zinc-100/80 p-2.5 text-zinc-500 transition-all hover:bg-zinc-200/80 hover:text-ink active:scale-90 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-800/80 dark:text-zinc-400 dark:hover:bg-zinc-700/80 dark:hover:text-white" aria-label={isMobileNavOpen ? '关闭导航菜单' : '打开导航菜单'} aria-expanded={isMobileNavOpen} aria-controls="mobile-navigation-panel">
               <div className="relative flex h-[18px] w-[18px] items-center justify-center">
                 <Menu size={18} className={`absolute transition-all duration-300 ${isMobileNavOpen ? 'rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100'}`} />
                 <X size={18} className={`absolute transition-all duration-300 ${isMobileNavOpen ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-0 opacity-0'}`} />
@@ -679,9 +735,10 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
 
       {isMobileNavMounted && (
         <div className="mobile-nav-root md:hidden">
-          <div data-testid="mobile-nav-backdrop" data-open={isMobileNavOpen} data-locked={isMobileNavAnimating} className="mobile-nav-backdrop fixed inset-0 z-[70] bg-void/58 backdrop-blur-sm" style={mobileNavStyle} onClick={() => requestCloseMobileNav()} />
+          <div data-testid="mobile-nav-backdrop" data-open={isMobileNavOpen} data-locked={isMobileNavAnimating} className="mobile-nav-backdrop fixed inset-0 z-[70] bg-void/50 backdrop-blur-sm" style={mobileNavStyle} onClick={() => requestCloseMobileNav()} />
 
           <motion.aside
+            ref={mobileNavPanelRef}
             id="mobile-navigation-panel"
             role="dialog"
             aria-modal="true"
@@ -692,62 +749,60 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             data-state={mobileNavPhase}
             data-interaction-locked={isMobileNavAnimating}
             data-locked={isMobileNavAnimating}
-            className="mobile-nav-panel fixed inset-x-0 top-0 z-[80] overflow-hidden rounded-b-[1.75rem] liquid-glass backdrop-blur-3xl text-ink shadow-2xl dark:text-white"
+            data-swiping="false"
+            className="mobile-nav-panel fixed inset-x-0 bottom-0 z-[80] overflow-hidden rounded-t-[2rem] liquid-glass backdrop-blur-3xl text-ink shadow-2xl dark:text-white"
             style={mobileNavPanelStyle}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            <div className="flex h-14 items-center justify-between border-b border-zinc-200/70 px-3 sm:h-16 sm:px-6 dark:border-zinc-800/70">
-              <button type="button" onClick={() => handleMobileNavItemSelect('/')} disabled={isMobileNavAnimating} className="group flex items-center space-x-2.5 text-left disabled:cursor-not-allowed disabled:opacity-60" aria-label="返回首页">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-zinc-900/20 blur-md transition-opacity group-hover:opacity-40 dark:bg-zinc-100/20" />
-                  <ProgressiveImage src={siteConfig.logo} alt="Logo" wrapperClassName="relative h-8 w-8 rounded-lg bg-white/10 sm:h-10 sm:w-10" className="h-8 w-8 rounded-lg bg-white/10 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10" />
-                </div>
-                <span className="font-serif text-lg font-bold tracking-tight text-ink dark:text-white sm:text-2xl">{siteConfig.title}</span>
-              </button>
-
-              <button type="button" onClick={() => requestCloseMobileNav()} disabled={isMobileNavAnimating} className="rounded-full border border-zinc-200/60 bg-white/70 p-1.5 text-zinc-500 transition-colors hover:border-zinc-300 hover:text-ink disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700/60 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:text-white" aria-label="关闭导航菜单">
-                <X size={16} />
-              </button>
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="h-1 w-9 rounded-full bg-zinc-300 dark:bg-zinc-600" />
             </div>
 
-            <div className="flex max-h-[min(82vh,42rem)] flex-col overflow-y-auto px-3 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-5">
-              <div className="space-y-1.5">
+            <div className="flex max-h-[65vh] flex-col overflow-y-auto px-4 pb-4 pt-1">
+              {/* Nav grid - 4 columns */}
+              <div className="grid grid-cols-4 gap-x-2 gap-y-3 pb-4">
                 {navItems.map((item) => {
                   const isActive = location.pathname === item.path;
+                  const Icon = item.icon;
 
                   return (
                     <button
                       key={item.path}
                       type="button"
                       onClick={() => handleMobileNavItemSelect(item.path)}
+                      onMouseEnter={() => preloadPage(item.path)}
                       disabled={isMobileNavAnimating}
-                      className={`group flex w-full items-center justify-between rounded-xl border px-3.5 py-3 text-left transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${
+                      className={`flex flex-col items-center gap-1.5 rounded-2xl px-1 py-3 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 ${
                         isActive
-                          ? 'border-zinc-900/25 bg-zinc-100/90 text-zinc-900 dark:border-zinc-100/25 dark:bg-zinc-800/90 dark:text-zinc-100'
-                          : 'border-zinc-200/60 bg-white/70 text-ink hover:border-zinc-300 hover:bg-white/90 dark:border-zinc-800/60 dark:bg-zinc-900/60 dark:text-white dark:hover:border-zinc-700 dark:hover:bg-zinc-900/80'
+                          ? 'bg-ink/[0.07] dark:bg-white/[0.1]'
+                          : 'hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40'
                       }`}
                       aria-current={isActive ? 'page' : undefined}
                     >
-                      <span className="flex flex-col gap-0.5">
-                        <span className="text-base font-bold tracking-tight">{item.label}</span>
-                        <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{item.hint}</span>
-                      </span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${isActive ? 'bg-zinc-900/10 text-zinc-900 dark:bg-zinc-100/14 dark:text-zinc-100' : 'bg-zinc-100/80 text-zinc-400 dark:bg-zinc-800/80 dark:text-zinc-500'}`}>{isActive ? '当前' : '进入'}</span>
+                      <Icon size={20} className={isActive ? 'text-ink dark:text-white' : 'text-zinc-400 dark:text-zinc-500'} strokeWidth={isActive ? 2.2 : 1.8} />
+                      <span className={`text-[11px] font-semibold leading-tight ${isActive ? 'text-ink dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>{item.label}</span>
                     </button>
                   );
                 })}
               </div>
 
-              <div className="mt-4 grid gap-2.5 border-t border-zinc-200/70 pt-4 dark:border-zinc-800/70">
-                <div className="flex items-center justify-between rounded-xl border border-zinc-200/60 bg-white/70 px-3.5 py-2.5 dark:border-zinc-800/60 dark:bg-zinc-900/60">
-                  <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{TEXT.theme}</span>
+              {/* Bottom row: theme + RSS */}
+              <div className="flex items-center justify-between border-t border-zinc-200/60 pt-3 dark:border-zinc-800/60">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">{TEXT.theme}</span>
                   <ThemeToggle />
                 </div>
-
-                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center gap-2.5 rounded-xl border border-zinc-200/60 bg-white/70 px-4 py-2.5 text-sm font-bold tracking-wide text-zinc-700 transition-colors hover:bg-white/90 dark:border-zinc-800/60 dark:bg-zinc-900/60 dark:text-zinc-300 dark:hover:bg-zinc-900/80">
-                  <Rss size={15} />
-                  <span>{TEXT.rssFeed}</span>
+                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-ink dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-white">
+                  <Rss size={12} />
+                  <span>RSS</span>
                 </a>
               </div>
+
+              {/* Safe area bottom spacer */}
+              <div className="h-[env(safe-area-inset-bottom,0px)]" />
             </div>
           </motion.aside>
         </div>
@@ -903,15 +958,18 @@ const Background = () => {
 
 interface LayoutProps {
   children: React.ReactNode;
+  hasViewTransition?: boolean;
 }
 
 const routeShellVariants = routeTransition;
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, hasViewTransition }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const openSearch = useCallback(() => setIsSearchOpen(true), []);
   const closeSearch = useCallback(() => setIsSearchOpen(false), []);
+  const scrollTimerRef = useRef<number | null>(null);
+  const locationKey = `${location.pathname}${location.search}`;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -935,9 +993,30 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isSearchOpen]);
 
+  // Scroll to top after route transition
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname, location.search]);
+    if (scrollTimerRef.current) {
+      window.clearTimeout(scrollTimerRef.current);
+    }
+
+    if (hasViewTransition) {
+      // With VT: scroll after the circle reveal animation has mostly completed
+      scrollTimerRef.current = window.setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      }, 200);
+    } else {
+      // With FM: scroll after exit animation completes
+      scrollTimerRef.current = window.setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      }, 140);
+    }
+
+    return () => {
+      if (scrollTimerRef.current) {
+        window.clearTimeout(scrollTimerRef.current);
+      }
+    };
+  }, [locationKey, hasViewTransition]);
 
   return (
     <div className="relative flex min-h-screen flex-col selection:bg-accent selection:text-white">
@@ -946,11 +1025,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Navbar onSearchClick={openSearch} />
       <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
       <main className="relative flex-grow px-3 pt-20 sm:px-6 sm:pt-24 md:pt-32">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={`${location.pathname}${location.search}`} variants={routeShellVariants} initial="initial" animate="animate" exit="exit" className="mx-auto max-w-7xl will-change-transform will-change-opacity">
+        {hasViewTransition ? (
+          <div key={locationKey} style={{ viewTransitionName: 'route-content' }} className="mx-auto max-w-7xl">
             {children}
-          </motion.div>
-        </AnimatePresence>
+          </div>
+        ) : (
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div key={locationKey} variants={routeShellVariants} initial="initial" animate="animate" exit="exit" className="mx-auto max-w-7xl">
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        )}
       </main>
       <BackToTop />
       <Footer />

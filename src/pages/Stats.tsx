@@ -58,7 +58,6 @@ const SummaryCard = ({
 };
 
 export const Stats = () => {
-  const shouldReduceMotion = useReducedMotion();
   const siteStatsLoadedRef = useRef(false);
   const [siteStats, setSiteStats] = useState<SiteStats>(EMPTY_SITE_STATS);
   const [siteStatsLoading, setSiteStatsLoading] = useState(true);

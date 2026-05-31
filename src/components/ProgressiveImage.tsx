@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { DBlogLoader } from './DBlogLoader';
 
 interface ProgressiveImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   wrapperClassName?: string;
@@ -60,11 +59,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = React.memo(({
           isLoaded || hasError ? 'opacity-0' : 'opacity-100'
         )}
       >
-        <DBlogLoader
-          size="image"
-          label={alt ? `${alt} 加载中` : '图片加载中'}
-          className="relative z-[1] opacity-80"
-        />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-500 dark:border-zinc-700 dark:border-t-zinc-400" />
       </div>
       {hasError ? (
         <div className="relative flex min-h-[6rem] items-center justify-center rounded-inherit bg-zinc-100/90 px-4 py-6 text-center text-sm text-zinc-500 dark:bg-zinc-900/80 dark:text-zinc-400">

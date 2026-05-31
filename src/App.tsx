@@ -1,22 +1,23 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
+import { flushSync } from 'react-dom';
 import { Layout } from './components/Layout';
-import { DBlogLoader } from './components/DBlogLoader';
 import { CookieNotice } from './components/CookieNotice';
 import { siteConfig } from '@config/site.config';
+import { pageLoaders } from './utils/preload';
 
-const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
-const Post = lazy(() => import('./pages/Post').then((module) => ({ default: module.Post })));
-const About = lazy(() => import('./pages/About').then((module) => ({ default: module.About })));
-const ArchivePage = lazy(() => import('./pages/Archive').then((module) => ({ default: module.ArchivePage })));
-const Stats = lazy(() => import('./pages/Stats').then((module) => ({ default: module.Stats })));
-const Friends = lazy(() => import('./pages/Friends').then((module) => ({ default: module.Friends })));
-const Tags = lazy(() => import('./pages/Tags').then((module) => ({ default: module.Tags })));
-const CoverGenerator = lazy(() => import('./pages/CoverGenerator').then((module) => ({ default: module.CoverGenerator })));
-const Sponsor = lazy(() => import('./pages/Sponsor').then((module) => ({ default: module.Sponsor })));
-const NotFound = lazy(() => import('./pages/NotFound').then((module) => ({ default: module.NotFound })));
+const Home = lazy(pageLoaders['/']);
+const Post = lazy(() => import('./pages/Post').then((m) => ({ default: m.Post })));
+const About = lazy(pageLoaders['/about']);
+const ArchivePage = lazy(pageLoaders['/archive']);
+const Stats = lazy(pageLoaders['/stats']);
+const Friends = lazy(pageLoaders['/friends']);
+const Tags = lazy(pageLoaders['/tags']);
+const CoverGenerator = lazy(pageLoaders['/cover']);
+const Sponsor = lazy(pageLoaders['/sponsor']);
+const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 const LoadingScreen: React.FC = () => {
   const letterVariants = {
@@ -30,7 +31,7 @@ const LoadingScreen: React.FC = () => {
   return (
     <motion.div
       className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-ink text-white dark:bg-black"
-      exit={{ clipPath: 'inset(0 0 100% 0)', transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } }}
+      exit={{ clipPath: 'circle(0% at 50% 50%)', transition: { duration: 0.7, ease: [0.76, 0, 0.24, 1] } }}
       aria-hidden="true"
     >
       <div className="relative flex flex-col items-center">
@@ -53,10 +54,9 @@ const LoadingScreen: React.FC = () => {
 };
 
 const RouteFallback: React.FC = () => (
-  <div className="mx-auto flex min-h-[40vh] max-w-7xl items-center justify-center px-4 text-sm text-zinc-500 dark:text-zinc-400">
+  <div className="mx-auto flex min-h-[50vh] max-w-7xl items-center justify-center">
     <div className="flex flex-col items-center gap-3">
-      <DBlogLoader size="image" label="页面加载中" className="opacity-85" />
-      <span className="text-[11px] uppercase tracking-[0.45em] text-zinc-400 dark:text-zinc-500">LOADING</span>
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-500 dark:border-zinc-700 dark:border-t-zinc-400" />
     </div>
   </div>
 );
@@ -98,16 +98,49 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();
-  const routeKey = location.pathname;
+  const [displayLocation, setDisplayLocation] = useState(location);
+  const hasViewTransition = typeof document !== 'undefined' && 'startViewTransition' in document;
+
+  useEffect(() => {
+    if (location.pathname === displayLocation.pathname && location.search === displayLocation.search) {
+      return;
+    }
+
+    if (hasViewTransition) {
+      // Set circle reveal origin based on last click position
+      const x = (window.__lastClickX ?? window.innerWidth / 2) / window.innerWidth * 100;
+      const y = (window.__lastClickY ?? 0) / window.innerHeight * 100;
+      document.documentElement.style.setProperty('--vt-origin-x', `${x}%`);
+      document.documentElement.style.setProperty('--vt-origin-y', `${y}%`);
+
+      (document as any).startViewTransition(() => {
+        flushSync(() => {
+          setDisplayLocation(location);
+        });
+      });
+    } else {
+      setDisplayLocation(location);
+    }
+  }, [location]);
 
   useEffect(() => {
     document.title = siteConfig.title;
   }, [location.pathname]);
 
+  // Track click positions for VT origin
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      (window as any).__lastClickX = e.clientX;
+      (window as any).__lastClickY = e.clientY;
+    };
+    window.addEventListener('click', handler, { passive: true });
+    return () => window.removeEventListener('click', handler);
+  }, []);
+
   return (
-    <Layout>
+    <Layout hasViewTransition={hasViewTransition}>
       <Suspense fallback={<RouteFallback />}>
-        <Routes location={location} key={routeKey}>
+        <Routes location={displayLocation} key={displayLocation.pathname}>
           <Route path="/" element={<Home />} />
           <Route path="/post/:id" element={<Post />} />
           <Route path="/archive" element={<ArchivePage />} />

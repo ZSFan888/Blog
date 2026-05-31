@@ -39,24 +39,46 @@
     animation: none;
     mix-blend-mode: normal;
   }
-  
+
   ::view-transition-old(root) {
     z-index: 1;
   }
-  
+
   ::view-transition-new(root) {
     z-index: 2;
     animation: theme-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  
+
   .dark::view-transition-old(root) {
     z-index: 2;
     animation: theme-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) reverse;
   }
-  
+
   .dark::view-transition-new(root) {
     z-index: 1;
     animation: none;
+  }
+
+  /* Route change View Transition — fade-out old + circle-reveal new */
+  ::view-transition-old(route-content) {
+    animation: route-fade-out 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  ::view-transition-new(route-content) {
+    animation: route-circle-reveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes route-fade-out {
+    from { opacity: 1; filter: blur(0); }
+    to { opacity: 0; filter: blur(2px); }
+  }
+
+  @keyframes route-circle-reveal {
+    from {
+      clip-path: circle(0% at var(--vt-origin-x, 50%) var(--vt-origin-y, 0%));
+    }
+    to {
+      clip-path: circle(150% at var(--vt-origin-x, 50%) var(--vt-origin-y, 0%));
+    }
   }
 
   @keyframes theme-reveal {
@@ -377,15 +399,19 @@ html.theme-switching *::after {
 
 .mobile-nav-panel {
   opacity: 0;
-  transform: translate3d(0, -12px, 0) scale(0.98);
+  transform: translate3d(0, 100%, 0);
   pointer-events: none;
-  transition: opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1), transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1), transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mobile-nav-panel[data-open='true'] {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
+  transform: translate3d(0, 0, 0);
   pointer-events: auto;
+}
+
+.mobile-nav-panel[data-swiping='true'] {
+  transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
