@@ -1,9 +1,12 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, RefreshCw, Type, Image as ImageIcon, Palette, Sparkles, Upload, X, ZoomIn, ZoomOut, Move, Search } from 'lucide-react';
+import {
+  Download, RefreshCw, Type, Image as ImageIcon, Palette,
+  Sparkles, Upload, X, Search, Copy, Check, Layout, Shuffle,
+  ChevronDown, ChevronUp, Frame, SplitSquareHorizontal, AlignLeft, AlignCenter, AlignRight
+} from 'lucide-react';
 import { Seo } from '../components/Seo';
-import { coverTemplates as templates, type CoverTemplate } from '../config/coverTemplates';
-import { debounce } from '../utils/debounce';
+import { coverTemplates as templates, type CoverTemplate, type PatternType } from '../config/coverTemplates';
 
 interface ExportRatio {
   label: string;
@@ -20,18 +23,28 @@ interface ShadowConfig {
   opacity: number;
 }
 
+type IconPosition = 'center' | 'above' | 'below';
+type TextAlign = 'left' | 'center' | 'right';
+type LayoutMode = 'icon-split' | 'stacked' | 'icon-only' | 'text-only';
+
 export const CoverGenerator: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bgImageInputRef = useRef<HTMLInputElement>(null);
   const iconInputRef = useRef<HTMLInputElement>(null);
   const fontInputRef = useRef<HTMLInputElement>(null);
-  
+
   // 基础文本状态
   const [leftText, setLeftText] = useState('D-blog');
   const [rightText, setRightText] = useState('跑路的duck');
+  const [subText, setSubText] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<CoverTemplate>(templates[0]);
   const [isGenerating, setIsGenerating] = useState(false);
-  
+
+  // 排版布局
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('icon-split');
+  const [iconPosition, setIconPosition] = useState<IconPosition>('center');
+  const [textAlign, setTextAlign] = useState<TextAlign>('center');
+
   // 背景图片状态
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [bgImageX, setBgImageX] = useState(0);
@@ -41,7 +54,7 @@ export const CoverGenerator: React.FC = () => {
   const [bgOpacity, setBgOpacity] = useState(100);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
+
   // 图标状态
   const [showIcon, setShowIcon] = useState(true);
   const [customIcon, setCustomIcon] = useState<string | null>('https://blog.pldduck.com/logo.png');
@@ -49,46 +62,52 @@ export const CoverGenerator: React.FC = () => {
   const [iconColor, setIconColor] = useState('#ffffff');
   const [iconBorderRadius, setIconBorderRadius] = useState(12);
   const [iconBgEnabled, setIconBgEnabled] = useState(true);
-  
+
   // Iconify 搜索状态
   const [iconifySearch, setIconifySearch] = useState('');
   const [iconifyResults, setIconifyResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showIconifyModal, setShowIconifyModal] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  
+
   // 字体状态
   const [customFont, setCustomFont] = useState<string | null>(null);
   const [fontWeight, setFontWeight] = useState(700);
   const [fontSize, setFontSize] = useState(72);
+  const [subFontSize, setSubFontSize] = useState(28);
   const [textColor, setTextColor] = useState('#ffffff');
   const [spacing, setSpacing] = useState(32);
-  const [keepAspectRatio, setKeepAspectRatio] = useState(true);
-  const [colorSync, setColorSync] = useState(false);
-  const [autoTextColor, setAutoTextColor] = useState(true); // 自动反色
-  
+  const [subSpacing, setSubSpacing] = useState(16);
+  const [autoTextColor, setAutoTextColor] = useState(true);
+
   // 文字描边状态
   const [textStroke, setTextStroke] = useState({
     enabled: false,
     width: 2,
     color: '#000000'
   });
-  
+
   // 背景遮罩状态
   const [overlayEnabled, setOverlayEnabled] = useState(false);
   const [overlayBlur, setOverlayBlur] = useState(0);
   const [overlayOpacity, setOverlayOpacity] = useState(50);
-  
+  const [overlayColor, setOverlayColor] = useState('#000000');
+
   // 阴影状态
   const [textShadow, setTextShadow] = useState<ShadowConfig>({
-    x: 2,
-    y: 2,
-    blur: 8,
-    color: '#000000',
-    opacity: 0.3
+    x: 2, y: 2, blur: 8, color: '#000000', opacity: 0.3
   });
-  
-  // 导出比例
+
+  // 装饰元素
+  const [showCorners, setShowCorners] = useState(false);
+  const [cornerColor, setCornerColor] = useState('#ffffff');
+  const [cornerOpacity, setCornerOpacity] = useState(30);
+  const [showSeparator, setShowSeparator] = useState(false);
+  const [separatorColor, setSeparatorColor] = useState('#ffffff');
+  const [separatorOpacity, setSeparatorOpacity] = useState(30);
+  const [decorOpacity, setDecorOpacity] = useState(10);
+
+  // 导出设置
   const [exportRatios, setExportRatios] = useState<ExportRatio[]>([
     { label: '16:9', w: 16, h: 9, active: true },
     { label: '1:1', w: 1, h: 1, active: false },
@@ -96,19 +115,52 @@ export const CoverGenerator: React.FC = () => {
     { label: '21:9', w: 21, h: 9, active: false }
   ]);
   const [exportScale, setExportScale] = useState(1);
-  const [activeTab, setActiveTab] = useState<'content' | 'style' | 'export'>('content');
-  const [exportTransparent, setExportTransparent] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'png' | 'jpeg'>('png');
   const [exportFilename, setExportFilename] = useState('cover');
-  
+  const [activeTab, setActiveTab] = useState<'content' | 'style' | 'layout' | 'export'>('content');
+  const [copied, setCopied] = useState(false);
+
+  // 折叠面板
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+
+  const toggleSection = (key: string) => {
+    setCollapsedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const isCollapsed = (key: string) => collapsedSections.has(key);
+
+  const SectionHeader: React.FC<{ icon: React.ReactNode; title: string; sectionKey: string; action?: React.ReactNode }> =
+    ({ icon, title, sectionKey, action }) => (
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          onClick={() => toggleSection(sectionKey)}
+          className="flex items-center gap-2 text-left hover:opacity-80"
+        >
+          {icon}
+          <h2 className="font-bold text-ink dark:text-white">{title}</h2>
+          {isCollapsed(sectionKey) ? <ChevronDown size={14} className="text-zinc-400" /> : <ChevronUp size={14} className="text-zinc-400" />}
+        </button>
+        {action}
+      </div>
+    );
+
   const activeRatio = exportRatios.find(r => r.active) || exportRatios[0];
   const canvasWidth = 1200;
   const canvasHeight = Math.round(canvasWidth / (activeRatio.w / activeRatio.h));
   const canvasSize = { width: canvasWidth, height: canvasHeight };
 
-  const drawPattern = (ctx: CanvasRenderingContext2D, pattern: string, width: number, height: number) => {
-    ctx.globalAlpha = 0.1;
+  // ==================== 图案绘制 ====================
+  const drawPattern = (ctx: CanvasRenderingContext2D, pattern: PatternType, width: number, height: number) => {
+    ctx.save();
+    ctx.globalAlpha = 0.08;
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
+    ctx.fillStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
 
     switch (pattern) {
       case 'dots':
@@ -120,6 +172,7 @@ export const CoverGenerator: React.FC = () => {
           }
         }
         break;
+
       case 'grid':
         for (let x = 0; x < width; x += 50) {
           ctx.beginPath();
@@ -134,6 +187,7 @@ export const CoverGenerator: React.FC = () => {
           ctx.stroke();
         }
         break;
+
       case 'waves':
         for (let y = 0; y < height; y += 30) {
           ctx.beginPath();
@@ -144,19 +198,147 @@ export const CoverGenerator: React.FC = () => {
           ctx.stroke();
         }
         break;
+
+      case 'hexagon': {
+        const hexSize = 18;
+        const rowHeight = hexSize * Math.sqrt(3);
+        const colWidth = hexSize * 1.5;
+        for (let row = 0; row < Math.ceil(height / rowHeight) + 1; row++) {
+          for (let col = 0; col < Math.ceil(width / colWidth) + 1; col++) {
+            const cx = col * colWidth + (row % 2) * (colWidth / 2);
+            const cy = row * rowHeight;
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+              const angle = (Math.PI / 3) * i - Math.PI / 6;
+              const px = cx + hexSize * Math.cos(angle);
+              const py = cy + hexSize * Math.sin(angle);
+              if (i === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.stroke();
+          }
+        }
+        break;
+      }
+
+      case 'triangles': {
+        const tSize = 20;
+        for (let row = 0; row < Math.ceil(height / (tSize * 0.866)) + 1; row++) {
+          for (let col = 0; col < Math.ceil(width / tSize) + 1; col++) {
+            const cx = col * tSize;
+            const cy = row * tSize * 0.866;
+            const flip = (row + col) % 2 === 0;
+            ctx.beginPath();
+            if (flip) {
+              ctx.moveTo(cx, cy + tSize);
+              ctx.lineTo(cx + tSize / 2, cy);
+              ctx.lineTo(cx + tSize, cy + tSize);
+            } else {
+              ctx.moveTo(cx, cy);
+              ctx.lineTo(cx + tSize / 2, cy + tSize);
+              ctx.lineTo(cx + tSize, cy);
+            }
+            ctx.closePath();
+            ctx.stroke();
+          }
+        }
+        break;
+      }
+
+      case 'circles': {
+        for (let x = 40; x < width; x += 60) {
+          for (let y = 40; y < height; y += 60) {
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x, y, 14, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+        break;
+      }
+
+      case 'diagonal':
+        for (let i = -height; i < width + height; i += 35) {
+          ctx.beginPath();
+          ctx.moveTo(i, 0);
+          ctx.lineTo(i - height, height);
+          ctx.stroke();
+        }
+        break;
+
+      default: // solid
+        break;
     }
-    ctx.globalAlpha = 1;
+    ctx.restore();
   };
 
-  // 背景图片上传处理
+  // ==================== 角标装饰 ====================
+  const drawCorners = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const size = Math.min(width, height) * 0.08;
+    const margin = 40;
+    const lineWidth = 3;
+
+    ctx.save();
+    ctx.strokeStyle = cornerColor;
+    ctx.fillStyle = cornerColor;
+    ctx.globalAlpha = cornerOpacity / 100;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round';
+
+    const corners = [
+      { x: margin, y: margin, dx: 1, dy: 1 },
+      { x: width - margin, y: margin, dx: -1, dy: 1 },
+      { x: margin, y: height - margin, dx: 1, dy: -1 },
+      { x: width - margin, y: height - margin, dx: -1, dy: -1 },
+    ];
+
+    for (const c of corners) {
+      ctx.beginPath();
+      ctx.moveTo(c.x, c.y + size * c.dy);
+      ctx.lineTo(c.x, c.y);
+      ctx.lineTo(c.x + size * c.dx, c.y);
+      ctx.stroke();
+
+      // 小圆角装饰点
+      ctx.beginPath();
+      ctx.arc(c.x + size * 0.25 * c.dx, c.y + size * 0.25 * c.dy, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  };
+
+  // ==================== 分隔线 ====================
+  const drawSeparator = (ctx: CanvasRenderingContext2D, width: number, centerY: number) => {
+    ctx.save();
+    ctx.strokeStyle = separatorColor;
+    ctx.globalAlpha = separatorOpacity / 100;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([8, 6]);
+
+    const lineWidth = width * 0.25;
+    const startX = (width - lineWidth) / 2;
+
+    ctx.beginPath();
+    ctx.moveTo(startX, centerY);
+    ctx.lineTo(startX + lineWidth, centerY);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+    ctx.restore();
+  };
+
+  // ==================== 背景图片上传 ====================
   const handleBgImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous'; // 允许跨域
+      img.crossOrigin = 'anonymous';
       img.onload = () => {
         setBgImage(img);
         setBgImageScale(1);
@@ -168,11 +350,9 @@ export const CoverGenerator: React.FC = () => {
     reader.readAsDataURL(file);
   }, []);
 
-  // 图标上传处理
   const handleIconUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = (event) => {
       setCustomIcon(event.target?.result as string);
@@ -180,63 +360,35 @@ export const CoverGenerator: React.FC = () => {
     reader.readAsDataURL(file);
   }, []);
 
-  // Iconify 搜索处理
-  const searchIconify = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      setIconifyResults([]);
-      setSearchError(null);
-      return;
-    }
-    
-    // 检查网络连接状态
-    if (!navigator.onLine) {
-      setSearchError('网络未连接，请检查网络设置');
-      setIconifyResults([]);
-      return;
-    }
-    
+  // ==================== Iconify 搜索 ====================
+  const searchIconifyRef = useRef(async (query: string) => {
+    if (!query.trim()) { setIconifyResults([]); setSearchError(null); return; }
+    if (!navigator.onLine) { setSearchError('网络未连接，请检查网络设置'); setIconifyResults([]); return; }
     setIsSearching(true);
     setSearchError(null);
-    
-    // 创建 AbortController 用于超时控制
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     try {
-      // 搜索 Iconify 图标
-      const response = await fetch(`https://api.iconify.design/search?query=${encodeURIComponent(query)}&limit=24`, {
-        signal: controller.signal
-      });
-      
-      // 检查 HTTP 响应状态
+      const response = await fetch(
+        `https://api.iconify.design/search?query=${encodeURIComponent(query)}&limit=24`,
+        { signal: controller.signal }
+      );
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('API 端点不存在');
-        } else if (response.status === 429) {
-          throw new Error('请求过于频繁，请稍后再试');
-        } else if (response.status >= 500) {
-          throw new Error('服务器错误，请稍后再试');
-        } else {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+        if (response.status === 429) throw new Error('请求过于频繁，请稍后再试');
+        if (response.status >= 500) throw new Error('Iconify 服务暂时不可用，请稍后再试');
+        throw new Error(`搜索失败 (${response.status})`);
       }
-      
       const data = await response.json();
-      
       if (data.icons && data.icons.length > 0) {
         setIconifyResults(data.icons);
       } else {
         setIconifyResults([]);
       }
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.error('搜索超时：请求超过 5 秒未响应');
-        setSearchError('搜索超时，请重试');
-      } else if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
-        console.error('网络错误:', error);
+      if (error.name === 'AbortError') return;
+      if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
         setSearchError('网络连接失败，请检查网络后重试');
       } else {
-        console.error('搜索失败:', error);
         setSearchError(error.message || '搜索失败，请稍后重试');
       }
       setIconifyResults([]);
@@ -244,31 +396,31 @@ export const CoverGenerator: React.FC = () => {
       clearTimeout(timeoutId);
       setIsSearching(false);
     }
+  });
+
+  // 使用 useMemo 创建稳定防抖函数
+  const debouncedSearchIconify = useMemo(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    return (query: string) => {
+      if (timeoutId !== null) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        searchIconifyRef.current(query);
+        timeoutId = null;
+      }, 400);
+    };
   }, []);
 
-  // 防抖搜索函数
-  const debouncedSearchIconify = useCallback(
-    debounce((query: string) => {
-      searchIconify(query);
-    }, 500),
-    [searchIconify]
-  );
-
-  // 选择 Iconify 图标
   const selectIconifyIcon = useCallback((icon: string) => {
-    // 使用 Iconify API 获取 SVG
-    // color 参数需要 URL 编码，将 # 转换为 %23
     const encodedColor = encodeURIComponent(iconColor);
     const iconUrl = `https://api.iconify.design/${icon}.svg?color=${encodedColor}`;
     setCustomIcon(iconUrl);
     setShowIconifyModal(false);
   }, [iconColor]);
 
-  // 字体上传处理
+  // ==================== 字体上传 ====================
   const handleFontUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = async (event) => {
       const fontData = event.target?.result as ArrayBuffer;
@@ -280,7 +432,7 @@ export const CoverGenerator: React.FC = () => {
     reader.readAsArrayBuffer(file);
   }, []);
 
-  // 背景图片拖拽处理
+  // ==================== 画布交互 ====================
   const handleCanvasMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!bgImage) return;
     setIsDragging(true);
@@ -293,10 +445,7 @@ export const CoverGenerator: React.FC = () => {
     setBgImageY(e.clientY - dragStart.y);
   }, [isDragging, bgImage, dragStart]);
 
-  const handleCanvasMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
+  const handleCanvasMouseUp = useCallback(() => setIsDragging(false), []);
   const handleCanvasWheel = useCallback((e: React.WheelEvent<HTMLCanvasElement>) => {
     if (!bgImage) return;
     e.preventDefault();
@@ -304,16 +453,14 @@ export const CoverGenerator: React.FC = () => {
     setBgImageScale(prev => Math.max(0.1, Math.min(prev * delta, 10)));
   }, [bgImage]);
 
+  // ==================== 核心渲染 ====================
   const generateCover = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
     setIsGenerating(true);
 
-    // 创建临时canvas用于渐变
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvasSize.width;
     tempCanvas.height = canvasSize.height;
@@ -323,15 +470,11 @@ export const CoverGenerator: React.FC = () => {
     // 绘制背景图片
     if (bgImage) {
       tempCtx.save();
-      if (bgBlur > 0) {
-        tempCtx.filter = `blur(${bgBlur}px)`;
-      }
+      if (bgBlur > 0) tempCtx.filter = `blur(${bgBlur}px)`;
       tempCtx.globalAlpha = bgOpacity / 100;
-      
       const scale = bgImageScale;
       const x = bgImageX + canvasSize.width / 2;
       const y = bgImageY + canvasSize.height / 2;
-      
       tempCtx.translate(x, y);
       tempCtx.scale(scale, scale);
       tempCtx.drawImage(bgImage, -bgImage.width / 2, -bgImage.height / 2);
@@ -345,19 +488,46 @@ export const CoverGenerator: React.FC = () => {
       const angle = parseInt(gradientMatch[1]);
       const color1 = gradientMatch[2].trim();
       const color2 = gradientMatch[4].trim();
-      
       const angleRad = (angle - 90) * Math.PI / 180;
       const x1 = canvasSize.width / 2 + Math.cos(angleRad) * canvasSize.width / 2;
       const y1 = canvasSize.height / 2 + Math.sin(angleRad) * canvasSize.height / 2;
       const x2 = canvasSize.width / 2 - Math.cos(angleRad) * canvasSize.width / 2;
       const y2 = canvasSize.height / 2 - Math.sin(angleRad) * canvasSize.height / 2;
-
       const gradient = tempCtx.createLinearGradient(x1, y1, x2, y2);
       gradient.addColorStop(0, color1);
       gradient.addColorStop(1, color2);
       tempCtx.fillStyle = gradient;
     } else {
-      tempCtx.fillStyle = '#667eea';
+      // 兼容多色阶渐变
+      try {
+        const multiMatch = selectedTemplate.gradient.match(/linear-gradient\((\d+)deg,\s*(.+)\)/);
+        if (multiMatch) {
+          const angle = parseInt(multiMatch[1]);
+          const stopsStr = multiMatch[2];
+          const stopsRegex = /(#[a-fA-F0-9]{3,6}|rgba?\([^)]+\))\s+(\d+)%/g;
+          const stops: { color: string; pos: number }[] = [];
+          let m;
+          while ((m = stopsRegex.exec(stopsStr)) !== null) {
+            stops.push({ color: m[1].trim(), pos: parseInt(m[2]) / 100 });
+          }
+          if (stops.length >= 2) {
+            const angleRad = (angle - 90) * Math.PI / 180;
+            const x1 = canvasSize.width / 2 + Math.cos(angleRad) * canvasSize.width / 2;
+            const y1 = canvasSize.height / 2 + Math.sin(angleRad) * canvasSize.height / 2;
+            const x2 = canvasSize.width / 2 - Math.cos(angleRad) * canvasSize.width / 2;
+            const y2 = canvasSize.height / 2 - Math.sin(angleRad) * canvasSize.height / 2;
+            const gradient = tempCtx.createLinearGradient(x1, y1, x2, y2);
+            stops.forEach(s => gradient.addColorStop(s.pos, s.color));
+            tempCtx.fillStyle = gradient;
+          } else {
+            tempCtx.fillStyle = '#667eea';
+          }
+        } else {
+          tempCtx.fillStyle = '#667eea';
+        }
+      } catch {
+        tempCtx.fillStyle = '#667eea';
+      }
     }
 
     tempCtx.fillRect(0, 0, canvasSize.width, canvasSize.height);
@@ -367,7 +537,10 @@ export const CoverGenerator: React.FC = () => {
     if (overlayEnabled) {
       tempCtx.save();
       tempCtx.filter = `blur(${overlayBlur}px)`;
-      tempCtx.fillStyle = `rgba(0, 0, 0, ${overlayOpacity / 100})`;
+      const r = parseInt(overlayColor.slice(1, 3), 16);
+      const g = parseInt(overlayColor.slice(3, 5), 16);
+      const b = parseInt(overlayColor.slice(5, 7), 16);
+      tempCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${overlayOpacity / 100})`;
       tempCtx.fillRect(0, 0, canvasSize.width, canvasSize.height);
       tempCtx.restore();
     }
@@ -377,39 +550,100 @@ export const CoverGenerator: React.FC = () => {
       drawPattern(tempCtx, selectedTemplate.pattern, canvasSize.width, canvasSize.height);
     }
 
-    // 绘制装饰元素
-    tempCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    tempCtx.beginPath();
-    tempCtx.arc(canvasSize.width * 0.8, canvasSize.height * 0.2, 150, 0, Math.PI * 2);
-    tempCtx.fill();
+    // 绘制角标装饰
+    if (showCorners) {
+      drawCorners(tempCtx, canvasSize.width, canvasSize.height);
+    }
 
-    // 绘制图标和文字（图标居中，文字在两侧）
+    // 绘制装饰圆
+    if (decorOpacity > 0) {
+      tempCtx.save();
+      tempCtx.fillStyle = `rgba(255, 255, 255, ${decorOpacity / 100})`;
+      tempCtx.beginPath();
+      tempCtx.arc(canvasSize.width * 0.85, canvasSize.height * 0.15, 150, 0, Math.PI * 2);
+      tempCtx.fill();
+      tempCtx.beginPath();
+      tempCtx.arc(canvasSize.width * 0.15, canvasSize.height * 0.85, 100, 0, Math.PI * 2);
+      tempCtx.fill();
+      tempCtx.restore();
+    }
+
+    // 绘制图标和文字
     const drawIconAndText = async () => {
-      const fontFamily = customFont || '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      const fontFamily = customFont || '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
       tempCtx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-      
-      // 计算文字宽度
-      const leftWidth = leftText ? tempCtx.measureText(leftText).width : 0;
-      const rightWidth = rightText ? tempCtx.measureText(rightText).width : 0;
-      
-      // 中心点
+
       const centerX = canvasSize.width / 2;
       const centerY = canvasSize.height / 2;
-      
-      // 图标位置（居中）
-      const iconX = centerX - iconSize / 2;
-      const iconY = centerY - iconSize / 2;
-      
+
+      // 计算文字颜色
+      let finalTextColor = textColor;
+      if (autoTextColor) {
+        finalTextColor = selectedTemplate.id === 'white' ? '#1a1a2e' : '#ffffff';
+      }
+
+      // 阴影描边绘制函数
+      const applyTextEffects = (ctx2d: CanvasRenderingContext2D) => {
+        if (textShadow.opacity > 0) {
+          ctx2d.shadowColor = `${textShadow.color}${Math.round(textShadow.opacity * 255).toString(16).padStart(2, '0')}`;
+          ctx2d.shadowBlur = textShadow.blur;
+          ctx2d.shadowOffsetX = textShadow.x;
+          ctx2d.shadowOffsetY = textShadow.y;
+        }
+      };
+
+      const clearTextEffects = (ctx2d: CanvasRenderingContext2D) => {
+        ctx2d.shadowColor = 'transparent';
+        ctx2d.shadowBlur = 0;
+        ctx2d.shadowOffsetX = 0;
+        ctx2d.shadowOffsetY = 0;
+      };
+
+      const drawTextWithStroke = (ctx2d: CanvasRenderingContext2D, text: string, x: number, y: number, align: CanvasTextAlign) => {
+        ctx2d.textAlign = align;
+        ctx2d.textBaseline = 'middle';
+        applyTextEffects(ctx2d);
+
+        if (textStroke.enabled && textStroke.width > 0) {
+          ctx2d.strokeStyle = textStroke.color;
+          ctx2d.lineWidth = textStroke.width;
+          ctx2d.lineJoin = 'round';
+          ctx2d.miterLimit = 2;
+          ctx2d.strokeText(text, x, y);
+        }
+
+        ctx2d.fillStyle = finalTextColor;
+        ctx2d.fillText(text, x, y);
+        clearTextEffects(ctx2d);
+      };
+
+      // 图标绘制
+      let iconCenterX = centerX;
+      let iconCenterY = centerY;
+
+      const effectiveLayout = layoutMode === 'icon-split' && showIcon && customIcon ? 'icon-split' :
+        layoutMode === 'stacked' ? 'stacked' :
+        layoutMode === 'icon-only' ? 'icon-only' :
+        layoutMode === 'text-only' ? 'text-only' :
+        showIcon && customIcon ? 'icon-split' : 'text-only';
+
+      if (effectiveLayout === 'stacked') {
+        iconCenterY = centerY - iconSize / 2 - subSpacing - fontSize / 2;
+      } else if (effectiveLayout === 'icon-only') {
+        iconCenterY = centerY;
+      }
+
       // 绘制图标
-      if (showIcon && customIcon) {
+      if ((effectiveLayout === 'icon-split' || effectiveLayout === 'stacked' || effectiveLayout === 'icon-only') && customIcon) {
+        const iconX = iconCenterX - iconSize / 2;
+        const iconY = iconCenterY - iconSize / 2;
         const iconSrc = customIcon;
-        
+
         if (iconSrc) {
           const iconImg = new Image();
-          iconImg.crossOrigin = 'anonymous'; // 允许跨域
+          iconImg.crossOrigin = 'anonymous';
           await new Promise<void>((resolve) => {
             iconImg.onload = () => {
-              // 绘制图标背景
               if (iconBgEnabled) {
                 tempCtx.save();
                 tempCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
@@ -423,8 +657,6 @@ export const CoverGenerator: React.FC = () => {
                 tempCtx.fill();
                 tempCtx.restore();
               }
-              
-              // 绘制图标
               tempCtx.save();
               if (iconBorderRadius > 0) {
                 const radius = (iconSize * iconBorderRadius) / 100;
@@ -436,187 +668,156 @@ export const CoverGenerator: React.FC = () => {
               tempCtx.restore();
               resolve();
             };
-            iconImg.onerror = (e) => {
-              console.error('Failed to load icon image:', e);
-              resolve();
-            };
+            iconImg.onerror = () => resolve();
             iconImg.src = iconSrc;
           });
         }
       }
-      
-      // 计算文字颜色（自动反色或手动设置）
-      let finalTextColor = textColor;
-      if (autoTextColor) {
-        // 根据背景颜色自动反色
-        const bgColor = selectedTemplate.id === 'white' ? '#ffffff' : '#000000';
-        finalTextColor = bgColor === '#ffffff' ? '#000000' : '#ffffff';
-      } else {
-        finalTextColor = colorSync ? iconColor : textColor;
+
+      // 绘制分隔线（stacked 模式下，图标和文字之间）
+      if (showSeparator && effectiveLayout === 'stacked') {
+        drawSeparator(tempCtx, canvasSize.width, iconCenterY + iconSize / 2 + subSpacing / 2);
       }
 
-      // 绘制文字函数
-      const drawText = (text: string, x: number, align: CanvasTextAlign) => {
-        tempCtx.textAlign = align;
-        tempCtx.textBaseline = 'middle';
-        
-        // 应用文字阴影
-        if (textShadow.opacity > 0) {
-          tempCtx.shadowColor = `${textShadow.color}${Math.round(textShadow.opacity * 255).toString(16).padStart(2, '0')}`;
-          tempCtx.shadowBlur = textShadow.blur;
-          tempCtx.shadowOffsetX = textShadow.x;
-          tempCtx.shadowOffsetY = textShadow.y;
+      // 绘制文字
+      if (effectiveLayout === 'icon-split') {
+        // 图标在中间，文字分两侧
+        const iconX = iconCenterX - iconSize / 2;
+        if (leftText) drawTextWithStroke(tempCtx, leftText, iconX - spacing, centerY, 'right');
+        if (rightText) drawTextWithStroke(tempCtx, rightText, iconX + iconSize + spacing, centerY, 'left');
+        // 副标题在下方
+        if (subText) {
+          tempCtx.font = `${fontWeight - 200} ${subFontSize}px ${fontFamily}`;
+          drawTextWithStroke(tempCtx, subText, centerX, centerY + fontSize / 2 + subSpacing + subFontSize / 2, 'center');
         }
-        
-        // 绘制描边
-        if (textStroke.enabled && textStroke.width > 0) {
-          tempCtx.strokeStyle = textStroke.color;
-          tempCtx.lineWidth = textStroke.width;
-          tempCtx.lineJoin = 'round';
-          tempCtx.miterLimit = 2;
-          tempCtx.strokeText(text, x, centerY);
+      } else if (effectiveLayout === 'stacked') {
+        // 图标在上，文字在下
+        const textY = iconCenterY + iconSize / 2 + subSpacing + fontSize / 2;
+        const combinedText = leftText && rightText ? `${leftText} ${rightText}` : leftText || rightText;
+        if (combinedText && effectiveLayout !== 'icon-only') {
+          const alignX = textAlign === 'left' ? 80 : textAlign === 'right' ? canvasSize.width - 80 : centerX;
+          const canvasAlign = textAlign === 'left' ? 'left' as const : textAlign === 'right' ? 'right' as const : 'center' as const;
+          drawTextWithStroke(tempCtx, combinedText, alignX, textY, canvasAlign);
         }
-        
-        // 绘制填充文字
-        tempCtx.fillStyle = finalTextColor;
-        tempCtx.fillText(text, x, centerY);
-        
-        // 重置阴影
-        tempCtx.shadowColor = 'transparent';
-        tempCtx.shadowBlur = 0;
-        tempCtx.shadowOffsetX = 0;
-        tempCtx.shadowOffsetY = 0;
-      };
-      
-      // 根据是否显示图标来决定文字布局
-      if (showIcon && customIcon) {
-        // 显示图标时：左侧文字（图标左边，右对齐）
-        if (leftText) {
-          drawText(leftText, iconX - spacing, 'right');
-        }
-        
-        // 右侧文字（图标右边，左对齐）
-        if (rightText) {
-          drawText(rightText, iconX + iconSize + spacing, 'left');
+        if (subText) {
+          tempCtx.font = `${fontWeight - 200} ${subFontSize}px ${fontFamily}`;
+          const subAlignX = textAlign === 'left' ? 80 : textAlign === 'right' ? canvasSize.width - 80 : centerX;
+          const subCanvasAlign = textAlign === 'left' ? 'left' as const : textAlign === 'right' ? 'right' as const : 'center' as const;
+          drawTextWithStroke(tempCtx, subText, subAlignX, textY + fontSize / 2 + subSpacing, subCanvasAlign);
         }
       } else {
-        // 不显示图标时：两侧文字合并居中显示
-        const combinedText = leftText && rightText ? `${leftText}${rightText}` : leftText || rightText;
+        // text-only 居中显示
+        const combinedText = leftText && rightText ? `${leftText} ${rightText}` : leftText || rightText;
+        const alignX = textAlign === 'left' ? 80 : textAlign === 'right' ? canvasSize.width - 80 : centerX;
+        const canvasAlign = textAlign === 'left' ? 'left' as const : textAlign === 'right' ? 'right' as const : 'center' as const;
         if (combinedText) {
-          tempCtx.textAlign = 'center';
-          tempCtx.textBaseline = 'middle';
-          
-          // 应用文字阴影
-          if (textShadow.opacity > 0) {
-            tempCtx.shadowColor = `${textShadow.color}${Math.round(textShadow.opacity * 255).toString(16).padStart(2, '0')}`;
-            tempCtx.shadowBlur = textShadow.blur;
-            tempCtx.shadowOffsetX = textShadow.x;
-            tempCtx.shadowOffsetY = textShadow.y;
-          }
-          
-          // 绘制描边
-           if (textStroke.enabled && textStroke.width > 0) {
-             tempCtx.strokeStyle = textStroke.color;
-             tempCtx.lineWidth = textStroke.width;
-             tempCtx.lineJoin = 'round';
-             tempCtx.miterLimit = 2;
-             tempCtx.strokeText(combinedText, centerX, centerY);
-           }
-          
-          // 绘制填充文字
-          tempCtx.fillStyle = finalTextColor;
-          tempCtx.fillText(combinedText, centerX, centerY);
-          
-          // 重置阴影
-          tempCtx.shadowColor = 'transparent';
-          tempCtx.shadowBlur = 0;
-          tempCtx.shadowOffsetX = 0;
-          tempCtx.shadowOffsetY = 0;
+          const textY = subText ? centerY - subSpacing / 2 - subFontSize / 2 : centerY;
+          drawTextWithStroke(tempCtx, combinedText, alignX, textY, canvasAlign);
+        }
+        if (subText) {
+          tempCtx.font = `${fontWeight - 200} ${subFontSize}px ${fontFamily}`;
+          const subY = combinedText ? centerY + fontSize / 2 + subSpacing : centerY;
+          drawTextWithStroke(tempCtx, subText, alignX, subY, canvasAlign);
         }
       }
 
-      // 将临时canvas内容绘制到主canvas
+      // 将临时canvas绘制到主canvas
       ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
       ctx.drawImage(tempCanvas, 0, 0);
-
       setTimeout(() => setIsGenerating(false), 300);
     };
-    
+
     await drawIconAndText();
-  }, [leftText, rightText, selectedTemplate, bgImage, bgImageX, bgImageY, bgImageScale, bgBlur, bgOpacity, overlayEnabled, overlayBlur, overlayOpacity, showIcon, customIcon, iconSize, iconColor, iconBorderRadius, iconBgEnabled, textShadow, textStroke, customFont, fontWeight, fontSize, textColor, spacing, colorSync, autoTextColor, canvasSize]);
+  }, [
+    leftText, rightText, subText, selectedTemplate, bgImage, bgImageX, bgImageY,
+    bgImageScale, bgBlur, bgOpacity, overlayEnabled, overlayBlur, overlayOpacity, overlayColor,
+    showIcon, customIcon, iconSize, iconBorderRadius, iconBgEnabled,
+    textShadow, textStroke, customFont, fontWeight, fontSize, subFontSize,
+    textColor, spacing, subSpacing, autoTextColor, canvasSize,
+    layoutMode, iconPosition, textAlign, showCorners, cornerColor, cornerOpacity,
+    showSeparator, separatorColor, separatorOpacity, decorOpacity
+  ]);
 
-  const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
-    const words = text.split('');
-    const lines: string[] = [];
-    let currentLine = '';
-
-    for (const char of words) {
-      const testLine = currentLine + char;
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && currentLine.length > 0) {
-        lines.push(currentLine);
-        currentLine = char;
-      } else {
-        currentLine = testLine;
-      }
-    }
-    lines.push(currentLine);
-    return lines;
-  };
-
+  // ==================== 导出 ====================
   const downloadCover = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error('Canvas not found');
-      alert('Canvas 未找到，请稍后重试');
-      return;
-    }
+    if (!canvas) return;
+    const mimeType = exportFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
+    const ext = exportFormat === 'jpeg' ? 'jpg' : 'png';
+    canvas.toBlob((blob) => {
+      if (!blob) { alert('生成图片失败，请重试'); return; }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = exportFilename || 'cover';
+      const scaleText = exportScale > 1 ? `@${exportScale}x` : '';
+      link.download = `${filename}${scaleText}.${ext}`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+    }, mimeType);
+  }, [exportScale, exportFilename, exportFormat, canvasSize]);
 
-    console.log('Starting download...', {
-      canvasSize,
-      exportScale,
-      exportTransparent,
-      exportFilename
-    });
-
+  const copyToClipboard = useCallback(async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     try {
-      // 直接使用当前canvas转换为图片
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          console.error('Failed to create blob');
-          alert('生成图片失败，请重试');
-          return;
-        }
-        
-        console.log('Blob created:', blob.size, 'bytes');
-        
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        const filename = exportFilename || 'cover';
-        const scaleText = exportScale > 1 ? `@${exportScale}x` : '';
-        link.download = `${filename}${scaleText}.png`;
-        link.href = url;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        console.log('Triggering download...');
-        link.click();
-        
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          console.log('Download complete');
-        }, 100);
-      }, 'image/png');
-    } catch (error) {
-      console.error('Download failed:', error);
-      alert('下载失败: ' + error);
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) { alert('生成图片失败'); return; }
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob })
+      ]);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      alert('复制到剪贴板失败，请尝试直接下载');
     }
-  }, [exportScale, exportFilename, canvasSize]);
+  }, []);
+
+  // ==================== 随机风格 ====================
+  const randomizeStyle = useCallback(() => {
+    const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+    setSelectedTemplate(randomTemplate);
+
+    const fontSizes = [48, 56, 64, 72, 80, 96];
+    const weights = [300, 400, 500, 600, 700, 800, 900];
+    const iconSizes = [48, 56, 64, 72, 80, 96, 120];
+    const spacings = [16, 24, 32, 40, 48, 60];
+    const radii = [0, 4, 8, 12, 16, 24, 50];
+    const decorOps = [0, 5, 10, 15];
+
+    setFontSize(fontSizes[Math.floor(Math.random() * fontSizes.length)]);
+    setFontWeight(weights[Math.floor(Math.random() * weights.length)]);
+    setIconSize(iconSizes[Math.floor(Math.random() * iconSizes.length)]);
+    setSpacing(spacings[Math.floor(Math.random() * spacings.length)]);
+    setIconBorderRadius(radii[Math.floor(Math.random() * radii.length)]);
+    setSubFontSize([20, 24, 28, 32, 36][Math.floor(Math.random() * 5)]);
+    setTextShadow({
+      x: Math.floor(Math.random() * 8) - 2,
+      y: Math.floor(Math.random() * 8) - 2,
+      blur: Math.floor(Math.random() * 16) + 4,
+      color: '#000000',
+      opacity: Math.random() * 0.5
+    });
+    setShowCorners(Math.random() > 0.5);
+    setShowSeparator(Math.random() > 0.6);
+    setDecorOpacity(decorOps[Math.floor(Math.random() * decorOps.length)]);
+    setLayoutMode(['icon-split', 'stacked', 'text-only'][Math.floor(Math.random() * 3)] as LayoutMode);
+  }, []);
 
   useEffect(() => {
     generateCover();
   }, [generateCover]);
+
+  // ==================== UI 渲染 ====================
+  const inputClass = "w-full rounded-lg border border-zinc-200 bg-white px-4 py-2 text-ink outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-ink/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-white dark:focus:ring-white/20";
+  const rangeClass = "w-full accent-ink dark:accent-white";
+  const colorClass = "h-10 w-full rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer";
+  const cardClass = "rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 overflow-hidden transition-all";
+  const dashedBtnClass = "flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-600 transition-colors hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-white dark:hover:bg-white/5";
 
   return (
     <div className="pb-20">
@@ -630,709 +831,601 @@ export const CoverGenerator: React.FC = () => {
       </div>
 
       {/* 标签页切换 */}
-      <div className="mb-6 flex justify-center gap-2">
-        {(['content', 'style', 'export'] as const).map((tab) => (
+      <div className="mb-6 flex flex-wrap justify-center gap-2">
+        {(['content', 'style', 'layout', 'export'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`rounded-lg px-6 py-2 font-semibold transition-all ${
+            className={`rounded-lg px-5 py-2 font-semibold text-sm transition-all ${
               activeTab === tab
-                ? 'bg-ink text-white dark:bg-white dark:text-ink'
+                ? 'bg-ink text-white dark:bg-white dark:text-ink shadow-lg'
                 : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
             }`}
           >
-            {tab === 'content' ? '内容' : tab === 'style' ? '样式' : '导出'}
+            {{ content: '内容', style: '样式', layout: '排版', export: '导出' }[tab]}
           </button>
         ))}
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* 左侧控制面板 */}
-        <div className="space-y-6 lg:col-span-1">
-          
-          {/* 内容标签页 */}
+        <div className="space-y-4 lg:col-span-1">
+
+          {/* ===== 内容标签页 ===== */}
           {activeTab === 'content' && (
             <>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center gap-2">
-                  <Type className="text-ink dark:text-white" size={20} />
-                  <h2 className="font-bold text-ink dark:text-white">文字内容</h2>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-zinc-600 dark:text-zinc-400">左侧文字</label>
-                    <input
-                      type="text"
-                      value={leftText}
-                      onChange={(e) => setLeftText(e.target.value)}
-                      className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2 text-ink outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-ink/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-white dark:focus:ring-white/20"
-                      placeholder="输入左侧文字"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-zinc-600 dark:text-zinc-400">右侧文字</label>
-                    <input
-                      type="text"
-                      value={rightText}
-                      onChange={(e) => setRightText(e.target.value)}
-                      className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-                      placeholder="输入右侧文字"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ImageIcon className="text-ink dark:text-white" size={20} />
-                    <h2 className="font-bold text-ink dark:text-white">图标</h2>
-                  </div>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={showIcon}
-                      onChange={(e) => setShowIcon(e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-zinc-600 dark:text-zinc-400">显示图标</span>
-                  </label>
-                </div>
-
-                {showIcon && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setShowIconifyModal(true)}
-                        className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-600 transition-colors hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-white dark:hover:bg-white/5"
-                      >
-                        <Search size={16} />
-                        搜索图标
-                      </button>
-                      
-                      <input
-                        ref={iconInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleIconUpload}
-                        className="hidden"
-                      />
-                      <button
-                        onClick={() => iconInputRef.current?.click()}
-                        className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-600 transition-colors hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-white dark:hover:bg-white/5"
-                      >
-                        <Upload size={16} />
-                        上传图标
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center gap-2">
-                  <Palette className="text-ink dark:text-white" size={20} />
-                  <h2 className="font-bold text-ink dark:text-white">背景模板</h2>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {templates.map((template) => (
-                    <motion.button
-                      key={template.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setSelectedTemplate(template)}
-                      className={`relative h-20 overflow-hidden rounded-lg border-2 transition-all ${
-                        selectedTemplate.id === template.id
-                          ? 'border-ink shadow-lg shadow-ink/20 dark:border-white dark:shadow-white/20'
-                          : 'border-zinc-200 dark:border-zinc-700'
-                      }`}
-                      style={{ background: template.gradient }}
-                      title={template.description}
-                    >
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <span className="text-xs font-bold text-white drop-shadow-lg">{template.name}</span>
+              {/* 文字内容 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <SectionHeader icon={<Type size={18} className="text-ink dark:text-white" />} title="文字内容" sectionKey="text-content" />
+                  {!isCollapsed('text-content') && (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">左侧/主要文字</label>
+                          <input type="text" value={leftText} onChange={(e) => setLeftText(e.target.value)} className={inputClass} placeholder="主标题" />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">右侧文字</label>
+                          <input type="text" value={rightText} onChange={(e) => setRightText(e.target.value)} className={inputClass} placeholder="副标题" />
+                        </div>
                       </div>
-                    </motion.button>
-                  ))}
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">次要/描述文字</label>
+                        <input type="text" value={subText} onChange={(e) => setSubText(e.target.value)} className={inputClass} placeholder="可选描述文字（如：技术博客）" />
+                      </div>
+                    </div>
+                  )}
                 </div>
+              </div>
 
-                <div className="mt-4">
-                  <input
-                    ref={bgImageInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleBgImageUpload}
-                    className="hidden"
+              {/* 图标 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <SectionHeader
+                    icon={<ImageIcon size={18} className="text-ink dark:text-white" />}
+                    title="图标设置"
+                    sectionKey="icon"
+                    action={
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={showIcon} onChange={(e) => setShowIcon(e.target.checked)} className="rounded accent-ink dark:accent-white" />
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">显示</span>
+                      </label>
+                    }
                   />
-                  <button
-                    onClick={() => bgImageInputRef.current?.click()}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-600 transition-colors hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-white dark:hover:bg-white/5"
-                  >
-                    <Upload size={16} />
-                    上传背景图片
-                  </button>
+                  {!isCollapsed('icon') && showIcon && (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <button onClick={() => setShowIconifyModal(true)} className={dashedBtnClass}>
+                          <Search size={14} />搜索图标
+                        </button>
+                        <input ref={iconInputRef} type="file" accept="image/*" onChange={handleIconUpload} className="hidden" />
+                        <button onClick={() => iconInputRef.current?.click()} className={dashedBtnClass}>
+                          <Upload size={14} />上传图标
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 背景模板 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <SectionHeader
+                    icon={<Palette size={18} className="text-ink dark:text-white" />}
+                    title="背景模板"
+                    sectionKey="templates"
+                    action={
+                      <motion.button
+                        whileHover={{ scale: 1.1, rotate: 15 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={randomizeStyle}
+                        className="rounded-lg p-1.5 text-zinc-400 hover:text-accent hover:bg-accent/10 transition-colors"
+                        title="随机风格"
+                      >
+                        <Shuffle size={16} />
+                      </motion.button>
+                    }
+                  />
+                  {!isCollapsed('templates') && (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        {templates.map((template) => (
+                          <motion.button
+                            key={template.id}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSelectedTemplate(template)}
+                            className={`relative h-20 overflow-hidden rounded-lg border-2 transition-all ${
+                              selectedTemplate.id === template.id
+                                ? 'border-ink shadow-lg shadow-ink/20 ring-2 ring-ink/20 dark:border-white dark:shadow-white/20 dark:ring-white/20'
+                                : 'border-zinc-200 dark:border-zinc-700 opacity-70 hover:opacity-100'
+                            }`}
+                            style={{ background: template.gradient }}
+                            title={template.description || template.name}
+                          >
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                              <span className={`text-sm font-bold drop-shadow-md ${template.id === 'white' ? 'text-ink' : 'text-white'}`}>
+                                {template.name}
+                              </span>
+                            </div>
+                          </motion.button>
+                        ))}
+                      </div>
+                      <div className="pt-2">
+                        <input ref={bgImageInputRef} type="file" accept="image/*" onChange={handleBgImageUpload} className="hidden" />
+                        <button onClick={() => bgImageInputRef.current?.click()} className={dashedBtnClass + ' w-full'}>
+                          <Upload size={14} />上传自定义背景图片
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
           )}
 
-          {/* 样式标签页 */}
+          {/* ===== 样式标签页 ===== */}
           {activeTab === 'style' && (
             <>
               {/* 快捷预设 */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center gap-2">
-                  <Sparkles className="text-accent" size={20} />
-                  <h2 className="font-bold text-ink dark:text-white">快捷预设</h2>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => {
-                      setFontSize(72);
-                      setFontWeight(700);
-                      setIconSize(80);
-                      setSpacing(32);
-                      setTextShadow({ x: 2, y: 2, blur: 8, color: '#000000', opacity: 0.3 });
-                      setTextStroke({ enabled: false, width: 2, color: '#000000' });
-                      setIconBorderRadius(12);
-                      setIconBgEnabled(true);
-                    }}
-                    className="rounded-lg border-2 border-zinc-200 bg-gradient-to-br from-zinc-50 to-zinc-100 px-4 py-3 text-sm font-semibold text-zinc-700 transition-all hover:border-accent hover:from-accent/5 hover:to-accent/10 dark:border-zinc-700 dark:from-zinc-800 dark:to-zinc-900 dark:text-zinc-300"
-                  >
-                    默认风格
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      setFontSize(80);
-                      setFontWeight(900);
-                      setIconSize(100);
-                      setSpacing(40);
-                      setTextShadow({ x: 4, y: 4, blur: 12, color: '#000000', opacity: 0.5 });
-                      setTextStroke({ enabled: true, width: 4, color: '#000000' });
-                      setIconBorderRadius(20);
-                      setIconBgEnabled(true);
-                    }}
-                    className="rounded-lg border-2 border-zinc-200 bg-gradient-to-br from-purple-50 to-purple-100 px-4 py-3 text-sm font-semibold text-purple-700 transition-all hover:border-purple-400 dark:border-zinc-700 dark:from-purple-900/20 dark:to-purple-900/30 dark:text-purple-300"
-                  >
-                    醒目风格
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      setFontSize(60);
-                      setFontWeight(400);
-                      setIconSize(64);
-                      setSpacing(24);
-                      setTextShadow({ x: 0, y: 0, blur: 0, color: '#000000', opacity: 0 });
-                      setTextStroke({ enabled: false, width: 2, color: '#000000' });
-                      setIconBorderRadius(0);
-                      setIconBgEnabled(false);
-                    }}
-                    className="rounded-lg border-2 border-zinc-200 bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-3 text-sm font-semibold text-blue-700 transition-all hover:border-blue-400 dark:border-zinc-700 dark:from-blue-900/20 dark:to-blue-900/30 dark:text-blue-300"
-                  >
-                    简约风格
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      setFontSize(68);
-                      setFontWeight(600);
-                      setIconSize(72);
-                      setSpacing(28);
-                      setTextShadow({ x: 0, y: 4, blur: 16, color: '#000000', opacity: 0.4 });
-                      setTextStroke({ enabled: false, width: 2, color: '#000000' });
-                      setIconBorderRadius(50);
-                      setIconBgEnabled(true);
-                    }}
-                    className="rounded-lg border-2 border-zinc-200 bg-gradient-to-br from-pink-50 to-pink-100 px-4 py-3 text-sm font-semibold text-pink-700 transition-all hover:border-pink-400 dark:border-zinc-700 dark:from-pink-900/20 dark:to-pink-900/30 dark:text-pink-300"
-                  >
-                    柔和风格
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center gap-2">
-                  <Type className="text-ink dark:text-white" size={20} />
-                  <h2 className="font-bold text-ink dark:text-white">文字样式</h2>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                      <span>字体大小</span>
-                      <span className="text-ink dark:text-white">{fontSize}px</span>
-                    </label>
-                    <input
-                      type="range"
-                      min="24"
-                      max="120"
-                      value={fontSize}
-                      onChange={(e) => setFontSize(Number(e.target.value))}
-                      className="w-full accent-ink dark:accent-white"
-                    />
+              <div className={cardClass}>
+                <div className="p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Sparkles size={18} className="text-accent" />
+                    <h2 className="font-bold text-ink dark:text-white">快捷预设</h2>
                   </div>
-
-                  <div>
-                    <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                      <span>文字间距</span>
-                      <span className="text-ink dark:text-white">{spacing}px</span>
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={spacing}
-                      onChange={(e) => setSpacing(Number(e.target.value))}
-                      className="w-full accent-ink dark:accent-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={autoTextColor}
-                        onChange={(e) => setAutoTextColor(e.target.checked)}
-                        className="accent-ink dark:accent-white"
-                      />
-                      <span className="text-sm text-zinc-600 dark:text-zinc-400">自动反色（根据背景）</span>
-                    </label>
-                  </div>
-
-                  {!autoTextColor && (
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold text-zinc-600 dark:text-zinc-400">文字颜色</label>
-                      <input
-                        type="color"
-                        value={textColor}
-                        onChange={(e) => setTextColor(e.target.value)}
-                        className="h-10 w-full rounded-lg border border-zinc-200 dark:border-zinc-700"
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <input
-                      ref={fontInputRef}
-                      type="file"
-                      accept=".ttf,.otf,.woff,.woff2"
-                      onChange={handleFontUpload}
-                      className="hidden"
-                    />
-                    <button
-                      onClick={() => fontInputRef.current?.click()}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 bg-gradient-to-r from-zinc-50 to-zinc-100 px-4 py-3 text-sm font-semibold text-zinc-600 transition-all hover:border-ink hover:text-ink dark:border-zinc-700 dark:from-zinc-800 dark:to-zinc-900 dark:text-zinc-400 dark:hover:border-white dark:hover:text-white"
-                    >
-                      <Upload size={16} />
-                      上传自定义字体
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                      <span>字体粗细</span>
-                      <span className="text-ink dark:text-white">{fontWeight}</span>
-                    </label>
-                    <input
-                      type="range"
-                      min="100"
-                      max="900"
-                      step="100"
-                      value={fontWeight}
-                      onChange={(e) => setFontWeight(Number(e.target.value))}
-                      className="w-full accent-ink dark:accent-white"
-                    />
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { name: '默认', action: () => { setFontSize(72); setFontWeight(700); setIconSize(80); setSpacing(32); setTextShadow({ x: 2, y: 2, blur: 8, color: '#000000', opacity: 0.3 }); setTextStroke({ enabled: false, width: 2, color: '#000000' }); setIconBorderRadius(12); setIconBgEnabled(true); setShowCorners(false); setShowSeparator(false); } },
+                      { name: '醒目', action: () => { setFontSize(80); setFontWeight(900); setIconSize(100); setSpacing(40); setTextShadow({ x: 4, y: 4, blur: 12, color: '#000000', opacity: 0.5 }); setTextStroke({ enabled: true, width: 4, color: '#000000' }); setIconBorderRadius(20); setIconBgEnabled(true); setShowCorners(false); setShowSeparator(false); } },
+                      { name: '简约', action: () => { setFontSize(56); setFontWeight(400); setIconSize(56); setSpacing(20); setTextShadow({ x: 0, y: 0, blur: 0, color: '#000000', opacity: 0 }); setTextStroke({ enabled: false, width: 2, color: '#000000' }); setIconBorderRadius(0); setIconBgEnabled(false); setShowCorners(false); setShowSeparator(false); } },
+                      { name: '柔和', action: () => { setFontSize(64); setFontWeight(500); setIconSize(68); setSpacing(28); setTextShadow({ x: 0, y: 4, blur: 14, color: '#000000', opacity: 0.3 }); setTextStroke({ enabled: false, width: 2, color: '#000000' }); setIconBorderRadius(50); setIconBgEnabled(true); setShowCorners(false); setShowSeparator(false); } },
+                      { name: '杂志', action: () => { setFontSize(68); setFontWeight(800); setIconSize(64); setSpacing(36); setTextShadow({ x: 1, y: 1, blur: 4, color: '#000000', opacity: 0.2 }); setTextStroke({ enabled: false, width: 2, color: '#000000' }); setIconBorderRadius(4); setIconBgEnabled(true); setShowCorners(true); setShowSeparator(true); setLayoutMode('stacked'); } },
+                      { name: '极简', action: () => { setFontSize(96); setFontWeight(300); setSpacing(24); setTextShadow({ x: 0, y: 0, blur: 0, color: '#000000', opacity: 0 }); setTextStroke({ enabled: false, width: 2, color: '#000000' }); setShowIcon(false); setShowCorners(false); setShowSeparator(false); setLayoutMode('text-only'); } },
+                    ].map((preset) => (
+                      <motion.button
+                        key={preset.name}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={preset.action}
+                        className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-xs font-semibold text-zinc-700 transition-all hover:border-zinc-400 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:bg-zinc-700"
+                      >
+                        {preset.name}
+                      </motion.button>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* 文字描边设置 */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Type className="text-ink dark:text-white" size={20} />
-                    <h2 className="font-bold text-ink dark:text-white">文字描边</h2>
-                  </div>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={textStroke.enabled}
-                      onChange={(e) => setTextStroke({ ...textStroke, enabled: e.target.checked })}
-                      className="accent-ink dark:accent-white"
-                    />
-                    <span className="text-sm text-zinc-600 dark:text-zinc-400">启用</span>
-                  </label>
-                </div>
-
-                {textStroke.enabled && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                        <span>描边宽度</span>
-                        <span className="text-ink dark:text-white">{textStroke.width}px</span>
-                      </label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        value={textStroke.width}
-                        onChange={(e) => setTextStroke({ ...textStroke, width: Number(e.target.value) })}
-                        className="w-full accent-ink dark:accent-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold text-zinc-600 dark:text-zinc-400">描边颜色</label>
-                      <input
-                        type="color"
-                        value={textStroke.color}
-                        onChange={(e) => setTextStroke({ ...textStroke, color: e.target.value })}
-                        className="h-10 w-full rounded-lg border border-zinc-200 dark:border-zinc-700"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 文字阴影设置 */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center gap-2">
-                  <Type className="text-ink dark:text-white" size={20} />
-                  <h2 className="font-bold text-ink dark:text-white">文字阴影</h2>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                      <span>阴影透明度</span>
-                      <span className="text-ink dark:text-white">{Math.round(textShadow.opacity * 100)}%</span>
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={textShadow.opacity}
-                      onChange={(e) => setTextShadow({ ...textShadow, opacity: Number(e.target.value) })}
-                      className="w-full accent-ink dark:accent-white"
-                    />
-                  </div>
-
-                  {textShadow.opacity > 0 && (
-                    <>
+              {/* 文字样式 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <SectionHeader icon={<Type size={18} className="text-ink dark:text-white" />} title="文字样式" sectionKey="text-style" />
+                  {!isCollapsed('text-style') && (
+                    <div className="space-y-4">
                       <div>
-                        <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                          <span>模糊半径</span>
-                          <span className="text-ink dark:text-white">{textShadow.blur}px</span>
+                        <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span>字体大小</span>
+                          <span className="text-ink dark:text-white tabular-nums">{fontSize}px</span>
                         </label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="30"
-                          value={textShadow.blur}
-                          onChange={(e) => setTextShadow({ ...textShadow, blur: Number(e.target.value) })}
-                          className="w-full accent-ink dark:accent-white"
-                        />
+                        <input type="range" min="24" max="120" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className={rangeClass} />
                       </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                            <span>X 偏移</span>
-                            <span className="text-ink dark:text-white">{textShadow.x}px</span>
-                          </label>
-                          <input
-                            type="range"
-                            min="-20"
-                            max="20"
-                            value={textShadow.x}
-                            onChange={(e) => setTextShadow({ ...textShadow, x: Number(e.target.value) })}
-                            className="w-full accent-ink dark:accent-white"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                            <span>Y 偏移</span>
-                            <span className="text-ink dark:text-white">{textShadow.y}px</span>
-                          </label>
-                          <input
-                            type="range"
-                            min="-20"
-                            max="20"
-                            value={textShadow.y}
-                            onChange={(e) => setTextShadow({ ...textShadow, y: Number(e.target.value) })}
-                            className="w-full accent-ink dark:accent-white"
-                          />
-                        </div>
-                      </div>
-
                       <div>
-                        <label className="mb-2 block text-sm font-semibold text-zinc-600 dark:text-zinc-400">阴影颜色</label>
-                        <input
-                          type="color"
-                          value={textShadow.color}
-                          onChange={(e) => setTextShadow({ ...textShadow, color: e.target.value })}
-                          className="h-10 w-full rounded-lg border border-zinc-200 dark:border-zinc-700"
-                        />
+                        <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span>副标题大小</span>
+                          <span className="text-ink dark:text-white tabular-nums">{subFontSize}px</span>
+                        </label>
+                        <input type="range" min="16" max="48" value={subFontSize} onChange={(e) => setSubFontSize(Number(e.target.value))} className={rangeClass} />
                       </div>
-                    </>
+                      <div>
+                        <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span>文字间距</span>
+                          <span className="text-ink dark:text-white tabular-nums">{spacing}px</span>
+                        </label>
+                        <input type="range" min="0" max="120" value={spacing} onChange={(e) => setSpacing(Number(e.target.value))} className={rangeClass} />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span>字体粗细</span>
+                          <span className="text-ink dark:text-white tabular-nums">{fontWeight}</span>
+                        </label>
+                        <input type="range" min="100" max="900" step="100" value={fontWeight} onChange={(e) => setFontWeight(Number(e.target.value))} className={rangeClass} />
+                      </div>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={autoTextColor} onChange={(e) => setAutoTextColor(e.target.checked)} className="rounded accent-ink dark:accent-white" />
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">自动反色（根据背景）</span>
+                      </label>
+                      {!autoTextColor && (
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">文字颜色</label>
+                          <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className={colorClass} />
+                        </div>
+                      )}
+                      <input ref={fontInputRef} type="file" accept=".ttf,.otf,.woff,.woff2" onChange={handleFontUpload} className="hidden" />
+                      <button onClick={() => fontInputRef.current?.click()} className={dashedBtnClass + ' w-full'}>
+                        <Upload size={14} />上传自定义字体
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
 
+              {/* 文字描边 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <SectionHeader
+                    icon={<Type size={18} className="text-ink dark:text-white" />}
+                    title="文字描边"
+                    sectionKey="stroke"
+                    action={
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={textStroke.enabled} onChange={(e) => setTextStroke({ ...textStroke, enabled: e.target.checked })} className="rounded accent-ink dark:accent-white" />
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">启用</span>
+                      </label>
+                    }
+                  />
+                  {!isCollapsed('stroke') && textStroke.enabled && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span>描边宽度</span><span className="tabular-nums">{textStroke.width}px</span>
+                        </label>
+                        <input type="range" min="1" max="10" value={textStroke.width} onChange={(e) => setTextStroke({ ...textStroke, width: Number(e.target.value) })} className={rangeClass} />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">描边颜色</label>
+                        <input type="color" value={textStroke.color} onChange={(e) => setTextStroke({ ...textStroke, color: e.target.value })} className={colorClass} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 文字阴影 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <SectionHeader icon={<Type size={18} className="text-ink dark:text-white" />} title="文字阴影" sectionKey="shadow" />
+                  {!isCollapsed('shadow') && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span>透明度</span><span className="tabular-nums">{Math.round(textShadow.opacity * 100)}%</span>
+                        </label>
+                        <input type="range" min="0" max="1" step="0.1" value={textShadow.opacity} onChange={(e) => setTextShadow({ ...textShadow, opacity: Number(e.target.value) })} className={rangeClass} />
+                      </div>
+                      {textShadow.opacity > 0 && (
+                        <>
+                          <div>
+                            <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                              <span>模糊半径</span><span className="tabular-nums">{textShadow.blur}px</span>
+                            </label>
+                            <input type="range" min="0" max="40" value={textShadow.blur} onChange={(e) => setTextShadow({ ...textShadow, blur: Number(e.target.value) })} className={rangeClass} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                                <span>X 偏移</span><span className="tabular-nums">{textShadow.x}px</span>
+                              </label>
+                              <input type="range" min="-20" max="20" value={textShadow.x} onChange={(e) => setTextShadow({ ...textShadow, x: Number(e.target.value) })} className={rangeClass} />
+                            </div>
+                            <div>
+                              <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                                <span>Y 偏移</span><span className="tabular-nums">{textShadow.y}px</span>
+                              </label>
+                              <input type="range" min="-20" max="20" value={textShadow.y} onChange={(e) => setTextShadow({ ...textShadow, y: Number(e.target.value) })} className={rangeClass} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">阴影颜色</label>
+                            <input type="color" value={textShadow.color} onChange={(e) => setTextShadow({ ...textShadow, color: e.target.value })} className={colorClass} />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 图标样式 */}
               {showIcon && (
-                <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  <div className="mb-4 flex items-center gap-2">
-                    <ImageIcon className="text-ink dark:text-white" size={20} />
-                    <h2 className="font-bold text-ink dark:text-white">图标样式</h2>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                        <span>图标大小</span>
-                        <span className="text-ink dark:text-white">{iconSize}px</span>
-                      </label>
-                      <input
-                        type="range"
-                        min="32"
-                        max="200"
-                        value={iconSize}
-                        onChange={(e) => setIconSize(Number(e.target.value))}
-                        className="w-full accent-ink dark:accent-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold text-zinc-600 dark:text-zinc-400">图标颜色</label>
-                      <input
-                        type="color"
-                        value={iconColor}
-                        onChange={(e) => setIconColor(e.target.value)}
-                        className="h-10 w-full rounded-lg border border-zinc-200 dark:border-zinc-700"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                        <span>圆角</span>
-                        <span className="text-ink dark:text-white">{iconBorderRadius}%</span>
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="50"
-                        value={iconBorderRadius}
-                        onChange={(e) => setIconBorderRadius(Number(e.target.value))}
-                        className="w-full accent-ink dark:accent-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={iconBgEnabled}
-                          onChange={(e) => setIconBgEnabled(e.target.checked)}
-                          className="accent-ink dark:accent-white"
-                        />
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">显示图标背景</span>
-                      </label>
-                    </div>
+                <div className={cardClass}>
+                  <div className="p-5">
+                    <SectionHeader icon={<ImageIcon size={18} className="text-ink dark:text-white" />} title="图标样式" sectionKey="icon-style" />
+                    {!isCollapsed('icon-style') && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            <span>大小</span><span className="tabular-nums">{iconSize}px</span>
+                          </label>
+                          <input type="range" min="32" max="200" value={iconSize} onChange={(e) => setIconSize(Number(e.target.value))} className={rangeClass} />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">图标颜色</label>
+                          <input type="color" value={iconColor} onChange={(e) => setIconColor(e.target.value)} className={colorClass} />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            <span>圆角</span><span className="tabular-nums">{iconBorderRadius}%</span>
+                          </label>
+                          <input type="range" min="0" max="50" value={iconBorderRadius} onChange={(e) => setIconBorderRadius(Number(e.target.value))} className={rangeClass} />
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={iconBgEnabled} onChange={(e) => setIconBgEnabled(e.target.checked)} className="rounded accent-ink dark:accent-white" />
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400">显示图标背景</span>
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* 背景遮罩设置 */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Palette className="text-ink dark:text-white" size={20} />
-                    <h2 className="font-bold text-ink dark:text-white">背景遮罩</h2>
-                  </div>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={overlayEnabled}
-                      onChange={(e) => setOverlayEnabled(e.target.checked)}
-                      className="accent-ink dark:accent-white"
-                    />
-                    <span className="text-sm text-zinc-600 dark:text-zinc-400">启用</span>
-                  </label>
+              {/* 背景遮罩 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <SectionHeader
+                    icon={<Palette size={18} className="text-ink dark:text-white" />}
+                    title="背景遮罩"
+                    sectionKey="overlay"
+                    action={
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={overlayEnabled} onChange={(e) => setOverlayEnabled(e.target.checked)} className="rounded accent-ink dark:accent-white" />
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">启用</span>
+                      </label>
+                    }
+                  />
+                  {!isCollapsed('overlay') && overlayEnabled && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">遮罩颜色</label>
+                        <input type="color" value={overlayColor} onChange={(e) => setOverlayColor(e.target.value)} className={colorClass} />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span>模糊</span><span className="tabular-nums">{overlayBlur}px</span>
+                        </label>
+                        <input type="range" min="0" max="20" value={overlayBlur} onChange={(e) => setOverlayBlur(Number(e.target.value))} className={rangeClass} />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span>透明度</span><span className="tabular-nums">{overlayOpacity}%</span>
+                        </label>
+                        <input type="range" min="0" max="100" value={overlayOpacity} onChange={(e) => setOverlayOpacity(Number(e.target.value))} className={rangeClass} />
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                {overlayEnabled && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                        <span>模糊程度</span>
-                        <span className="text-ink dark:text-white">{overlayBlur}px</span>
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="20"
-                        value={overlayBlur}
-                        onChange={(e) => setOverlayBlur(Number(e.target.value))}
-                        className="w-full accent-ink dark:accent-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                        <span>遮罩透明度</span>
-                        <span className="text-ink dark:text-white">{overlayOpacity}%</span>
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={overlayOpacity}
-                        onChange={(e) => setOverlayOpacity(Number(e.target.value))}
-                        className="w-full accent-ink dark:accent-white"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
 
+              {/* 背景图片控制 */}
               {bgImage && (
-                <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  <div className="mb-4 flex items-center gap-2">
-                    <ImageIcon className="text-ink dark:text-white" size={20} />
-                    <h2 className="font-bold text-ink dark:text-white">背景图片</h2>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                        <span>模糊</span>
-                        <span className="text-ink dark:text-white">{bgBlur}px</span>
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="20"
-                        value={bgBlur}
-                        onChange={(e) => setBgBlur(Number(e.target.value))}
-                        className="w-full accent-ink dark:accent-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                        <span>不透明度</span>
-                        <span className="text-ink dark:text-white">{bgOpacity}%</span>
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={bgOpacity}
-                        onChange={(e) => setBgOpacity(Number(e.target.value))}
-                        className="w-full accent-ink dark:accent-white"
-                      />
-                    </div>
-
-                    <button
-                      onClick={() => setBgImage(null)}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-50 to-red-100 px-4 py-3 text-sm font-semibold text-red-600 transition-all hover:from-red-100 hover:to-red-200 dark:from-red-900/20 dark:to-red-900/30 dark:text-red-400"
-                    >
-                      <X size={16} />
-                      移除背景图片
-                    </button>
+                <div className={cardClass}>
+                  <div className="p-5">
+                    <SectionHeader icon={<ImageIcon size={18} className="text-ink dark:text-white" />} title="背景图片" sectionKey="bg-image" />
+                    {!isCollapsed('bg-image') && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            <span>模糊</span><span className="tabular-nums">{bgBlur}px</span>
+                          </label>
+                          <input type="range" min="0" max="20" value={bgBlur} onChange={(e) => setBgBlur(Number(e.target.value))} className={rangeClass} />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            <span>不透明度</span><span className="tabular-nums">{bgOpacity}%</span>
+                          </label>
+                          <input type="range" min="0" max="100" value={bgOpacity} onChange={(e) => setBgOpacity(Number(e.target.value))} className={rangeClass} />
+                        </div>
+                        <button onClick={() => setBgImage(null)} className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition-all hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40">
+                          <X size={14} />移除背景图片
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
             </>
           )}
 
-          {/* 导出标签页 */}
-          {activeTab === 'export' && (
+          {/* ===== 排版标签页 ===== */}
+          {activeTab === 'layout' && (
             <>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mb-4 flex items-center gap-2">
-                  <ImageIcon className="text-ink dark:text-white" size={20} />
-                  <h2 className="font-bold text-ink dark:text-white">导出设置</h2>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-zinc-600 dark:text-zinc-400">宽高比</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {exportRatios.map((ratio) => (
-                        <button
-                          key={ratio.label}
-                          onClick={() => {
-                            setExportRatios(exportRatios.map(r => ({ ...r, active: r.label === ratio.label })));
-                          }}
-                          className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all ${
-                            ratio.active
-                              ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-ink'
-                              : 'border-zinc-200 text-zinc-600 hover:border-ink dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-white'
-                          }`}
-                        >
-                          {ratio.label}
-                        </button>
-                      ))}
-                    </div>
+              {/* 布局模式 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Layout size={18} className="text-ink dark:text-white" />
+                    <h2 className="font-bold text-ink dark:text-white">布局模式</h2>
                   </div>
-
-                  <div>
-                    <label className="mb-2 flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                      <span>导出倍率</span>
-                      <span className="text-ink dark:text-white">{exportScale}x</span>
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="3"
-                      step="0.5"
-                      value={exportScale}
-                      onChange={(e) => setExportScale(Number(e.target.value))}
-                      className="w-full accent-ink dark:accent-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-zinc-600 dark:text-zinc-400">文件名</label>
-                    <input
-                      type="text"
-                      value={exportFilename}
-                      onChange={(e) => setExportFilename(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-ink outline-none transition-all focus:border-ink focus:ring-2 focus:ring-ink/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-white dark:focus:ring-white/20"
-                      placeholder="cover"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={exportTransparent}
-                        onChange={(e) => setExportTransparent(e.target.checked)}
-                        className="accent-ink dark:accent-white"
-                      />
-                      <span className="text-sm text-zinc-600 dark:text-zinc-400">透明背景</span>
-                    </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { mode: 'icon-split' as LayoutMode, icon: SplitSquareHorizontal, label: '图标分列', desc: '图标居中，文字在两侧' },
+                      { mode: 'stacked' as LayoutMode, icon: AlignCenter, label: '垂直堆叠', desc: '图标在上，文字在下' },
+                      { mode: 'text-only' as LayoutMode, icon: Type, label: '纯文字', desc: '仅显示文字内容' },
+                    ]).map(({ mode, icon: Icon, label, desc }) => (
+                      <motion.button
+                        key={mode}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => setLayoutMode(mode)}
+                        className={`flex flex-col items-center gap-1 rounded-xl border-2 p-3 transition-all ${
+                          layoutMode === mode
+                            ? 'border-ink bg-ink/5 dark:border-white dark:bg-white/10'
+                            : 'border-zinc-200 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500'
+                        }`}
+                      >
+                        <Icon size={22} className={layoutMode === mode ? 'text-ink dark:text-white' : 'text-zinc-400'} />
+                        <span className={`text-xs font-semibold ${layoutMode === mode ? 'text-ink dark:text-white' : 'text-zinc-500'}`}>{label}</span>
+                        <span className="text-[10px] text-zinc-400 leading-tight text-center">{desc}</span>
+                      </motion.button>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              {/* 文字对齐 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <AlignLeft size={18} className="text-ink dark:text-white" />
+                    <h2 className="font-bold text-ink dark:text-white">文字对齐</h2>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { align: 'left' as TextAlign, icon: AlignLeft, label: '左对齐' },
+                      { align: 'center' as TextAlign, icon: AlignCenter, label: '居中' },
+                      { align: 'right' as TextAlign, icon: AlignRight, label: '右对齐' },
+                    ]).map(({ align, icon: Icon, label }) => (
+                      <motion.button
+                        key={align}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => setTextAlign(align)}
+                        className={`flex flex-col items-center gap-1 rounded-xl border-2 p-3 transition-all ${
+                          textAlign === align
+                            ? 'border-ink bg-ink/5 dark:border-white dark:bg-white/10'
+                            : 'border-zinc-200 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500'
+                        }`}
+                      >
+                        <Icon size={22} className={textAlign === align ? 'text-ink dark:text-white' : 'text-zinc-400'} />
+                        <span className={`text-xs font-semibold ${textAlign === align ? 'text-ink dark:text-white' : 'text-zinc-500'}`}>{label}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 装饰元素 */}
+              <div className={cardClass}>
+                <div className="p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Frame size={18} className="text-ink dark:text-white" />
+                    <h2 className="font-bold text-ink dark:text-white">装饰元素</h2>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={showCorners} onChange={(e) => setShowCorners(e.target.checked)} className="rounded accent-ink dark:accent-white" />
+                        <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">角标装饰</span>
+                      </label>
+                    </div>
+                    {showCorners && (
+                      <div className="space-y-3 pl-6 border-l-2 border-zinc-100 dark:border-zinc-800">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">角标颜色</label>
+                          <input type="color" value={cornerColor} onChange={(e) => setCornerColor(e.target.value)} className={colorClass} />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            <span>角标透明度</span><span className="tabular-nums">{cornerOpacity}%</span>
+                          </label>
+                          <input type="range" min="10" max="100" value={cornerOpacity} onChange={(e) => setCornerOpacity(Number(e.target.value))} className={rangeClass} />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={showSeparator} onChange={(e) => setShowSeparator(e.target.checked)} className="rounded accent-ink dark:accent-white" />
+                        <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">分隔线</span>
+                      </label>
+                    </div>
+                    {showSeparator && (
+                      <div className="space-y-3 pl-6 border-l-2 border-zinc-100 dark:border-zinc-800">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">分隔线颜色</label>
+                          <input type="color" value={separatorColor} onChange={(e) => setSeparatorColor(e.target.value)} className={colorClass} />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            <span>透明度</span><span className="tabular-nums">{separatorOpacity}%</span>
+                          </label>
+                          <input type="range" min="10" max="100" value={separatorOpacity} onChange={(e) => setSeparatorOpacity(Number(e.target.value))} className={rangeClass} />
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                        <span>背景装饰透明度</span><span className="tabular-nums">{decorOpacity}%</span>
+                      </label>
+                      <input type="range" min="0" max="20" value={decorOpacity} onChange={(e) => setDecorOpacity(Number(e.target.value))} className={rangeClass} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ===== 导出标签页 ===== */}
+          {activeTab === 'export' && (
+            <>
+              <div className={cardClass}>
+                <div className="p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Download size={18} className="text-ink dark:text-white" />
+                    <h2 className="font-bold text-ink dark:text-white">导出设置</h2>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">宽高比</label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {exportRatios.map((ratio) => (
+                          <button
+                            key={ratio.label}
+                            onClick={() => setExportRatios(exportRatios.map(r => ({ ...r, active: r.label === ratio.label })))}
+                            className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all ${
+                              ratio.active
+                                ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-ink'
+                                : 'border-zinc-200 text-zinc-600 hover:border-ink dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-white'
+                            }`}
+                          >
+                            {ratio.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">格式</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['png', 'jpeg'] as const).map(f => (
+                          <button
+                            key={f}
+                            onClick={() => setExportFormat(f)}
+                            className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold uppercase transition-all ${
+                              exportFormat === f
+                                ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-ink'
+                                : 'border-zinc-200 text-zinc-600 hover:border-ink dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-white'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                        <span>导出倍率</span>
+                        <span className="tabular-nums text-ink dark:text-white">{exportScale}x</span>
+                      </label>
+                      <input type="range" min="1" max="3" step="0.5" value={exportScale} onChange={(e) => setExportScale(Number(e.target.value))} className={rangeClass} />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">文件名</label>
+                      <input type="text" value={exportFilename} onChange={(e) => setExportFilename(e.target.value)} className={inputClass} placeholder="cover" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={generateCover}
                   disabled={isGenerating}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-zinc-100 to-zinc-200 px-4 py-3 font-semibold text-ink transition-all hover:from-zinc-200 hover:to-zinc-300 disabled:opacity-50 dark:from-zinc-800 dark:to-zinc-700 dark:text-white dark:hover:from-zinc-700 dark:hover:to-zinc-600"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-100 px-4 py-3 font-semibold text-ink transition-all hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                 >
                   <RefreshCw size={18} className={isGenerating ? 'animate-spin' : ''} />
                   重新生成
@@ -1347,6 +1440,20 @@ export const CoverGenerator: React.FC = () => {
                   <Download size={18} />
                   下载封面
                 </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={copyToClipboard}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 font-semibold transition-all ${
+                    copied
+                      ? 'border-green-500 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                      : 'border-zinc-200 text-zinc-600 hover:border-ink dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-white'
+                  }`}
+                >
+                  {copied ? <Check size={18} /> : <Copy size={18} />}
+                  {copied ? '已复制' : '复制到剪贴板'}
+                </motion.button>
               </div>
             </>
           )}
@@ -1354,11 +1461,22 @@ export const CoverGenerator: React.FC = () => {
 
         {/* 右侧预览区域 */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900 sticky top-24">
             <div className="mb-4 flex items-center gap-2">
               <ImageIcon className="text-ink dark:text-white" size={20} />
               <h2 className="font-bold text-ink dark:text-white">实时预览</h2>
-              <span className="ml-auto text-xs text-zinc-400">{canvasSize.width} × {canvasSize.height} px</span>
+              <span className="ml-auto text-xs text-zinc-400 tabular-nums">
+                {canvasSize.width} × {canvasSize.height} px
+              </span>
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 15 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={randomizeStyle}
+                className="ml-2 rounded-lg p-1.5 text-zinc-400 hover:text-accent hover:bg-accent/10 transition-colors"
+                title="随机风格"
+              >
+                <Shuffle size={16} />
+              </motion.button>
             </div>
 
             <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800">
@@ -1378,16 +1496,16 @@ export const CoverGenerator: React.FC = () => {
 
             <div className="mt-4 rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
               <div className="flex items-start gap-2">
-                <Sparkles className="mt-0.5 text-ink dark:text-white" size={16} />
+                <Sparkles className="mt-0.5 shrink-0 text-ink dark:text-white" size={16} />
                 <div className="text-sm text-zinc-600 dark:text-zinc-400">
                   <p className="font-semibold">使用提示：</p>
                   <ul className="mt-2 space-y-1 text-xs">
-                    <li>• 在"内容"标签页中输入文字、选择图标和背景模板</li>
-                    <li>• 在"样式"标签页中调整字体、颜色、阴影、描边等效果</li>
-                    <li>• 在"导出"标签页中设置宽高比、导出倍率和文件名</li>
-                    <li>• 上传背景图片后可以拖拽移动、滚轮缩放调整位置</li>
-                    <li>• 支持搜索 Iconify 图标库或上传自定义图标</li>
-                    <li>• 默认启用文字阴影和图标圆角，让封面更精美</li>
+                    <li>• <strong>内容</strong>标签页 - 输入文字、选择图标和背景模板</li>
+                    <li>• <strong>样式</strong>标签页 - 调整字体、颜色、阴影、描边等效果</li>
+                    <li>• <strong>排版</strong>标签页 - 切换布局模式、对齐方式、装饰元素</li>
+                    <li>• <strong>导出</strong>标签页 - 设置宽高比、格式、导出倍率</li>
+                    <li>• 上传背景图片后可拖拽移动、滚轮缩放调整位置</li>
+                    <li>• 点击 <Shuffle className="inline" size={12} /> 随机按钮可快速探索不同风格</li>
                   </ul>
                 </div>
               </div>
@@ -1415,76 +1533,43 @@ export const CoverGenerator: React.FC = () => {
             >
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-ink dark:text-white">搜索 Iconify 图标</h2>
-                <button
-                  onClick={() => setShowIconifyModal(false)}
-                  className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                >
+                <button onClick={() => setShowIconifyModal(false)} className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
                   <X size={20} />
                 </button>
               </div>
-
               <div className="mb-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
                   <input
-                    type="text"
-                    value={iconifySearch}
-                    onChange={(e) => {
-                      setIconifySearch(e.target.value);
-                      debouncedSearchIconify(e.target.value);
-                    }}
+                    type="text" value={iconifySearch}
+                    onChange={(e) => { setIconifySearch(e.target.value); debouncedSearchIconify(e.target.value); }}
                     placeholder="搜索图标，例如：home, user, settings..."
                     className="w-full rounded-lg border border-zinc-200 bg-white py-3 pl-10 pr-4 text-ink outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-ink/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-white dark:focus:ring-white/20"
                   />
                 </div>
-                
-                {/* 错误提示 */}
                 {searchError && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="mt-2 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
-                  >
-                    <X size={16} />
-                    <span>{searchError}</span>
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-2 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                    <X size={16} /><span>{searchError}</span>
                   </motion.div>
                 )}
               </div>
-
               <div className="max-h-96 overflow-y-auto">
                 {isSearching ? (
-                  <div className="flex items-center justify-center py-12">
-                    <RefreshCw className="animate-spin text-ink dark:text-white" size={32} />
-                  </div>
+                  <div className="flex items-center justify-center py-12"><RefreshCw className="animate-spin text-ink dark:text-white" size={32} /></div>
                 ) : iconifyResults.length > 0 ? (
                   <div className="grid grid-cols-6 gap-3">
                     {iconifyResults.map((icon) => (
-                      <button
-                        key={icon}
-                        onClick={() => selectIconifyIcon(icon)}
+                      <button key={icon} onClick={() => selectIconifyIcon(icon)}
                         className="flex aspect-square items-center justify-center rounded-lg border-2 border-zinc-200 bg-zinc-50 p-3 transition-all hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white dark:hover:bg-white/5"
-                        title={icon}
-                      >
-                        <img
-                          src={`https://api.iconify.design/${icon}.svg`}
-                          alt={icon}
-                          className="h-full w-full"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
+                        title={icon}>
+                        <img src={`https://api.iconify.design/${icon}.svg`} alt={icon} className="h-full w-full" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                       </button>
                     ))}
                   </div>
                 ) : iconifySearch ? (
-                  <div className="py-12 text-center text-zinc-500 dark:text-zinc-400">
-                    未找到相关图标，请尝试其他关键词
-                  </div>
+                  <div className="py-12 text-center text-zinc-500 dark:text-zinc-400">未找到相关图标，请尝试其他关键词</div>
                 ) : (
-                  <div className="py-12 text-center text-zinc-500 dark:text-zinc-400">
-                    输入关键词搜索图标
-                  </div>
+                  <div className="py-12 text-center text-zinc-500 dark:text-zinc-400">输入关键词搜索图标</div>
                 )}
               </div>
             </motion.div>
