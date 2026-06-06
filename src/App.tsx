@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -7,6 +7,17 @@ import { Layout } from './components/Layout';
 import { CookieNotice } from './components/CookieNotice';
 import { siteConfig } from '@config/site.config';
 import { pageLoaders } from './utils/preload';
+
+const Home = lazy(pageLoaders['/']);
+const Post = lazy(() => import('./pages/Post').then((m) => ({ default: m.Post })));
+const About = lazy(pageLoaders['/about']);
+const ArchivePage = lazy(pageLoaders['/archive']);
+const Stats = lazy(pageLoaders['/stats']);
+const Friends = lazy(pageLoaders['/friends']);
+const Tags = lazy(pageLoaders['/tags']);
+const CoverGenerator = lazy(pageLoaders['/cover']);
+const Sponsor = lazy(pageLoaders['/sponsor']);
+const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 const LoadingScreen: React.FC = () => {
   const letterVariants = {
@@ -51,8 +62,6 @@ const RouteFallback: React.FC = () => (
 );
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  private autoRecoveryAttempted = false;
-
   constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
@@ -63,28 +72,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 
   componentDidCatch(error: Error) {
-    const message = error?.message ?? '';
-    const isChunkLoadError =
-      /Loading chunk [\d]+ failed/i.test(message) ||
-      /ChunkLoadError/i.test(message) ||
-      /Failed to fetch dynamically imported module/i.test(message) ||
-      /Importing a module script failed/i.test(message);
-
-    if (isChunkLoadError && typeof window !== 'undefined' && !this.autoRecoveryAttempted) {
-      this.autoRecoveryAttempted = true;
-
-      try {
-        const currentUrl = window.location.pathname + window.location.search + window.location.hash;
-        sessionStorage.setItem('dblog:auto-reload-once', currentUrl);
-      } catch {
-        // ignore storage errors
-      }
-
-      window.location.reload();
-      return;
-    }
-
-    // 生产环境静默处理，避免额外日志开销
+    console.error('App Error:', error);
   }
 
   render() {
@@ -108,25 +96,23 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-
 const AppRoutes: React.FC = () => {
   const location = useLocation();
   const [displayLocation, setDisplayLocation] = useState(location);
-  const transitionDocument = document as ViewTransitionDocument;
-  const hasViewTransition = typeof document !== 'undefined' && typeof transitionDocument.startViewTransition === 'function';
+  const hasViewTransition = typeof document !== 'undefined' && 'startViewTransition' in document;
 
   useEffect(() => {
     if (location.pathname === displayLocation.pathname && location.search === displayLocation.search) {
       return;
     }
 
-    if (hasViewTransition && transitionDocument.startViewTransition) {
-      const x = ((window as Window & { __lastClickX?: number }).__lastClickX ?? window.innerWidth / 2) / window.innerWidth * 100;
-      const y = ((window as Window & { __lastClickY?: number }).__lastClickY ?? 0) / window.innerHeight * 100;
+    if (hasViewTransition) {
+      const x = ((window as unknown as { __lastClickX?: number }).__lastClickX ?? window.innerWidth / 2) / window.innerWidth * 100;
+      const y = ((window as unknown as { __lastClickY?: number }).__lastClickY ?? 0) / window.innerHeight * 100;
       document.documentElement.style.setProperty('--vt-origin-x', `${x}%`);
       document.documentElement.style.setProperty('--vt-origin-y', `${y}%`);
 
-      transitionDocument.startViewTransition(() => {
+      (document as Document & { startViewTransition?: (callback: () => void) => void }).startViewTransition?.(() => {
         flushSync(() => {
           setDisplayLocation(location);
         });
@@ -134,7 +120,7 @@ const AppRoutes: React.FC = () => {
     } else {
       setDisplayLocation(location);
     }
-  }, [displayLocation.pathname, displayLocation.search, hasViewTransition, location, transitionDocument]);
+  }, [location, displayLocation.pathname, displayLocation.search, hasViewTransition]);
 
   useEffect(() => {
     document.title = siteConfig.title;
@@ -142,8 +128,8 @@ const AppRoutes: React.FC = () => {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      (window as Window & { __lastClickX?: number; __lastClickY?: number }).__lastClickX = e.clientX;
-      (window as Window & { __lastClickX?: number; __lastClickY?: number }).__lastClickY = e.clientY;
+      (window as unknown as { __lastClickX?: number }).__lastClickX = e.clientX;
+      (window as unknown as { __lastClickY?: number }).__lastClickY = e.clientY;
     };
     window.addEventListener('click', handler, { passive: true });
     return () => window.removeEventListener('click', handler);
@@ -175,30 +161,21 @@ const App: React.FC = () => {
       return false;
     }
 
-    try {
-      return sessionStorage.getItem('hasVisited') !== 'true';
-    } catch {
-      return false;
-    }
+    return sessionStorage.getItem('hasVisited') !== 'true';
   });
+
   const [showCookieNotice, setShowCookieNotice] = useState(false);
 
   useEffect(() => {
-    let timer = 0;
-
     if (!showLoadingScreen) {
-      timer = window.setTimeout(() => {
+      const timer = window.setTimeout(() => {
         setShowCookieNotice(true);
       }, 2000);
       return () => window.clearTimeout(timer);
     }
 
-    timer = window.setTimeout(() => {
-      try {
-        sessionStorage.setItem('hasVisited', 'true');
-      } catch {
-        // ignore storage errors
-      }
+    const timer = window.setTimeout(() => {
+      sessionStorage.setItem('hasVisited', 'true');
       setShowLoadingScreen(false);
       setShowCookieNotice(true);
     }, 900);
@@ -222,4 +199,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-

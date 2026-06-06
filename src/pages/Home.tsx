@@ -14,8 +14,6 @@ import { getDateTimestamp } from '@/utils/date';
 import { easeOut, easeSmooth, fadeInUp, staggerContainer, cardHover, chipHover } from '@/utils/motion';
 import { preloadPage } from '@/utils/preload';
 
-
-
 const ALL_CATEGORY = '全部';
 
 const listSwapTransition = {
@@ -39,7 +37,6 @@ const gridExitVariants = {
     transition: { duration: 0.18, ease: easeSmooth },
   },
 } as const;
-
 
 const sortPosts = (posts: PostMetadata[], sortOrder: 'newest' | 'oldest') =>
   posts.slice().sort((a, b) => {
@@ -91,7 +88,6 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
     ? undefined
     : { y: -2 };
 
-
   const CategoryBadge = ({ text }: { text: string }) => (
     <span className="z-10 rounded-full bg-white/80 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-ink transition-transform group-hover:scale-105 dark:text-white">
       {text}
@@ -129,9 +125,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
               <CategoryBadge text={post.category} />
             </div>
           </Link>
-          <div
-            className="relative flex w-full flex-col justify-center bg-white/90 p-5 backdrop-blur-sm dark:bg-zinc-900/90 md:w-2/5 md:p-10"
-          >
+          <div className="relative flex w-full flex-col justify-center bg-white/90 p-5 backdrop-blur-sm dark:bg-zinc-900/90 md:w-2/5 md:p-10">
             {post.top !== undefined && (
               <div className="absolute right-4 top-4 md:right-6 md:top-6 flex items-center gap-1.5 rounded-full bg-ink/5 px-2.5 py-1 text-[10px] font-bold text-ink dark:bg-white/10 dark:text-white">
                 <Pin size={10} fill="currentColor" />
@@ -306,7 +300,6 @@ export const Home = () => {
     emptyResults: allPosts
   });
 
-  // 使用自定义 hook 监听媒体查询
   const isMobile = useMediaQuery('(max-width: 767px)', false);
   const postsPerPage = isMobile ? 5 : 9;
 
@@ -369,14 +362,10 @@ export const Home = () => {
 
   const displayedPosts = useMemo(() => filterAndSortPosts(results, selectedCategory, sortOrder), [results, selectedCategory, sortOrder]);
 
-  // 使用 useMemo 缓存分页相关计算
   const paginationData = useMemo(() => {
     const pinnedPosts = displayedPosts.filter(post => post.top !== undefined);
     const regularPosts = displayedPosts.filter(post => post.top === undefined);
-    
-    // 计算顶置文章占用的位置：移动端单列展示占 1 个位置，大屏端占 3 个位置
     const pinnedPostsSlots = pinnedPosts.length * (isMobile ? 1 : 3);
-    // 总位置数 = 顶置文章占用的位置 + 普通文章数量
     const totalSlots = pinnedPostsSlots + regularPosts.length;
     const totalPages = Math.max(1, Math.ceil(totalSlots / postsPerPage));
 
@@ -401,100 +390,91 @@ export const Home = () => {
       }
 
       return nextParams;
-    });
+    }, { replace: true });
+  };
 
-    document.getElementById('posts-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleToggleSort = () => {
+    setSortOrder((current) => current === 'newest' ? 'oldest' : 'newest');
   };
 
   const handleClearSearch = () => {
     clearSearch();
-    setCurrentPage(1);
   };
 
-  const activeCategoryLabel = selectedCategory === ALL_CATEGORY ? '全部分类' : selectedCategory;
-
-  // 使用 useMemo 缓存当前页文章计算
   const currentPosts = useMemo(() => {
-    const startSlot = (currentPage - 1) * postsPerPage;
-    const endSlot = startSlot + postsPerPage;
+    const pageStart = (currentPage - 1) * postsPerPage;
+    const pageEnd = pageStart + postsPerPage;
 
-    const result: PostMetadata[] = [];
-    let currentSlot = 0;
-
-    // 先处理顶置文章
-    for (const post of pinnedPosts) {
-      const postSlots = isMobile ? 1 : 3;
-      const postEndSlot = currentSlot + postSlots;
-
-      // 如果这个顶置文章的任何一个位置在当前页范围内，就显示它
-      if (postEndSlot > startSlot && currentSlot < endSlot) {
-        result.push(post);
-      }
-
-      currentSlot = postEndSlot;
-
-      // 如果已经超出当前页范围，停止处理顶置文章
-      if (currentSlot >= endSlot) {
-        return result;
-      }
+    if (isMobile) {
+      return displayedPosts.slice(pageStart, pageEnd);
     }
 
-    // 再处理普通文章
-    for (const post of regularPosts) {
-      if (currentSlot >= endSlot) {
+    const pagedPosts: PostMetadata[] = [];
+    let consumedSlots = 0;
+
+    for (const post of displayedPosts) {
+      const slots = post.top !== undefined ? 3 : 1;
+      const nextConsumedSlots = consumedSlots + slots;
+
+      if (nextConsumedSlots <= pageStart) {
+        consumedSlots = nextConsumedSlots;
+        continue;
+      }
+
+      if (consumedSlots >= pageEnd) {
         break;
       }
 
-      if (currentSlot >= startSlot) {
-        result.push(post);
-      }
-
-      currentSlot++;
+      pagedPosts.push(post);
+      consumedSlots = nextConsumedSlots;
     }
 
-    return result;
-  }, [currentPage, postsPerPage, pinnedPosts, regularPosts, isMobile]);
+    return pagedPosts;
+  }, [currentPage, displayedPosts, isMobile, postsPerPage]);
 
   const paginate = (pageNumber: number) => {
-    const nextPage = Math.min(Math.max(pageNumber, 1), totalPages);
-    setCurrentPage(nextPage);
-    document.getElementById('posts-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setCurrentPage(Math.min(Math.max(1, pageNumber), totalPages));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const featuredPost = useMemo(() => currentPosts.find((post) => post.featured) ?? null, [currentPosts]);
+  const remainingPosts = useMemo(() => currentPosts.filter((post) => post !== featuredPost), [currentPosts, featuredPost]);
+
   return (
-    <div className="pb-8 md:pb-14">
-      <Seo title="D-blog" description="跑路的duck的个人博客，分享前端技术、编程教程与生活感悟，探索极致的静态页面体验。" />
+    <div className="pb-16 md:pb-24">
+      <Seo title={siteConfig.title} description={siteConfig.description} path="/" />
       <Hero />
 
-      {!loading && !loadError && (
-        <motion.div variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.03 }}>
-          <AnimatePresence mode="wait" initial={false}>
-            {hasSearchQuery && (
-              <motion.div key={`search-summary-${searchQuery}-${activeCategoryLabel}`} initial={{ opacity: 0, y: 8, scale: 0.992 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.992 }} transition={listSwapTransition} className="mb-5 px-1 md:mb-6">
-                <motion.div layout className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm dark:border-zinc-800 dark:bg-zinc-900 md:rounded-2xl md:px-4 md:py-3">
-                  <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.25, delay: 0.03, ease: easeOut }}>
-                    <Search size={14} className="text-zinc-400 dark:text-zinc-500" />
-                  </motion.div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 md:text-sm">
-                    搜索 "<span className="font-semibold text-ink dark:text-zinc-200">{searchQuery}</span>" 共命中 {results.length} 篇，按 "<span className="font-semibold text-ink dark:text-zinc-200">{activeCategoryLabel}</span>" 显示 {displayedPosts.length} 篇
-                  </p>
-                  <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.18, ease: easeOut }} onClick={handleClearSearch} className="ml-auto rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-semibold text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-ink dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-white md:text-xs" aria-label="清除搜索">
-                    清除
-                  </motion.button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-8 px-4 md:space-y-10 md:px-0">
+        <FilterBar categories={categories} selected={selectedCategory} onSelect={handleSelectCategory} sortOrder={sortOrder} onToggleSort={handleToggleSort} />
 
-          <FilterBar categories={categories} selected={selectedCategory} onSelect={handleSelectCategory} sortOrder={sortOrder} onToggleSort={() => setSortOrder((previous) => (previous === 'newest' ? 'oldest' : 'newest'))} />
-        </motion.div>
-      )}
+        <div className="mx-auto max-w-2xl">
+          <label className="group relative block">
+            <span className="sr-only">搜索文章</span>
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-zinc-600 dark:group-focus-within:text-zinc-300" />
+            <input
+              value={searchQuery}
+              onChange={(event) => handleSearch(event.target.value)}
+              type="search"
+              placeholder="搜索标题、摘要、分类与正文内容..."
+              className="w-full rounded-full border border-zinc-200/80 bg-white/90 py-3 pl-11 pr-4 text-sm text-ink shadow-sm outline-none transition-all duration-200 placeholder:text-zinc-400 focus:border-zinc-300 focus:ring-4 focus:ring-zinc-100 dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-700 dark:focus:ring-zinc-800/60"
+              aria-label="搜索文章"
+            />
+          </label>
+        </div>
 
-      <motion.div id="posts-grid" className="scroll-mt-32" variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.06 }}>
         {loading || isSearching ? (
-          <motion.div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3" variants={staggerContainer} initial="hidden" animate="visible">
-            {[1, 2, 3].map((item) => (
-              <motion.div key={item} variants={fadeInUp} className="h-72 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800" />
+          <motion.div variants={fadeInUp} className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3">
+            {Array.from({ length: postsPerPage }).map((_, index) => (
+              <div key={index} className="animate-pulse rounded-2xl border border-zinc-200/70 bg-white/80 p-4 dark:border-zinc-800/70 dark:bg-zinc-900/80">
+                <div className="mb-4 aspect-[16/10] rounded-xl bg-zinc-200/80 dark:bg-zinc-800/80" />
+                <div className="mb-2 h-4 rounded bg-zinc-200/80 dark:bg-zinc-800/80" />
+                <div className="mb-4 h-4 w-2/3 rounded bg-zinc-200/80 dark:bg-zinc-800/80" />
+                <div className="space-y-2">
+                  <div className="h-3 rounded bg-zinc-200/80 dark:bg-zinc-800/80" />
+                  <div className="h-3 w-4/5 rounded bg-zinc-200/80 dark:bg-zinc-800/80" />
+                </div>
+              </div>
             ))}
           </motion.div>
         ) : loadError ? (
@@ -512,9 +492,10 @@ export const Home = () => {
                 initial="hidden"
                 animate="visible"
               >
-                {currentPosts.length > 0 ? (
-                  currentPosts.map((post, index) => <PostCard key={post.id} post={post} index={index} featured={!!post.featured} onShare={setSharePost} />)
-                ) : (
+                {featuredPost && <PostCard key={featuredPost.id} post={featuredPost} index={0} featured onShare={setSharePost} />}
+                {remainingPosts.length > 0 ? (
+                  remainingPosts.map((post, index) => <PostCard key={post.id} post={post} index={index + (featuredPost ? 1 : 0)} onShare={setSharePost} />)
+                ) : !featuredPost ? (
                   <motion.div variants={fadeInUp} className="col-span-full rounded-2xl border border-dashed border-zinc-200 py-20 text-center dark:border-zinc-800">
                     <p className="mb-2 font-serif text-lg text-zinc-400">{hasSearchQuery ? '未找到匹配的文章' : '暂无相关文章'}</p>
                     {hasSearchQuery && (
@@ -523,7 +504,7 @@ export const Home = () => {
                       </motion.button>
                     )}
                   </motion.div>
-                )}
+                ) : null}
               </motion.div>
             </AnimatePresence>
 
@@ -548,5 +529,3 @@ export const Home = () => {
     </div>
   );
 };
-
-
