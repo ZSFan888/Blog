@@ -1,27 +1,12 @@
-import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
 import { flushSync } from 'react-dom';
 import { Layout } from './components/Layout';
+import { CookieNotice } from './components/CookieNotice';
 import { siteConfig } from '@config/site.config';
 import { pageLoaders } from './utils/preload';
-
-const Home = lazy(pageLoaders['/']);
-const Post = lazy(() => import('./pages/Post').then((m) => ({ default: m.Post })));
-const About = lazy(pageLoaders['/about']);
-const ArchivePage = lazy(pageLoaders['/archive']);
-const Stats = lazy(pageLoaders['/stats']);
-const Friends = lazy(pageLoaders['/friends']);
-const Tags = lazy(pageLoaders['/tags']);
-const CoverGenerator = lazy(pageLoaders['/cover']);
-const Sponsor = lazy(pageLoaders['/sponsor']);
-const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
-const CookieNotice = lazy(() => import('./components/CookieNotice').then((m) => ({ default: m.CookieNotice })));
-
-type ViewTransitionDocument = Document & {
-  startViewTransition?: (callback: () => void) => void;
-};
 
 const LoadingScreen: React.FC = () => {
   const letterVariants = {
@@ -196,7 +181,6 @@ const App: React.FC = () => {
       return false;
     }
   });
-  const [cookieNoticeReady, setCookieNoticeReady] = useState(false);
   const [showCookieNotice, setShowCookieNotice] = useState(false);
 
   useEffect(() => {
@@ -204,7 +188,6 @@ const App: React.FC = () => {
 
     if (!showLoadingScreen) {
       timer = window.setTimeout(() => {
-        setCookieNoticeReady(true);
         setShowCookieNotice(true);
       }, 2000);
       return () => window.clearTimeout(timer);
@@ -217,7 +200,6 @@ const App: React.FC = () => {
         // ignore storage errors
       }
       setShowLoadingScreen(false);
-      setCookieNoticeReady(true);
       setShowCookieNotice(true);
     }, 900);
 
@@ -226,25 +208,13 @@ const App: React.FC = () => {
     };
   }, [showLoadingScreen]);
 
-  const cookieNotice = useMemo(() => {
-    if (!cookieNoticeReady || !showCookieNotice) {
-      return null;
-    }
-
-    return (
-      <Suspense fallback={null}>
-        <CookieNotice />
-      </Suspense>
-    );
-  }, [cookieNoticeReady, showCookieNotice]);
-
   return (
     <HelmetProvider>
       <ErrorBoundary>
         <Router>
           <AppRoutes />
           <AnimatePresence>{showLoadingScreen && <LoadingScreen />}</AnimatePresence>
-          {cookieNotice}
+          {showCookieNotice && <CookieNotice />}
         </Router>
       </ErrorBoundary>
     </HelmetProvider>
