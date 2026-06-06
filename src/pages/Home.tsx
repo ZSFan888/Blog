@@ -11,7 +11,7 @@ import { usePostSearch } from '@/hooks/usePostSearch';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { ProgressiveImage } from '@/components/ProgressiveImage';
 import { getDateTimestamp } from '@/utils/date';
-import { easeOut, easeSmooth, fadeInUp, staggerContainer, cardHover, chipHover } from '@/utils/motion';
+import { easeOut, easeSmooth, fadeInUp, staggerContainer } from '@/utils/motion';
 import { preloadPage } from '@/utils/preload';
 
 const ALL_CATEGORY = '全部';
@@ -229,7 +229,7 @@ interface FilterBarProps {
 
 const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, sortOrder, onToggleSort }) => {
   return (
-    <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="mb-8 flex items-center justify-between gap-3 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 px-3 py-2.5 md:mb-10 md:gap-4 md:rounded-2xl md:px-4 md:py-3">
+    <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="mb-8 flex items-center justify-between gap-3 rounded-xl border border-zinc-200/80 bg-white/95 px-3 py-2.5 dark:border-zinc-800/80 dark:bg-zinc-900/95 md:mb-10 md:gap-4 md:rounded-2xl md:px-4 md:py-3">
       <div className="-mx-2 w-full overflow-x-auto px-2 no-scrollbar md:mx-0 md:w-auto md:px-0">
         <div className="flex space-x-1.5 md:space-x-2" role="tablist" aria-label="文章分类筛选">
           {[ALL_CATEGORY, ...categories].map((category) => (
@@ -243,7 +243,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
               className={`relative whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all duration-200 hover:-translate-y-px active:scale-95 md:px-4 md:py-2 md:text-sm ${
                 selected === category
                   ? 'text-white dark:text-ink'
-                  : 'text-zinc-500 hover:bg-zinc-100 hover:text-ink dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white'
+                  : 'text-zinc-700 hover:bg-zinc-100 hover:text-ink dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-white'
               }`}
             >
               {selected === category && (
@@ -258,7 +258,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
           ))}
         </div>
       </div>
-      <button onClick={onToggleSort} aria-pressed={sortOrder === 'oldest'} aria-label={`当前排序：${sortOrder === 'newest' ? '最新优先' : '最早优先'}，点击切换`} className="flex shrink-0 items-center space-x-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-500 transition-all duration-200 hover:-translate-y-px hover:text-ink active:scale-95 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white md:px-4 md:py-2 md:text-sm">
+      <button onClick={onToggleSort} aria-pressed={sortOrder === 'oldest'} aria-label={`当前排序：${sortOrder === 'newest' ? '最新优先' : '最早优先'}，点击切换`} className="flex shrink-0 items-center space-x-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-all duration-200 hover:-translate-y-px hover:text-ink active:scale-95 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:text-white md:px-4 md:py-2 md:text-sm">
         {sortOrder === 'newest' ? <ArrowDownWideNarrow size={13} /> : <ArrowUpWideNarrow size={13} />}
         <span>{sortOrder === 'newest' ? '最新' : '最早'}</span>
       </button>
@@ -268,18 +268,18 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
 
 const Hero = () => {
   return (
-    <div className="relative z-10 flex flex-col items-center px-4 pt-6 pb-10 text-center md:pt-14 md:pb-16">
+    <div className="relative z-10 flex flex-col items-center px-4 pb-10 pt-6 text-center md:pb-16 md:pt-14">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: easeOut }} className="mb-4 flex items-center gap-3">
-        <div className="h-px w-8 bg-zinc-300 dark:bg-zinc-700" />
-        <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 md:text-xs">
+        <div className="h-px w-8 bg-zinc-400 dark:bg-zinc-600" />
+        <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-zinc-700 dark:text-zinc-300 md:text-xs">
           {siteConfig.subtitle}
         </span>
-        <div className="h-px w-8 bg-zinc-300 dark:bg-zinc-700" />
+        <div className="h-px w-8 bg-zinc-400 dark:bg-zinc-600" />
       </motion.div>
-      <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04, duration: 0.4, ease: easeOut }} className="mb-4 font-serif text-6xl font-black leading-[0.95] tracking-tighter bg-gradient-to-br from-ink to-zinc-600 bg-clip-text text-transparent sm:text-7xl md:mb-5 md:text-8xl lg:text-9xl">
+      <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04, duration: 0.4, ease: easeOut }} className="mb-4 bg-gradient-to-br from-ink via-zinc-800 to-zinc-600 bg-clip-text font-serif text-6xl font-black leading-[0.95] tracking-tighter text-transparent sm:text-7xl md:mb-5 md:text-8xl lg:text-9xl dark:from-white dark:via-zinc-100 dark:to-zinc-400">
         {siteConfig.title}
       </motion.h1>
-      <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.35, ease: easeOut }} className="mx-auto max-w-lg font-sans text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 md:max-w-xl md:text-base">
+      <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.35, ease: easeOut }} className="mx-auto max-w-lg font-sans text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 md:max-w-xl md:text-base">
         {siteConfig.description}
       </motion.p>
     </div>
@@ -485,20 +485,37 @@ export const Home = () => {
           </motion.div>
         ) : (
           <div id="posts-panel" role="tabpanel" aria-labelledby={`category-tab-${selectedCategory}`} className="space-y-8 md:space-y-10">
-            <AnimatePresence mode="wait">
+            <motion.div
+              layout
+              transition={gridLayoutTransition}
+              className="relative"
+            >
+              <AnimatePresence initial={false}>
+                <motion.div
+                  key={`${selectedCategory}-${sortOrder}-${currentPage}-${searchQuery}`}
+                  className="pointer-events-none absolute inset-0 rounded-[2rem] bg-white/55 backdrop-blur-[1px] dark:bg-zinc-950/45"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16, ease: easeSmooth }}
+                  aria-hidden="true"
+                />
+              </AnimatePresence>
+
               <motion.div
-                key={`${selectedCategory}-${sortOrder}-${currentPage}-${searchQuery}`}
+                layout
+                id="posts-grid"
                 className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3"
                 variants={gridExitVariants}
                 initial="hidden"
                 animate="visible"
+                transition={gridLayoutTransition}
               >
-
                 {featuredPost && <PostCard key={featuredPost.id} post={featuredPost} index={0} featured onShare={setSharePost} />}
                 {remainingPosts.length > 0 ? (
                   remainingPosts.map((post, index) => <PostCard key={post.id} post={post} index={index + (featuredPost ? 1 : 0)} onShare={setSharePost} />)
                 ) : !featuredPost ? (
-                  <motion.div variants={fadeInUp} className="col-span-full rounded-2xl border border-dashed border-zinc-200 py-20 text-center dark:border-zinc-800">
+                  <motion.div layout variants={fadeInUp} className="col-span-full rounded-2xl border border-dashed border-zinc-200 py-20 text-center dark:border-zinc-800">
                     <p className="mb-2 font-serif text-lg text-zinc-400">{hasSearchQuery ? '未找到匹配的文章' : '暂无相关文章'}</p>
                     {hasSearchQuery && (
                       <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.18, ease: easeOut }} onClick={handleClearSearch} className="mt-4 text-sm text-zinc-700 hover:underline dark:text-zinc-300" aria-label="清除搜索条件">
@@ -508,9 +525,10 @@ export const Home = () => {
                   </motion.div>
                 ) : null}
               </motion.div>
-            </AnimatePresence>
+            </motion.div>
 
             {totalPages > 1 && (
+
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: easeOut }} className="flex items-center justify-center gap-3 pt-2" aria-label="分页导航">
                 <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.18, ease: easeOut }} onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-500 transition-colors hover:border-zinc-300 hover:text-ink disabled:opacity-25 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-white md:p-3" aria-label="上一页">
                   <ChevronLeft size={16} />

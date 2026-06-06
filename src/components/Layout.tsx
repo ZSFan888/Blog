@@ -220,7 +220,8 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
 
             <div className="max-h-[60vh] overflow-y-auto">
               {isSearching ? (
-                <div className="p-12 text-center text-zinc-400">
+                <div className="p-12 text-center text-zinc-600 dark:text-zinc-300">
+
                   <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent dark:border-zinc-100" />
                 </div>
               ) : visibleResults.length > 0 ? (

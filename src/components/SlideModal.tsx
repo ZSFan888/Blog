@@ -161,7 +161,8 @@ export const SlideModal: React.FC<SlideModalProps> = ({
           className={`fixed inset-0 z-[110] flex justify-center ${isMobile ? 'items-end' : 'items-center'}`}
           role="dialog"
           aria-modal="true"
-          aria-labelledby={ariaLabelledby}
+          aria-labelledby={ariaLabelledby || undefined}
+          aria-describedby={ariaDescribedby || undefined}
         >
           <motion.div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/80"

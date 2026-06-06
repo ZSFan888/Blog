@@ -106,6 +106,11 @@ const AppRoutes: React.FC = () => {
       return;
     }
 
+    if (location.pathname === displayLocation.pathname) {
+      setDisplayLocation(location);
+      return;
+    }
+
     if (hasViewTransition) {
       const x = ((window as unknown as { __lastClickX?: number }).__lastClickX ?? window.innerWidth / 2) / window.innerWidth * 100;
       const y = ((window as unknown as { __lastClickY?: number }).__lastClickY ?? 0) / window.innerHeight * 100;
@@ -121,6 +126,7 @@ const AppRoutes: React.FC = () => {
       setDisplayLocation(location);
     }
   }, [location, displayLocation.pathname, displayLocation.search, hasViewTransition]);
+
 
 
 

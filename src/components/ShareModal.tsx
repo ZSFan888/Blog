@@ -106,7 +106,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       onCloseCallback={onCloseCallback}
       initialFocusRef={closeButtonRef}
       ariaLabelledby={titleId}
+      ariaDescribedby={descriptionId}
     >
+
       {/* Windows 风格标题栏 */}
       <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50 px-5 py-3 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center gap-3">
