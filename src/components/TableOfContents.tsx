@@ -436,7 +436,7 @@ export const TableOfContents: React.FC<{
   const readingProgressDisplay = headings.length > 0 ? Math.round(((currentHeadingIndex + 1) / headings.length) * 100) : 0;
 
   const panelContent = (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-lg backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-4.5">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:p-4.5">
       <div
         className="mb-3 flex justify-center lg:hidden"
         onTouchStart={handleSheetTouchStart}
@@ -577,7 +577,7 @@ export const TableOfContents: React.FC<{
             type="button"
             onClick={() => setIsOpen((value) => !value)}
             style={MOBILE_TOC_TRIGGER_STYLE}
-            className="fixed z-[60] inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/96 px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900/94 dark:text-zinc-100 dark:hover:border-zinc-600 lg:hidden"
+            className="fixed z-[60] inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 transition-colors hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-600 lg:hidden"
             aria-label={isOpen ? '关闭目录' : '打开目录'}
             aria-expanded={isOpen}
           >

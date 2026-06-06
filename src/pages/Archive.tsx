@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Archive, Calendar, FolderTree, ArrowUpRight, Search, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { getPosts } from '@/services/posts';
 import { PostMetadata } from '../types';
@@ -92,14 +92,18 @@ const buildArchiveGroups = (posts: PostMetadata[]) => {
 };
 
 export const ArchivePage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryFromUrl = searchParams.get('q') || '';
+  const yearFromUrl = searchParams.get('year');
   const [allPosts, setAllPosts] = useState<PostMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
   const latestDate = allPosts[0]?.date || '';
-  const { searchQuery, isSearching, results, handleSearch, clearSearch, hasSearchQuery } = usePostSearch({
-    emptyResults: allPosts
+  const { searchQuery, isSearching, results, handleSearch, setSearchQuery, clearSearch, hasSearchQuery } = usePostSearch({
+    emptyResults: allPosts,
+    initialQuery: queryFromUrl
   });
 
   useEffect(() => {
@@ -131,22 +135,52 @@ export const ArchivePage = () => {
     };
   }, []);
 
+  const handleSearchChange = (query: string) => {
+    handleSearch(query);
+    setSearchParams((previous) => {
+      const nextParams = new URLSearchParams(previous);
+      if (query.trim()) {
+        nextParams.set('q', query);
+      } else {
+        nextParams.delete('q');
+      }
+      return nextParams;
+    }, { replace: true });
+  };
+
+  const handleClearSearch = () => {
+    clearSearch();
+    setSearchParams((previous) => {
+      const nextParams = new URLSearchParams(previous);
+      nextParams.delete('q');
+      return nextParams;
+    }, { replace: true });
+  };
+
   const groups = buildArchiveGroups(results);
   const totalPosts = groups.reduce((sum, group) => sum + group.total, 0);
 
-  // 初始化展开状态：默认展开最新的年份
+  useEffect(() => {
+    if (queryFromUrl !== searchQuery) {
+      setSearchQuery(queryFromUrl);
+    }
+  }, [queryFromUrl, searchQuery, setSearchQuery]);
+
+  // 初始化展开状态：默认展开 URL 指定年份或最新的年份
   useEffect(() => {
     if (groups.length > 0 && expandedYears.size === 0) {
-      const latestYear = groups[0].year;
+      const targetGroup = yearFromUrl ? groups.find((group) => group.year === yearFromUrl) : null;
+      const latestYear = targetGroup?.year || groups[0].year;
+      const latestGroup = targetGroup || groups[0];
       setExpandedYears(new Set([latestYear]));
       
-      // 默认展开最新年份的第一个月
-      if (groups[0].months.length > 0) {
-        const latestMonth = `${latestYear}-${groups[0].months[0].monthNum}`;
+      // 默认展开目标年份的第一个月
+      if (latestGroup.months.length > 0) {
+        const latestMonth = `${latestYear}-${latestGroup.months[0].monthNum}`;
         setExpandedMonths(new Set([latestMonth]));
       }
     }
-  }, [groups]);
+  }, [groups, expandedYears.size, yearFromUrl]);
 
   // 搜索时自动展开所有匹配项
   useEffect(() => {
@@ -169,6 +203,13 @@ export const ArchivePage = () => {
       const next = new Set(prev);
       if (next.has(year)) {
         next.delete(year);
+        setSearchParams((previous) => {
+          const nextParams = new URLSearchParams(previous);
+          if (nextParams.get('year') === year) {
+            nextParams.delete('year');
+          }
+          return nextParams;
+        }, { replace: true });
         // 折叠年份时，同时折叠该年份下的所有月份
         setExpandedMonths(prevMonths => {
           const nextMonths = new Set(prevMonths);
@@ -179,6 +220,11 @@ export const ArchivePage = () => {
         });
       } else {
         next.add(year);
+        setSearchParams((previous) => {
+          const nextParams = new URLSearchParams(previous);
+          nextParams.set('year', year);
+          return nextParams;
+        }, { replace: true });
       }
       return next;
     });
@@ -270,12 +316,12 @@ export const ArchivePage = () => {
               type="text"
               placeholder="搜索归档文章..."
               value={searchQuery}
-              onChange={(event) => handleSearch(event.target.value)}
+              onChange={(event) => handleSearchChange(event.target.value)}
               className="w-full rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 py-3 pl-11 pr-11 text-sm text-ink outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-4 ring-zinc-900/10 dark:text-white dark:focus:border-zinc-100 dark:ring-zinc-100/10"
               aria-label="搜索归档文章"
             />
             {searchQuery && (
-              <button onClick={clearSearch} className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100" aria-label="清除搜索">
+              <button onClick={handleClearSearch} className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100" aria-label="清除搜索">
                 <X size={16} />
               </button>
             )}
@@ -439,7 +485,7 @@ export const ArchivePage = () => {
 
                                                 <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-zinc-400 transition-colors group-hover:text-zinc-700 dark:group-hover:text-zinc-300">
                                           <span>阅读文章</span>
-                                                  <ArrowUpRight size={14} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                                                  <ArrowUpRight size={14} />
                                                 </div>
                                               </Link>
                                             </motion.div>

@@ -899,12 +899,12 @@ export const CoverGenerator: React.FC = () => {
   }, [generateCover]);
 
   // ==================== UI 渲染 ====================
-  const inputClass = "w-full rounded-xl border border-zinc-200/80 bg-white/90 px-4 py-2.5 text-ink shadow-sm outline-none transition-all focus:border-ink focus:ring-4 focus:ring-ink/10 dark:border-zinc-700/80 dark:bg-zinc-800/90 dark:text-white dark:focus:border-white dark:focus:ring-white/10";
+  const inputClass = "w-full rounded-xl border border-zinc-200/80 bg-white px-4 py-2.5 text-ink outline-none transition-colors focus:border-ink dark:border-zinc-700/80 dark:bg-zinc-800 dark:text-white dark:focus:border-white";
   const rangeClass = "w-full accent-ink dark:accent-white";
   const colorClass = "h-11 w-full cursor-pointer rounded-xl border border-zinc-200 dark:border-zinc-700";
-  const cardClass = "overflow-hidden rounded-3xl border border-zinc-200/70 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm transition-all dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:shadow-none";
-  const dashedBtnClass = "flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-700 transition-all hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-white dark:hover:bg-white/5";
-  const chipClass = "inline-flex items-center rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs font-semibold text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300";
+  const cardClass = "overflow-hidden rounded-3xl border border-zinc-200/70 bg-white transition-colors dark:border-zinc-800/80 dark:bg-zinc-900";
+  const dashedBtnClass = "flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-700 transition-colors hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-white dark:hover:bg-white/5";
+  const chipClass = "inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
 
   return (
     <div className="pb-20">
@@ -1016,29 +1016,25 @@ export const CoverGenerator: React.FC = () => {
                     title="背景模板"
                     sectionKey="templates"
                     action={
-                      <motion.button
-                        whileHover={{ scale: 1.08, rotate: 8 }}
-                        whileTap={{ scale: 0.94 }}
+                      <button
                         onClick={randomizeStyle}
                         className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-ink dark:hover:bg-zinc-800 dark:hover:text-white"
                         title="随机风格"
                       >
                         <Shuffle size={16} />
-                      </motion.button>
+                      </button>
                     }
                   />
                   {!isCollapsed('templates') && (
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-3">
                         {templates.map((template) => (
-                          <motion.button
+                          <button
                             key={template.id}
-                            whileHover={{ scale: 1.02, y: -2 }}
-                            whileTap={{ scale: 0.98 }}
                             onClick={() => setSelectedTemplate(template)}
-                            className={`group relative h-28 overflow-hidden rounded-2xl border transition-all ${
+                            className={`group relative h-28 overflow-hidden rounded-2xl border transition-colors ${
                               selectedTemplate.id === template.id
-                                ? 'border-ink shadow-lg shadow-ink/15 ring-4 ring-ink/10 dark:border-white dark:shadow-white/10 dark:ring-white/10'
+                                ? 'border-ink ring-2 ring-ink/10 dark:border-white dark:ring-white/10'
                                 : 'border-zinc-200/80 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500'
                             }`}
                             style={{ background: template.gradient }}
@@ -1052,7 +1048,7 @@ export const CoverGenerator: React.FC = () => {
                             {selectedTemplate.id === template.id && (
                               <div className="absolute right-3 top-3 rounded-full bg-white/80 px-2 py-1 text-[11px] font-bold text-ink shadow-sm dark:bg-zinc-800/80 dark:text-white">当前</div>
                             )}
-                          </motion.button>
+                          </button>
                         ))}
                       </div>
                       <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/80 p-3 dark:border-zinc-700 dark:bg-zinc-800/60">

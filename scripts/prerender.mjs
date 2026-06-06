@@ -43,7 +43,8 @@ if (!fs.existsSync(POSTS_FILE)) {
 }
 const posts = JSON.parse(fs.readFileSync(POSTS_FILE, 'utf-8'));
 
-const escapeHtmlAttribute = (value) => String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+const escapeHtmlAttribute = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const escapeJsonForHtml = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
 
 const createImagePreload = (imageUrl, imagesizes) => {
   if (!imageUrl) {
@@ -52,6 +53,65 @@ const createImagePreload = (imageUrl, imagesizes) => {
 
   const sizesAttr = imagesizes ? ` imagesizes="${escapeHtmlAttribute(imagesizes)}"` : '';
   return `\n    <link rel="preload" as="image" href="${escapeHtmlAttribute(imageUrl)}" fetchpriority="high"${sizesAttr}>`;
+};
+
+const createStaticPageMeta = ({ path: pagePath, title, description, schemaType = 'CollectionPage' }) => {
+  const pageUrl = new URL(pagePath, `${SITE_URL}/`).toString();
+  const image = toAbsoluteUrl(siteConfig.seoImage || siteConfig.logo || '/logo.png', SITE_URL);
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': schemaType,
+    name: title,
+    description,
+    url: pageUrl,
+    isPartOf: {
+      '@type': 'WebSite',
+      name: siteTitle,
+      url: SITE_URL
+    },
+    image
+  };
+
+  return `
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="${escapeHtmlAttribute(title)}">
+    <meta property="og:description" content="${escapeHtmlAttribute(description)}">
+    <meta property="og:url" content="${escapeHtmlAttribute(pageUrl)}">
+    <meta property="og:image" content="${escapeHtmlAttribute(image)}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${escapeHtmlAttribute(title)}">
+    <meta name="twitter:description" content="${escapeHtmlAttribute(description)}">
+    <meta name="twitter:image" content="${escapeHtmlAttribute(image)}">
+    <script type="application/ld+json">${escapeJsonForHtml(structuredData)}</script>`;
+};
+
+const createHomeMeta = () => {
+  const image = toAbsoluteUrl(siteConfig.seoImage || siteConfig.logo || '/logo.png', SITE_URL);
+  const websiteData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: siteTitle,
+    description: siteConfig.description,
+    url: SITE_URL,
+    image,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${SITE_URL}/?q={search_term_string}`,
+      'query-input': 'required name=search_term_string'
+    }
+  };
+
+  return `
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="${escapeHtmlAttribute(siteTitle)}">
+    <meta property="og:description" content="${escapeHtmlAttribute(siteConfig.description)}">
+    <meta property="og:url" content="${escapeHtmlAttribute(SITE_URL)}">
+    <meta property="og:image" content="${escapeHtmlAttribute(image)}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${escapeHtmlAttribute(siteTitle)}">
+    <meta name="twitter:description" content="${escapeHtmlAttribute(siteConfig.description)}">
+    <meta name="twitter:image" content="${escapeHtmlAttribute(image)}">
+    <script type="application/ld+json">${escapeJsonForHtml(websiteData)}</script>`;
 };
 
 const getHomeHeroPost = () => posts.find((post) => post.top !== undefined) || posts.find((post) => post.featured) || posts[0];
@@ -161,26 +221,23 @@ posts.forEach(post => {
 
 // 2. Process Static Pages
 const staticPages = [
-  { path: 'archive', title: `文章归档 - ${SITE_SUFFIX}`, description: `按年份归档 ${siteTitle} 全部历史文章，快速查看发布时间与更新轨迹。` },
-  { path: 'tags', title: `标签云 - ${SITE_SUFFIX}`, description: `按标签浏览 ${siteTitle} 文章，通过标签快速筛选感兴趣的技术主题。` },
-  { path: 'stats', title: `站点统计 - ${SITE_SUFFIX}`, description: `${siteTitle} 站点统计概览：文章数、总字数、分类标签等核心数据。` },
-  { path: 'about', title: `关于我 - ${SITE_SUFFIX}`, description: `关于跑路的duck：前端开发者，热爱探索 Web 技术与极致性能体验。` },
-  { path: 'friends', title: `友情链接 - ${SITE_SUFFIX}`, description: `${siteTitle} 友情链接汇集优秀技术博客，欢迎通过 GitHub PR 申请交换友链。` },
-  { path: 'cover', title: `封面生成器 - ${SITE_SUFFIX}`, description: `在线生成精美博客封面图片，支持自定义文字、图标与多种导出比例。` },
-  { path: 'sponsor', title: `赞助支持 - ${SITE_SUFFIX}`, description: `支持 ${siteTitle} 的多种方式：贡献代码、撰写文章帮助博客持续成长。` }
+  { path: 'archive', title: `文章归档 - ${SITE_SUFFIX}`, description: `按年份归档 ${siteTitle} 全部历史文章，快速查看发布时间与更新轨迹。`, schemaType: 'CollectionPage' },
+  { path: 'tags', title: `标签云 - ${SITE_SUFFIX}`, description: `按标签浏览 ${siteTitle} 文章，通过标签快速筛选感兴趣的技术主题。`, schemaType: 'CollectionPage' },
+  { path: 'stats', title: `站点统计 - ${SITE_SUFFIX}`, description: `${siteTitle} 站点统计概览：文章数、总字数、分类标签等核心数据。`, schemaType: 'WebPage' },
+  { path: 'about', title: `关于我 - ${SITE_SUFFIX}`, description: `关于跑路的duck：前端开发者，热爱探索 Web 技术与极致性能体验。`, schemaType: 'ProfilePage' },
+  { path: 'friends', title: `友情链接 - ${SITE_SUFFIX}`, description: `${siteTitle} 友情链接汇集优秀技术博客，欢迎通过 GitHub PR 申请交换友链。`, schemaType: 'CollectionPage' },
+  { path: 'cover', title: `封面生成器 - ${SITE_SUFFIX}`, description: `在线生成精美博客封面图片，支持自定义文字、图标与多种导出比例。`, schemaType: 'WebApplication' },
+  { path: 'sponsor', title: `赞助支持 - ${SITE_SUFFIX}`, description: `支持 ${siteTitle} 的多种方式：贡献代码、撰写文章帮助博客持续成长。`, schemaType: 'WebPage' }
 ];
 
 staticPages.forEach(page => {
-  writeHtml(page.path, page.title, page.description);
+  writeHtml(page.path, page.title, page.description, createStaticPageMeta(page));
 });
 
 const homeHeroPost = getHomeHeroPost();
-if (homeHeroPost?.coverImage) {
-  const homeCoverImage = toAbsoluteUrl(homeHeroPost.coverImage, SITE_URL);
-  const homePreload = createImagePreload(homeCoverImage, '(max-width: 767px) 100vw, 60vw');
-  const homeHtml = injectSeoMeta(template, siteTitle, siteConfig.description, homePreload);
-  fs.writeFileSync(indexHtmlPath, homeHtml);
-}
+const homeExtraMeta = `${homeHeroPost?.coverImage ? createImagePreload(toAbsoluteUrl(homeHeroPost.coverImage, SITE_URL), '(max-width: 767px) 100vw, 60vw') : ''}${createHomeMeta()}`;
+const homeHtml = injectSeoMeta(template, siteTitle, siteConfig.description, homeExtraMeta);
+fs.writeFileSync(indexHtmlPath, homeHtml);
 
 writeStandaloneHtml('404.html', `页面不存在 - ${SITE_SUFFIX}`, '你访问的页面不存在，可能已经移动、重命名或链接已失效。');
 

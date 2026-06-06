@@ -31,16 +31,13 @@ const gridExitVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.025,
-      delayChildren: 0.02,
+      staggerChildren: 0.018,
+      delayChildren: 0.01,
     },
   },
   exit: {
     opacity: 0,
-    y: 10,
-    scale: 0.98,
-    filter: 'blur(2px)',
-    transition: { duration: 0.18, ease: easeSmooth },
+    transition: { duration: 0.14, ease: easeSmooth },
   },
 } as const;
 
@@ -117,7 +114,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
           <Link to={`/post/${post.id}`} className="group relative block h-56 w-full overflow-hidden md:h-full md:w-3/5" aria-label={`阅读文章：${post.title}`}>
             <div className="absolute inset-0 animate-pulse bg-zinc-200 dark:bg-zinc-800" />
             {post.coverImage ? (
-              <ProgressiveImage src={post.coverImage} alt={post.title} loading="lazy" aspectRatio="16/9" sizes="(max-width: 767px) 100vw, 60vw" wrapperClassName="absolute inset-0" className="h-full w-full object-cover" />
+              <ProgressiveImage src={post.coverImage} alt={post.title} loading="lazy" aspectRatio="16/9" sizes="(max-width: 767px) 100vw, 60vw" wrapperClassName="absolute inset-0" className="h-full w-full object-cover" effect="fade" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
                 <Sparkles className="h-16 w-16 text-zinc-300" />
@@ -143,7 +140,21 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
                 {post.title}
               </h2>
             </Link>
-            <p className="mb-5 font-sans text-xs leading-relaxed text-zinc-500 line-clamp-3 dark:text-zinc-400 md:mb-6 md:text-sm">{post.excerpt}</p>
+            <p className="mb-4 font-sans text-xs leading-relaxed text-zinc-500 line-clamp-3 dark:text-zinc-400 md:mb-5 md:text-sm">{post.excerpt}</p>
+            {post.tags.length > 0 && (
+              <div className="mb-5 flex flex-wrap gap-2">
+                {post.tags.slice(0, 3).map((tag) => (
+                  <Link
+                    key={tag}
+                    to={`/tags?tag=${encodeURIComponent(tag)}`}
+                    className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[10px] font-semibold text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400 dark:hover:border-zinc-100 dark:hover:text-zinc-100"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    #{tag}
+                  </Link>
+                ))}
+              </div>
+            )}
             <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-semibold tracking-wide text-zinc-600 dark:text-zinc-300 md:flex-nowrap md:text-xs">
 
               <div className="flex items-center gap-1.5">
@@ -170,24 +181,24 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
       <div className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 dark:hover:border-zinc-700">
         <Link to={`/post/${post.id}`} className="group/image relative aspect-[16/9] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 md:aspect-[16/10]" aria-label={`阅读文章：${post.title}`}>
           {post.coverImage ? (
-            <ProgressiveImage src={post.coverImage} alt={post.title} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} width={1600} height={1000} aspectRatio="16/10" sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
+            <ProgressiveImage src={post.coverImage} alt={post.title} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} width={1600} height={1000} aspectRatio="16/10" sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw" wrapperClassName="h-full w-full" className="h-full w-full object-cover" effect="fade" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-zinc-300">
               <Sparkles className="h-10 w-10 opacity-50" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-500 group-hover/image:opacity-100" />
+
           <div className="absolute left-3 top-3">
             <CategoryBadge text={post.category} />
           </div>
           <div className="absolute right-3 top-3 z-10">
             {post.top !== undefined ? (
-              <div className="flex items-center gap-1 rounded-full bg-ink/80 px-2 py-0.5 text-[9px] font-bold text-white backdrop-blur dark:bg-white/80 dark:text-ink">
+              <div className="flex items-center gap-1 rounded-full bg-ink/90 px-2 py-0.5 text-[9px] font-bold text-white dark:bg-white/90 dark:text-ink">
                 <Pin size={9} fill="currentColor" />
                 <span>置顶</span>
               </div>
             ) : (
-              <div className="rounded-full bg-white/90 p-2 opacity-0 shadow-lg backdrop-blur transition-all duration-300 group-hover/image:translate-y-0 group-hover/image:opacity-100 dark:bg-black/80">
+              <div className="rounded-full border border-zinc-200 bg-white/95 p-2 opacity-0 transition-opacity duration-200 group-hover/image:opacity-100 dark:border-zinc-700 dark:bg-black/85">
                 <ArrowUpRight size={14} className="text-ink dark:text-white" />
               </div>
             )}
@@ -199,7 +210,21 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
               {post.title}
             </h3>
           </Link>
-          <p className="mb-4 line-clamp-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 md:mb-5 md:text-sm">{post.excerpt}</p>
+          <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-sm">{post.excerpt}</p>
+          {post.tags.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {post.tags.slice(0, 3).map((tag) => (
+                <Link
+                  key={tag}
+                  to={`/tags?tag=${encodeURIComponent(tag)}`}
+                  className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 transition-colors hover:bg-zinc-900 hover:text-white dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-100 dark:hover:text-zinc-900"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  #{tag}
+                </Link>
+              ))}
+            </div>
+          )}
           <div className="mt-auto flex items-center justify-between border-t border-zinc-100/80 pt-3 text-[10px] font-semibold text-zinc-400 dark:border-zinc-800/80 dark:text-zinc-500 md:text-xs">
             <div className="flex items-center gap-2.5">
               <div className="flex items-center gap-1">
@@ -243,7 +268,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
               aria-selected={selected === category}
               aria-controls="posts-grid"
               tabIndex={selected === category ? 0 : -1}
-              className={`relative whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all duration-200 hover:-translate-y-px active:scale-95 md:px-4 md:py-2 md:text-sm ${
+              className={`relative whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-colors duration-150 md:px-4 md:py-2 md:text-sm ${
                 selected === category
                   ? 'text-white dark:text-ink'
                   : 'text-zinc-700 hover:bg-zinc-100 hover:text-ink dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-white'
@@ -252,8 +277,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
               {selected === category && (
                 <motion.span
                   layoutId="activeCategoryPill"
-                  className="absolute inset-0 rounded-full bg-ink shadow-md dark:bg-white"
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  className="absolute inset-0 rounded-full bg-ink dark:bg-white"
+                  transition={{ duration: 0.18, ease: easeSmooth }}
                 />
               )}
               <span className="relative z-10">{category}</span>
@@ -261,7 +286,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, s
           ))}
         </div>
       </div>
-      <button onClick={onToggleSort} aria-pressed={sortOrder === 'oldest'} aria-label={`当前排序：${sortOrder === 'newest' ? '最新优先' : '最早优先'}，点击切换`} className="flex shrink-0 items-center space-x-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-all duration-200 hover:-translate-y-px hover:text-ink active:scale-95 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:text-white md:px-4 md:py-2 md:text-sm">
+      <button onClick={onToggleSort} aria-pressed={sortOrder === 'oldest'} aria-label={`当前排序：${sortOrder === 'newest' ? '最新优先' : '最早优先'}，点击切换`} className="flex shrink-0 items-center space-x-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-colors duration-150 hover:text-ink dark:bg-zinc-800 dark:text-zinc-200 dark:hover:text-white md:px-4 md:py-2 md:text-sm">
         {sortOrder === 'newest' ? <ArrowDownWideNarrow size={13} /> : <ArrowUpWideNarrow size={13} />}
         <span>{sortOrder === 'newest' ? '最新' : '最早'}</span>
       </button>
@@ -292,6 +317,7 @@ const Hero = () => {
 export const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get('category');
+  const queryFromUrl = searchParams.get('q') || '';
   const [allPosts, setAllPosts] = useState<PostMetadata[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState(() => categoryFromUrl || ALL_CATEGORY);
@@ -300,8 +326,9 @@ export const Home = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sharePost, setSharePost] = useState<PostMetadata | null>(null);
-  const { searchQuery, isSearching, results, handleSearch, clearSearch, hasSearchQuery } = usePostSearch({
-    emptyResults: allPosts
+  const { searchQuery, isSearching, results, handleSearch, setSearchQuery, clearSearch, hasSearchQuery } = usePostSearch({
+    emptyResults: allPosts,
+    initialQuery: queryFromUrl
   });
 
   const isMobile = useMediaQuery('(max-width: 767px)', false);
@@ -361,6 +388,12 @@ export const Home = () => {
   }, [categories, categoryFromUrl, setSearchParams]);
 
   useEffect(() => {
+    if (queryFromUrl !== searchQuery) {
+      setSearchQuery(queryFromUrl);
+    }
+  }, [queryFromUrl, searchQuery, setSearchQuery]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, sortOrder]);
 
@@ -401,8 +434,28 @@ export const Home = () => {
     setSortOrder((current) => current === 'newest' ? 'oldest' : 'newest');
   };
 
+  const handleSearchChange = (query: string) => {
+    handleSearch(query);
+    setSearchParams((previous) => {
+      const nextParams = new URLSearchParams(previous);
+
+      if (query.trim()) {
+        nextParams.set('q', query);
+      } else {
+        nextParams.delete('q');
+      }
+
+      return nextParams;
+    }, { replace: true });
+  };
+
   const handleClearSearch = () => {
     clearSearch();
+    setSearchParams((previous) => {
+      const nextParams = new URLSearchParams(previous);
+      nextParams.delete('q');
+      return nextParams;
+    }, { replace: true });
   };
 
   const currentPosts = useMemo(() => {
@@ -458,10 +511,10 @@ export const Home = () => {
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-zinc-600 dark:group-focus-within:text-zinc-300" />
             <input
               value={searchQuery}
-              onChange={(event) => handleSearch(event.target.value)}
+              onChange={(event) => handleSearchChange(event.target.value)}
               type="search"
               placeholder="搜索标题、摘要、分类与正文内容..."
-              className="w-full rounded-full border border-zinc-200/80 bg-white/90 py-3 pl-11 pr-4 text-sm text-ink shadow-sm outline-none transition-all duration-200 placeholder:text-zinc-400 focus:border-zinc-300 focus:ring-4 focus:ring-zinc-100 dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-700 dark:focus:ring-zinc-800/60"
+              className="w-full rounded-full border border-zinc-200/80 bg-white py-3 pl-11 pr-4 text-sm text-ink outline-none transition-colors duration-150 placeholder:text-zinc-400 focus:border-zinc-400 dark:border-zinc-800/80 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-600"
               aria-label="搜索文章"
             />
           </label>
@@ -496,7 +549,7 @@ export const Home = () => {
               <AnimatePresence initial={false}>
                 <motion.div
                   key={`${selectedCategory}-${sortOrder}-${currentPage}-${searchQuery}`}
-                  className="pointer-events-none absolute inset-0 rounded-[2rem] bg-white/55 backdrop-blur-[1px] dark:bg-zinc-950/45"
+                  className="pointer-events-none absolute inset-0 rounded-[2rem] bg-white/55 dark:bg-zinc-950/45"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0 }}
                   exit={{ opacity: 0 }}
@@ -521,9 +574,9 @@ export const Home = () => {
                   <motion.div layout variants={fadeInUp} className="col-span-full rounded-2xl border border-dashed border-zinc-200 py-20 text-center dark:border-zinc-800">
                     <p className="mb-2 font-serif text-lg text-zinc-400">{hasSearchQuery ? '未找到匹配的文章' : '暂无相关文章'}</p>
                     {hasSearchQuery && (
-                      <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.18, ease: easeOut }} onClick={handleClearSearch} className="mt-4 text-sm text-zinc-700 hover:underline dark:text-zinc-300" aria-label="清除搜索条件">
+                      <button onClick={handleClearSearch} className="mt-4 text-sm text-zinc-700 hover:underline dark:text-zinc-300" aria-label="清除搜索条件">
                         清除搜索条件
-                      </motion.button>
+                      </button>
                     )}
                   </motion.div>
                 ) : null}
@@ -532,17 +585,17 @@ export const Home = () => {
 
             {totalPages > 1 && (
 
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: easeOut }} className="flex items-center justify-center gap-3 pt-2" aria-label="分页导航">
-                <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.18, ease: easeOut }} onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-500 transition-colors hover:border-zinc-300 hover:text-ink disabled:opacity-25 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-white md:p-3" aria-label="上一页">
+              <div className="flex items-center justify-center gap-3 pt-2" aria-label="分页导航">
+                <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-500 transition-colors hover:border-zinc-300 hover:text-ink disabled:opacity-25 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-white md:p-3" aria-label="上一页">
                   <ChevronLeft size={16} />
-                </motion.button>
-                <motion.span layout transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.6 }} className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 font-mono text-xs font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 md:px-4 md:py-2 md:text-sm" aria-live="polite">
+                </button>
+                <span className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 font-mono text-xs font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 md:px-4 md:py-2 md:text-sm" aria-live="polite">
                   {currentPage} / {totalPages}
-                </motion.span>
-                <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.18, ease: easeOut }} onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-500 transition-colors hover:border-zinc-300 hover:text-ink disabled:opacity-25 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-white md:p-3" aria-label="下一页">
+                </span>
+                <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-500 transition-colors hover:border-zinc-300 hover:text-ink disabled:opacity-25 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-white md:p-3" aria-label="下一页">
                   <ChevronRight size={16} />
-                </motion.button>
-              </motion.div>
+                </button>
+              </div>
             )}
           </div>
         )}

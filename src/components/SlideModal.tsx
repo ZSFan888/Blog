@@ -140,12 +140,12 @@ export const SlideModal: React.FC<SlideModalProps> = ({
     return null;
   }
 
-  const overlayDuration = reducedMotion ? 0.15 : 0.3;
-  const modalDuration = reducedMotion ? 0 : (isMobile ? 0.3 : 0.4);
+  const overlayDuration = reducedMotion ? 0.1 : 0.16;
+  const modalDuration = reducedMotion ? 0 : 0.18;
   const modalVariants = {
-    hidden: isMobile ? { y: '100%', opacity: 0 } : { y: 24, opacity: 0 },
-    visible: { y: 0, opacity: 1 },
-    exit: isMobile ? { y: '100%', opacity: 0 } : { y: 24, opacity: 0 }
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    exit: { opacity: 0 }
   };
 
   return createPortal(
@@ -167,7 +167,7 @@ export const SlideModal: React.FC<SlideModalProps> = ({
           aria-describedby={ariaDescribedby || undefined}
         >
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/80"
+            className="fixed inset-0 bg-black/50 dark:bg-black/70"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -186,16 +186,12 @@ export const SlideModal: React.FC<SlideModalProps> = ({
                 w-full
                 max-h-[85vh]
                 overflow-hidden
-                rounded-t-[28px]
+                rounded-t-2xl
                 border border-b-0
-                border-zinc-200/80
-                bg-white/95
-                shadow-[0_-24px_80px_rgba(15,23,42,0.18)]
-                backdrop-blur-xl
-                dark:border-zinc-800/80
-                dark:bg-zinc-900/95
-                dark:shadow-[0_-24px_80px_rgba(0,0,0,0.45)]
-                will-change-transform
+                border-zinc-200
+                bg-white
+                dark:border-zinc-800
+                dark:bg-zinc-900
                 ${className}
               `}
               style={{

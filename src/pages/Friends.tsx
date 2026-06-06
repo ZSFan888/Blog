@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Copy, Check, GitPullRequest, Sparkles, ChevronDown } from 'lucide-react';
+import { ExternalLink, Copy, Check, GitPullRequest, Sparkles, ChevronDown, Search, X, Globe2 } from 'lucide-react';
 import { siteConfig } from '@config/site.config';
 import { getFriends } from '@/services/friends';
 import { Seo } from '../components/Seo';
@@ -12,11 +12,20 @@ export const Friends = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getFriends()
-      .then((data) => setFriends(data))
+      .then((data) => {
+        setFriends(data);
+        setLoadError(null);
+      })
+      .catch((error) => {
+        console.error('Failed to load friends:', error);
+        setLoadError('友链数据加载失败，请稍后刷新重试。');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -60,6 +69,26 @@ export const Friends = () => {
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
+
+  const getFriendDomain = (url: string) => {
+    try {
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      return url;
+    }
+  };
+
+  const filteredFriends = useMemo(() => {
+    const keyword = searchQuery.trim().toLocaleLowerCase();
+    if (!keyword) {
+      return friends;
+    }
+
+    return friends.filter((friend) => {
+      const domain = getFriendDomain(friend.url).toLocaleLowerCase();
+      return [friend.name, friend.description, domain].some((value) => value.toLocaleLowerCase().includes(keyword));
+    });
+  }, [friends, searchQuery]);
 
   return (
     <div className="py-12 md:py-20">
@@ -185,29 +214,60 @@ export const Friends = () => {
         </AnimatePresence>
       </div>
 
+      <div className="mb-8 rounded-2xl border border-zinc-200/80 bg-white/90 p-4 dark:border-zinc-800/80 dark:bg-zinc-900/90">
+        <label className="group relative block">
+          <span className="sr-only">搜索友链</span>
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100" />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="按站点名称、简介或域名搜索友链..."
+            className="w-full rounded-full border border-zinc-200 bg-white py-3 pl-11 pr-11 text-sm text-zinc-900 outline-none transition-colors focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-600"
+          />
+          {searchQuery && (
+            <button type="button" onClick={() => setSearchQuery('')} className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100" aria-label="清除友链搜索">
+              <X size={16} />
+            </button>
+          )}
+        </label>
+        {searchQuery && (
+          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">找到 {filteredFriends.length} 个匹配站点</p>
+        )}
+      </div>
+
+      {loadError && !loading && (
+        <div className="mb-8 rounded-2xl border border-dashed border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+          {loadError}
+        </div>
+      )}
+
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {!loading &&
-          friends.map((friend, index) => (
+        {!loading && !loadError && filteredFriends.length > 0 &&
+          filteredFriends.map((friend, index) => (
             <motion.a
               key={`${friend.url}-${index}`}
               variants={itemVariants}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.22, ease: easeOut }}
+              transition={{ duration: 0.16, ease: easeOut }}
               href={friend.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative block overflow-hidden rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 p-6 transition-all duration-300 dark:hover:border-zinc-700"
+              className="group relative block overflow-hidden rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 p-6 transition-colors duration-150 dark:hover:border-zinc-700"
             >
-              <div className="absolute right-0 top-0 p-4 text-zinc-400 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 dark:text-zinc-500">
+              <div className="absolute right-0 top-0 p-4 text-zinc-400 opacity-0 transition-opacity duration-150 group-hover:opacity-100 dark:text-zinc-500">
                 <ExternalLink size={16} />
               </div>
               <div className="flex items-start gap-4">
                 <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
-                  <ProgressiveImage src={friend.avatar} alt={friend.name} wrapperClassName="h-full w-full" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
+                  <ProgressiveImage src={friend.avatar} alt={friend.name} wrapperClassName="h-full w-full" className="h-full w-full object-cover object-center" effect="fade" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className="mb-1 truncate font-serif text-lg font-bold text-zinc-900 transition-colors group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">{friend.name}</h2>
                   <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{friend.description}</p>
+                  <div className="mt-3 inline-flex max-w-full items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                    <Globe2 size={12} />
+                    <span className="truncate">{getFriendDomain(friend.url)}</span>
+                  </div>
                 </div>
               </div>
             </motion.a>
@@ -226,6 +286,12 @@ export const Friends = () => {
               </div>
             </motion.div>
           ))}
+
+        {!loading && !loadError && filteredFriends.length === 0 && (
+          <div className="col-span-full rounded-2xl border border-dashed border-zinc-200 bg-white/90 p-10 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-400">
+            没有找到匹配的友链，试试更短的关键词。
+          </div>
+        )}
       </motion.div>
     </div>
   );

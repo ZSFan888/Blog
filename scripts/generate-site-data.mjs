@@ -93,6 +93,48 @@ const generateSiteStats = (postsWithSearch) => {
   const totalCategories = new Set(postsWithSearch.map((post) => post.category)).size;
   const totalTags = new Set(postsWithSearch.flatMap((post) => post.tags || [])).size;
   const totalImages = postsWithSearch.reduce((sum, post) => sum + (post.imageCount || 0), 0);
+  const toPostSummary = (post) => ({
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt,
+    date: post.date,
+    updatedAt: post.updatedAt,
+    category: post.category,
+    tags: post.tags,
+    coverImage: post.coverImage,
+    readTime: post.readTime,
+    wordCount: post.wordCount || 0,
+    imageCount: post.imageCount || 0
+  });
+  const countBy = (items, getKey) => Array.from(items.reduce((map, item) => {
+    const key = getKey(item);
+    if (key) {
+      map.set(key, (map.get(key) || 0) + 1);
+    }
+    return map;
+  }, new Map()).entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'zh-CN'));
+  const categoryStats = countBy(postsWithSearch, (post) => post.category);
+  const tagStats = countBy(postsWithSearch.flatMap((post) => post.tags || []), (tag) => tag).slice(0, 12);
+  const yearlyStats = countBy(postsWithSearch, (post) => String(new Date(post.date).getFullYear()))
+    .sort((a, b) => Number(b.name) - Number(a.name))
+    .map((item) => ({ year: item.name, count: item.count }));
+  const recentPosts = postsWithSearch
+    .slice()
+    .sort((a, b) => new Date(b.updatedAt || b.date) - new Date(a.updatedAt || a.date))
+    .slice(0, 5)
+    .map(toPostSummary);
+  const topWordCountPosts = postsWithSearch
+    .slice()
+    .sort((a, b) => (b.wordCount || 0) - (a.wordCount || 0))
+    .slice(0, 5)
+    .map(toPostSummary);
+  const topImageCountPosts = postsWithSearch
+    .slice()
+    .sort((a, b) => (b.imageCount || 0) - (a.imageCount || 0))
+    .slice(0, 5)
+    .map(toPostSummary);
 
   fs.writeFileSync(
     path.join(OUTPUT_JSON_DIR, 'site-stats.json'),
@@ -102,7 +144,13 @@ const generateSiteStats = (postsWithSearch) => {
         totalWords,
         totalCategories,
         totalTags,
-        totalImages
+        totalImages,
+        categoryStats,
+        tagStats,
+        yearlyStats,
+        recentPosts,
+        topWordCountPosts,
+        topImageCountPosts
       },
       null,
       2
@@ -175,19 +223,26 @@ const formatFrontmatterDate = (value) => {
   return String(value);
 };
 
-const POST_CATEGORIES = ['教程', '技术', '随笔', '分享', '其他'];
+const CONTENT_CONFIG_FILE = path.join(__dirname, '../config/content.config.json');
+const contentConfig = JSON.parse(fs.readFileSync(CONTENT_CONFIG_FILE, 'utf-8'));
+const POST_CATEGORIES = Array.isArray(contentConfig.postCategories) && contentConfig.postCategories.length > 0
+  ? contentConfig.postCategories
+  : ['其他'];
+const FALLBACK_CATEGORY = typeof contentConfig.fallbackCategory === 'string' && contentConfig.fallbackCategory.trim()
+  ? contentConfig.fallbackCategory.trim()
+  : POST_CATEGORIES[POST_CATEGORIES.length - 1];
 
 const normalizeCategory = (value) => {
   if (typeof value !== 'string') {
-    return '其他';
+    return FALLBACK_CATEGORY;
   }
 
   const category = value.trim();
   if (!category) {
-    return '其他';
+    return FALLBACK_CATEGORY;
   }
 
-  return POST_CATEGORIES.includes(category) ? category : '其他';
+  return POST_CATEGORIES.includes(category) ? category : FALLBACK_CATEGORY;
 };
 
 const validatePostFrontmatter = (filename, data, formattedDate, formattedUpdatedAt, id) => {

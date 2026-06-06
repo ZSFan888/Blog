@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -43,7 +43,7 @@ const MERMAID_CONFIG = {
   }
 } as const;
 
-const hasCodeBlocks = (content: string) => /```[\w-]*\s*```/m.test(content);
+const hasCodeBlocks = (content: string) => /^```[\w-]*[\s\S]*?^```/m.test(content);
 const hasMathExpressions = (content: string) => /\$\$[\s\S]*?\$\$|\\\(|\\\[/m.test(content);
 const hasMermaidDiagrams = (content: string) => /```mermaid\b/.test(content);
 
@@ -424,6 +424,7 @@ const createMarkdownComponents = (
 
 export const Post = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [post, setPost] = useState<PostType | null>(null);
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt?: string } | null>(null);
@@ -588,15 +589,15 @@ export const Post = () => {
         if (shareModalOpen) { setShareModalOpen(false); return; }
       }
       if (e.key === 'ArrowLeft' && e.altKey && adjacentPosts.prev) {
-        window.location.href = `/post/${adjacentPosts.prev.id}`;
+        navigate(`/post/${adjacentPosts.prev.id}`);
       }
       if (e.key === 'ArrowRight' && e.altKey && adjacentPosts.next) {
-        window.location.href = `/post/${adjacentPosts.next.id}`;
+        navigate(`/post/${adjacentPosts.next.id}`);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [previewImage, shareModalOpen, adjacentPosts]);
+  }, [previewImage, shareModalOpen, adjacentPosts, navigate]);
 
   const markdownComponents = useMemo(
     () => createMarkdownComponents((image) => setPreviewImage(image), mermaidRenderer, headings, headingIdMapRef.current),
@@ -768,7 +769,7 @@ export const Post = () => {
 
         {post.coverImage && (
           <button type="button" className="mx-auto block w-full max-w-6xl px-4 md:px-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100" onClick={() => setPreviewImage({ src: post.coverImage, alt: post.title })} aria-label={`预览文章封面：${post.title}`}>
-            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35, ease: easeOut }} className="mb-10 aspect-[4/3] cursor-zoom-in overflow-hidden rounded-2xl shadow-2xl shadow-zinc-200/50 dark:shadow-none sm:aspect-[16/9] md:mb-20 md:aspect-[21/9] md:rounded-3xl">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1, duration: 0.22, ease: easeOut }} className="mb-10 aspect-[4/3] cursor-zoom-in overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 sm:aspect-[16/9] md:mb-20 md:aspect-[21/9] md:rounded-3xl">
               <ProgressiveImage src={post.coverImage} alt={post.title} loading="eager" fetchPriority="high" width={1600} height={686} aspectRatio="21/9" sizes="(max-width: 767px) 100vw, (max-width: 1279px) 80vw, 1152px" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
             </motion.div>
           </button>
@@ -791,7 +792,7 @@ export const Post = () => {
               prose-li:text-[16px] prose-li:leading-[1.85] md:prose-li:text-[18px] md:prose-li:leading-[1.9]
               prose-hr:my-10 prose-hr:border-zinc-200 dark:prose-hr:border-zinc-800 md:prose-hr:my-14
               prose-code:font-mono prose-code:text-[13px] prose-code:font-semibold md:prose-code:text-[14px]
-              prose-pre:overflow-hidden prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-700/80 prose-pre:bg-[#0d1117] prose-pre:p-0 prose-pre:shadow-xl md:prose-pre:rounded-2xl
+              prose-pre:overflow-hidden prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-700/80 prose-pre:bg-[#0d1117] prose-pre:p-0 md:prose-pre:rounded-2xl
               dark:prose-body:text-zinc-300
             ">
               <ReactMarkdown
@@ -803,8 +804,8 @@ export const Post = () => {
               </ReactMarkdown>
             </div>
 
-            <div className="group relative mt-16 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/80 p-6 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/50 md:mt-20 md:rounded-2xl md:p-8">
-              <div className="absolute -right-6 -top-6 rotate-12 text-zinc-200 opacity-50 transition-transform duration-500 group-hover:rotate-0 dark:text-zinc-800">
+            <div className="relative mt-16 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900/70 md:mt-20 md:rounded-2xl md:p-8">
+              <div className="absolute -right-6 -top-6 rotate-12 text-zinc-200 opacity-50 dark:text-zinc-800">
                 <Shield size={120} strokeWidth={0.5} />
               </div>
               <div className="relative z-10 flex flex-col items-start gap-6 md:flex-row">
@@ -842,9 +843,9 @@ export const Post = () => {
                 href={`${siteConfig.friendsPage.repoUrl}/blob/main/posts/${post.id}.md`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-sm font-medium text-zinc-600 transition-all hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900/30 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
+                className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
               >
-                <ExternalLink size={16} className="transition-transform group-hover:scale-110" />
+                <ExternalLink size={16} />
                 <span>此文章有问题？帮助改进！</span>
               </a>
             </div>

@@ -61,33 +61,6 @@ export default {
           dark: '#922b21'
         }
       },
-      animation: {
-        'float': 'float 12s ease-in-out infinite',
-        'grain': 'grain 8s steps(10) infinite',
-        'shimmer': 'shimmer 3s linear infinite',
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0) rotate(0)' },
-          '50%': { transform: 'translateY(-30px) rotate(1deg)' },
-        },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-        grain: {
-          '0%, 100%': { transform: 'translate(0, 0)' },
-          '10%': { transform: 'translate(-2%, -5%)' },
-          '20%': { transform: 'translate(-8%, 2%)' },
-          '30%': { transform: 'translate(4%, -10%)' },
-          '40%': { transform: 'translate(-2%, 8%)' },
-          '50%': { transform: 'translate(-8%, 4%)' },
-          '60%': { transform: 'translate(6%, 0%)' },
-          '70%': { transform: 'translate(0%, 6%)' },
-          '80%': { transform: 'translate(2%, 12%)' },
-          '90%': { transform: 'translate(-4%, 4%)' },
-        }
-      },
       typography: (theme) => ({
         DEFAULT: {
           css: {
@@ -168,21 +141,20 @@ export default {
               backgroundColor: '#0d1117',
               borderRadius: '0.75rem',
               padding: '0',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+              border: '1px solid rgba(63,63,70,0.8)',
+              boxShadow: 'none',
             },
             
             a: {
               color: theme('colors.ink'),
               fontWeight: '600',
               textDecoration: 'underline',
-              textDecorationColor: 'rgba(28,25,23,0.2)',
-              textUnderlineOffset: '2px',
+              textDecorationColor: 'rgba(28,25,23,0.28)',
+              textUnderlineOffset: '3px',
               textDecorationThickness: '2px',
-              transition: 'text-decoration-color 0.2s ease, text-underline-offset 0.2s ease',
             },
             'a:hover': {
               textDecorationColor: theme('colors.ink'),
-              textUnderlineOffset: '4px',
             },
             
             img: {
@@ -241,7 +213,7 @@ export default {
             },
             
             img: {
-              boxShadow: '0 0 0 1px rgba(255,255,255,0.08)',
+              boxShadow: 'none',
             },
           }
         }

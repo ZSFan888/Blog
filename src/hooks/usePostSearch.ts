@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { searchPosts, type PostSearchScope } from '@/services/posts';
+import { searchPosts, type PostSearchResult, type PostSearchScope } from '@/services/posts';
 import type { PostMetadata } from '@/types';
 
 interface UsePostSearchOptions {
   emptyResults?: PostMetadata[];
   debounceMs?: number;
   scope?: PostSearchScope;
+  initialQuery?: string;
 }
 
 const DEFAULT_EMPTY_RESULTS: PostMetadata[] = [];
@@ -13,13 +14,14 @@ const DEFAULT_EMPTY_RESULTS: PostMetadata[] = [];
 export const usePostSearch = ({
   emptyResults = DEFAULT_EMPTY_RESULTS,
   debounceMs = 300,
-  scope = 'all'
+  scope = 'all',
+  initialQuery = ''
 }: UsePostSearchOptions = {}) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState<PostMetadata[]>(emptyResults);
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [results, setResults] = useState<PostSearchResult[]>(emptyResults);
   const [isSearching, setIsSearching] = useState(false);
   const searchRequestIdRef = useRef(0);
-  const emptyResultsRef = useRef<PostMetadata[]>(emptyResults);
+  const emptyResultsRef = useRef<PostSearchResult[]>(emptyResults);
 
   useEffect(() => {
     emptyResultsRef.current = emptyResults;
@@ -88,6 +90,7 @@ export const usePostSearch = ({
     isSearching,
     results,
     handleSearch,
+    setSearchQuery: handleSearch,
     clearSearch,
     hasSearchQuery: searchQuery.trim().length > 0
   };

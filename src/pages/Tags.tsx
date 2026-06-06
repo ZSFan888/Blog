@@ -46,8 +46,10 @@ export const Tags = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const selectedTag = searchParams.get('tag');
-  const { searchQuery, isSearching, results, handleSearch, clearSearch, hasSearchQuery } = usePostSearch({
-    emptyResults: allPosts
+  const queryFromUrl = searchParams.get('q') || '';
+  const { searchQuery, isSearching, results, handleSearch, setSearchQuery, clearSearch, hasSearchQuery } = usePostSearch({
+    emptyResults: allPosts,
+    initialQuery: queryFromUrl
   });
 
   useEffect(() => {
@@ -80,6 +82,34 @@ export const Tags = () => {
       cancelled = true;
     };
   }, []);
+
+  const handleSearchChange = (query: string) => {
+    handleSearch(query);
+    setSearchParams((previous) => {
+      const nextParams = new URLSearchParams(previous);
+      if (query.trim()) {
+        nextParams.set('q', query);
+      } else {
+        nextParams.delete('q');
+      }
+      return nextParams;
+    }, { replace: true });
+  };
+
+  const handleClearSearch = () => {
+    clearSearch();
+    setSearchParams((previous) => {
+      const nextParams = new URLSearchParams(previous);
+      nextParams.delete('q');
+      return nextParams;
+    }, { replace: true });
+  };
+
+  useEffect(() => {
+    if (queryFromUrl !== searchQuery) {
+      setSearchQuery(queryFromUrl);
+    }
+  }, [queryFromUrl, searchQuery, setSearchQuery]);
 
   const tags = useMemo(() => buildTagList(results), [results]);
   const allTags = useMemo(() => buildTagList(allPosts), [allPosts]);
@@ -144,12 +174,12 @@ export const Tags = () => {
                 type="text"
                 placeholder="搜索标签或文章..."
                 value={searchQuery}
-                onChange={(event) => handleSearch(event.target.value)}
-                className="w-full rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 py-3 pl-11 pr-11 text-sm text-ink outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-4 ring-zinc-900/10 dark:text-white dark:focus:border-zinc-100 dark:ring-zinc-100/10"
+                onChange={(event) => handleSearchChange(event.target.value)}
+                className="w-full rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 py-3 pl-11 pr-11 text-sm text-ink outline-none transition-colors duration-150 placeholder:text-zinc-400 focus:border-zinc-400 dark:text-white dark:focus:border-zinc-600"
                 aria-label="搜索标签或文章"
               />
               {searchQuery && (
-                <button onClick={clearSearch} className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100" aria-label="清除搜索">
+                <button onClick={handleClearSearch} className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100" aria-label="清除搜索">
                   <X size={16} />
                 </button>
               )}
@@ -172,7 +202,7 @@ export const Tags = () => {
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.2, delay: index * 0.015, ease: easeOut }}
                       onClick={() => updateTagParam(tag.name)}
-                      className={`${getTagSize(tag.count)} group relative rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 px-5 py-2.5 font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:text-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-100 dark:hover:text-zinc-100`}
+                      className={`${getTagSize(tag.count)} relative rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 px-5 py-2.5 font-bold text-zinc-700 transition-colors hover:border-zinc-900 hover:text-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-100 dark:hover:text-zinc-100`}
                   aria-label={`查看标签 ${tag.name}，共 ${tag.count} 篇文章`}
                 >
                   {tag.name}
@@ -204,7 +234,7 @@ export const Tags = () => {
               <div className="grid gap-6 md:grid-cols-2">
                 {filteredSelectedTagPosts.map((post, index) => (
                   <motion.div key={post.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, delay: index * 0.02, ease: easeOut }}>
-                    <Link to={`/post/${post.id}`} className="group block rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 p-6 transition-all dark:hover:border-zinc-700">
+                    <Link to={`/post/${post.id}`} className="group block rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 p-6 transition-colors dark:hover:border-zinc-700">
                       <div className="mb-3 flex items-center gap-2">
                         <span className="rounded-lg bg-white/80 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 px-3 py-1 text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
                           {post.category}

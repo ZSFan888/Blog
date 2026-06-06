@@ -760,7 +760,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hasViewTransition }) =
   const openSearch = useCallback(() => setIsSearchOpen(true), []);
   const closeSearch = useCallback(() => setIsSearchOpen(false), []);
   const scrollTimerRef = useRef<number | null>(null);
-  const locationKey = `${location.pathname}${location.search}`;
+  const routeContentKey = location.pathname;
   const isPostPage = location.pathname.startsWith('/post/');
 
   useEffect(() => {
@@ -808,7 +808,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hasViewTransition }) =
         window.clearTimeout(scrollTimerRef.current);
       }
     };
-  }, [locationKey, hasViewTransition]);
+  }, [routeContentKey, hasViewTransition]);
 
   return (
     <div className="relative flex min-h-screen flex-col selection:bg-accent selection:text-white">
@@ -817,12 +817,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, hasViewTransition }) =
       <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
       <main className="relative flex-grow px-3 pt-20 sm:px-6 sm:pt-24 md:pt-32">
         {hasViewTransition ? (
-          <div key={locationKey} style={{ viewTransitionName: 'route-content' }} className="mx-auto max-w-7xl">
+          <div key={routeContentKey} style={{ viewTransitionName: 'route-content' }} className="mx-auto max-w-7xl">
             {children}
           </div>
         ) : (
           <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={locationKey} variants={routeShellVariants} initial="initial" animate="animate" exit="exit" className="mx-auto max-w-7xl">
+            <motion.div key={routeContentKey} variants={routeShellVariants} initial="initial" animate="animate" exit="exit" className="mx-auto max-w-7xl">
               {children}
             </motion.div>
           </AnimatePresence>

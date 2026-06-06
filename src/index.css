@@ -28,63 +28,28 @@
 
   /* View Transition for Theme Toggle */
   ::view-transition-old(root),
-  ::view-transition-new(root) {
+  ::view-transition-new(root),
+  ::view-transition-old(route-content),
+  ::view-transition-new(route-content) {
     animation: none;
     mix-blend-mode: normal;
   }
 
-  ::view-transition-old(root) {
-    z-index: 1;
-  }
-
-  ::view-transition-new(root) {
-    z-index: 2;
-    animation: theme-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .dark::view-transition-old(root) {
-    z-index: 2;
-    animation: theme-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) reverse;
-  }
-
-  .dark::view-transition-new(root) {
-    z-index: 1;
-    animation: none;
-  }
-
-  /* Route change View Transition — fade-out old + circle-reveal new */
   ::view-transition-old(route-content) {
-    animation: route-fade-out 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: route-fade-out 0.16s ease both;
   }
   ::view-transition-new(route-content) {
-    animation: route-circle-reveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: route-fade-in 0.18s ease both;
   }
 
   @keyframes route-fade-out {
-    from { opacity: 1; filter: blur(0) brightness(1); transform: scale(1); }
-    to { opacity: 0; filter: blur(4px) brightness(0.96); transform: scale(0.992); }
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
 
-  @keyframes route-circle-reveal {
-    from {
-      clip-path: circle(0% at var(--vt-origin-x, 50%) var(--vt-origin-y, 0%));
-      filter: blur(2px);
-      opacity: 0.8;
-    }
-    to {
-      clip-path: circle(150% at var(--vt-origin-x, 50%) var(--vt-origin-y, 0%));
-      filter: blur(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes theme-reveal {
-    from {
-      clip-path: circle(0% at 50% 10%);
-    }
-    to {
-      clip-path: circle(150% at 50% 10%);
-    }
+  @keyframes route-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
 
@@ -103,77 +68,7 @@ html.theme-switching *:not(script):not(style)::after {
     box-shadow 200ms ease !important;
 }
 
-@keyframes soft-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(0, -8px, 0);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-130%);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.55;
-  }
-  100% {
-    transform: translateX(130%);
-    opacity: 0;
-  }
-}
-
-@keyframes soft-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.16);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(192, 57, 43, 0);
-  }
-}
-
 @layer utilities {
-  .animate-soft-float {
-    animation: soft-float 6s ease-in-out infinite;
-  }
-
-  .animate-soft-pulse {
-    animation: soft-pulse 3.8s ease-in-out infinite;
-  }
-
-  .shimmer-mask {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .shimmer-mask::after {
-    content: '';
-    position: absolute;
-    inset: -20%;
-    background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.42) 48%, transparent 76%);
-    transform: translateX(-130%);
-    animation: shimmer 3.8s ease-in-out infinite;
-    pointer-events: none;
-    mix-blend-mode: screen;
-  }
-
-  .dark .shimmer-mask::after {
-    background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.14) 48%, transparent 76%);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .animate-soft-float,
-    .animate-soft-pulse,
-    .shimmer-mask::after {
-      animation: none !important;
-    }
-  }
-
   html {
     scrollbar-gutter: stable;
   }
@@ -329,14 +224,14 @@ html.theme-switching *:not(script):not(style)::after {
   @apply relative group/heading;
 }
 .heading-anchor {
-  @apply absolute -left-8 top-1/2 hidden -translate-y-1/2 text-zinc-300 opacity-0 transition-all hover:text-zinc-900 dark:text-zinc-600 dark:hover:text-zinc-100 md:inline-flex;
+  @apply absolute -left-8 top-1/2 hidden -translate-y-1/2 text-zinc-300 opacity-0 transition-opacity hover:text-zinc-900 dark:text-zinc-600 dark:hover:text-zinc-100 md:inline-flex;
 }
 .group\/heading:hover .heading-anchor {
   @apply opacity-100;
 }
 
 .code-lang-badge {
-  @apply absolute left-3 top-3 z-10 rounded-md bg-zinc-600/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-200 backdrop-blur-sm;
+  @apply absolute left-3 top-3 z-10 rounded-md bg-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-200;
 }
 
 .code-block-collapsed {
@@ -346,15 +241,15 @@ html.theme-switching *:not(script):not(style)::after {
   max-height: none;
 }
 .code-expand-btn {
-  @apply absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center rounded-b-xl bg-gradient-to-t from-[#0d1117] via-[#0d1117]/90 to-transparent py-6 text-sm text-zinc-400 transition-colors hover:text-zinc-200;
+  @apply absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center rounded-b-xl bg-[#0d1117] py-5 text-sm text-zinc-400 transition-colors hover:text-zinc-200;
 }
 
 .back-to-top-btn {
-  @apply fixed bottom-28 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-zinc-500 shadow-lg backdrop-blur-xl transition-all hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100 md:bottom-20;
+  @apply fixed bottom-28 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 transition-colors hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100 md:bottom-20;
 }
 
 .post-nav-item {
-  @apply flex-1 rounded-2xl border border-zinc-200 p-4 transition-all hover:border-zinc-400 hover:shadow-md dark:border-zinc-800 dark:hover:border-zinc-600 md:p-6;
+  @apply flex-1 rounded-xl border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600 md:p-6;
   content-visibility: auto;
   contain-intrinsic-size: auto 80px;
 }
