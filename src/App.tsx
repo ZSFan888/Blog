@@ -127,10 +127,6 @@ const AppRoutes: React.FC = () => {
     }
   }, [location, displayLocation.pathname, displayLocation.search, hasViewTransition]);
 
-
-
-
-
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       (window as unknown as { __lastClickX?: number }).__lastClickX = e.clientX;

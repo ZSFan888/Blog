@@ -201,9 +201,10 @@ const createSearchSnippet = (rawValue: string, normalizedValue: string, terms: s
   }
 
   const firstTerm = matchedTerms[0];
-  const matchIndex = normalizedValue.indexOf(firstTerm);
+  const rawMatchIndex = rawValue.toLocaleLowerCase().indexOf(firstTerm);
+  const matchIndex = rawMatchIndex >= 0 ? rawMatchIndex : normalizedValue.indexOf(firstTerm);
   const maxLength = field === 'content' ? 84 : 72;
-  const start = Math.max(0, matchIndex - 28);
+  const start = Math.max(0, Math.min(rawValue.length, matchIndex) - 28);
   const end = Math.min(rawValue.length, start + maxLength);
   const prefix = start > 0 ? '…' : '';
   const suffix = end < rawValue.length ? '…' : '';

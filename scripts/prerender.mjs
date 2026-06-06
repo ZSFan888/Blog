@@ -43,8 +43,14 @@ if (!fs.existsSync(POSTS_FILE)) {
 }
 const posts = JSON.parse(fs.readFileSync(POSTS_FILE, 'utf-8'));
 
-const escapeHtmlAttribute = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const escapeJsonForHtml = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
+const escapeHtmlText = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const escapeHtmlAttribute = (value) => escapeHtmlText(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const escapeJsonForHtml = (value) => JSON.stringify(value)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/&/g, '\\u0026')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
 
 const createImagePreload = (imageUrl, imagesizes) => {
   if (!imageUrl) {
@@ -117,11 +123,10 @@ const createHomeMeta = () => {
 const getHomeHeroPost = () => posts.find((post) => post.top !== undefined) || posts.find((post) => post.featured) || posts[0];
 
 const injectSeoMeta = (htmlTemplate, title, description, extraMeta = '') => {
-  let html = htmlTemplate.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
+  let html = htmlTemplate.replace(/<title>.*?<\/title>/, `<title>${escapeHtmlText(title)}</title>`);
 
   if (description) {
-    const safeDesc = description.replace(/"/g, '&quot;');
-    const metaDescTag = `<meta name="description" content="${safeDesc}">`;
+    const metaDescTag = `<meta name="description" content="${escapeHtmlAttribute(description)}">`;
 
     if (html.includes('<meta name="description"')) {
       html = html.replace(/<meta name="description" content=".*?">/, metaDescTag);
@@ -174,18 +179,18 @@ posts.forEach(post => {
 
   const ogMeta = `
     <meta property="og:type" content="article">
-    <meta property="og:title" content="${title.replace(/"/g, '&quot;')}">
-    <meta property="og:description" content="${description.replace(/"/g, '&quot;')}">
-    <meta property="og:url" content="${postUrl}">
-    <meta property="og:image" content="${coverImage}">
-    <meta property="article:published_time" content="${publishDate}">
-    <meta property="article:modified_time" content="${modifiedDate}">
-    <meta property="article:section" content="${post.category || ''}">
-    ${(post.tags || []).map(tag => `<meta property="article:tag" content="${tag}">`).join('\n    ')}
+    <meta property="og:title" content="${escapeHtmlAttribute(title)}">
+    <meta property="og:description" content="${escapeHtmlAttribute(description)}">
+    <meta property="og:url" content="${escapeHtmlAttribute(postUrl)}">
+    <meta property="og:image" content="${escapeHtmlAttribute(coverImage)}">
+    <meta property="article:published_time" content="${escapeHtmlAttribute(publishDate)}">
+    <meta property="article:modified_time" content="${escapeHtmlAttribute(modifiedDate)}">
+    <meta property="article:section" content="${escapeHtmlAttribute(post.category || '')}">
+    ${(post.tags || []).map(tag => `<meta property="article:tag" content="${escapeHtmlAttribute(tag)}">`).join('\n    ')}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="${title.replace(/"/g, '&quot;')}">
-    <meta name="twitter:description" content="${description.replace(/"/g, '&quot;')}">
-    <meta name="twitter:image" content="${coverImage}">`;
+    <meta name="twitter:title" content="${escapeHtmlAttribute(title)}">
+    <meta name="twitter:description" content="${escapeHtmlAttribute(description)}">
+    <meta name="twitter:image" content="${escapeHtmlAttribute(coverImage)}">`;
 
   const postAuthorName = post.authors?.[0]?.name || authorName;
   const structuredData = {
@@ -211,7 +216,7 @@ posts.forEach(post => {
     ]
   };
 
-  const jsonLd = `\n    <script type="application/ld+json">${JSON.stringify([structuredData, breadcrumbData])}</script>`;
+  const jsonLd = `\n    <script type="application/ld+json">${escapeJsonForHtml([structuredData, breadcrumbData])}</script>`;
 
   const imagePreload = createImagePreload(coverImage, '(max-width: 767px) 100vw, (max-width: 1279px) 80vw, 1152px');
   const extraMeta = `${imagePreload}${ogMeta}${jsonLd}`;

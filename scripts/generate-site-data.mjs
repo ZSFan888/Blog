@@ -47,11 +47,43 @@ const xmlEscape = (value) => String(value ?? '')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&apos;');
 
-const assertValidUrl = (value, label) => {
+const escapeHtmlAttribute = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const wrapCdata = (value) => `<![CDATA[${String(value ?? '').replace(/]]>/g, ']]]]><![CDATA[>')}]]>`;
+
+const HTTP_URL_PROTOCOLS = new Set(['http:', 'https:']);
+
+const assertValidUrl = (value, label, allowedProtocols = HTTP_URL_PROTOCOLS) => {
+  let url;
   try {
-    new URL(value);
+    url = new URL(value);
   } catch {
     throw new Error(`${label} must be a valid URL: ${value}`);
+  }
+
+  if (!allowedProtocols.has(url.protocol)) {
+    throw new Error(`${label} protocol must be one of ${Array.from(allowedProtocols).join(', ')}: ${value}`);
+  }
+};
+
+const isSafeRssUrl = (value) => {
+  if (!value || /[\s"'<>]/.test(value)) {
+    return false;
+  }
+
+  if (value.startsWith('/') || value.startsWith('./') || value.startsWith('../') || value.startsWith('#')) {
+    return true;
+  }
+
+  try {
+    return HTTP_URL_PROTOCOLS.has(new URL(value).protocol);
+  } catch {
+    return false;
   }
 };
 
@@ -365,7 +397,9 @@ const friends = friendFiles.flatMap((filename) => {
     }
 
     const friendUrl = data.url.trim();
+    const friendAvatar = data.avatar.trim();
     assertValidUrl(friendUrl, `friend ${filename} url`);
+    assertValidUrl(friendAvatar, `friend ${filename} avatar`);
 
     if (seenFriendUrls.has(friendUrl)) {
       logger.warn('Skip duplicate friend file', `${filename}: url ${friendUrl}`);
@@ -377,7 +411,7 @@ const friends = friendFiles.flatMap((filename) => {
       {
         name: data.name.trim(),
         description: data.description.trim(),
-        avatar: data.avatar.trim(),
+        avatar: friendAvatar,
         url: friendUrl
       }
     ];
@@ -452,8 +486,20 @@ const generateRss = () => {
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
       .replace(/`(.+?)`/g, '<code>$1</code>')
-      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2" />')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) => {
+        const safeUrl = String(url).trim();
+        if (!isSafeRssUrl(safeUrl)) {
+          return escapeHtmlAttribute(alt);
+        }
+        return `<img alt="${escapeHtmlAttribute(alt)}" src="${escapeHtmlAttribute(safeUrl)}" />`;
+      })
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => {
+        const safeUrl = String(url).trim();
+        if (!isSafeRssUrl(safeUrl)) {
+          return text;
+        }
+        return `<a href="${escapeHtmlAttribute(safeUrl)}">${text}</a>`;
+      })
       .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
       .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
       .replace(/\n{2,}/g, '</p><p>')
@@ -475,11 +521,11 @@ const generateRss = () => {
       .map(
         (post) => `
     <item>
-      <title><![CDATA[${post.title}]]></title>
+      <title>${wrapCdata(post.title)}</title>
       <link>${xmlEscape(`${SITE_URL}/post/${post.id}`)}</link>
       <guid isPermaLink="true">${xmlEscape(`${SITE_URL}/post/${post.id}`)}</guid>
-      <description><![CDATA[${post.excerpt}]]></description>
-      <content:encoded><![CDATA[<article>${simpleMarkdownToHtml(post.content || '')}</article>]]></content:encoded>
+      <description>${wrapCdata(post.excerpt)}</description>
+      <content:encoded>${wrapCdata(`<article>${simpleMarkdownToHtml(post.content || '')}</article>`)}</content:encoded>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
       ${post.updatedAt ? `<atom:updated>${new Date(post.updatedAt).toISOString()}</atom:updated>` : ''}
       <category>${xmlEscape(post.category)}</category>

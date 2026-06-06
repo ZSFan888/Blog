@@ -119,7 +119,6 @@ export default defineConfig({
         pure_funcs: ['console.log', 'console.info', 'console.debug'],
         pure_getters: true,
         passes: 2,
-        unsafe_proto: true,
       },
     },
   },

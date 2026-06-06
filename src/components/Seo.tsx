@@ -32,6 +32,13 @@ const toAbsoluteUrl = (value?: string) => {
   return new URL(value.startsWith('/') ? value : `/${value}`, siteConfig.url).toString();
 };
 
+const stringifyJsonLd = (value: StructuredData | Record<string, unknown>) => JSON.stringify(value)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/&/g, '\\u0026')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
+
 export const Seo: React.FC<SeoProps> = ({
   title,
   description = siteConfig.description,
@@ -95,7 +102,7 @@ export const Seo: React.FC<SeoProps> = ({
       <meta name="twitter:url" content={canonicalUrl} />
 
       {schema.length > 0 && (
-        <script type="application/ld+json">{JSON.stringify(schema.length === 1 ? schema[0] : schema)}</script>
+        <script type="application/ld+json">{stringifyJsonLd(schema.length === 1 ? schema[0] : schema)}</script>
       )}
     </Helmet>
   );

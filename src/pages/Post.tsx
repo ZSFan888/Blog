@@ -274,6 +274,22 @@ const MermaidBlock = ({ children, renderer }: { children: string; renderer: Merm
   );
 };
 
+const isSafeMarkdownHref = (href?: string) => {
+  if (!href) {
+    return false;
+  }
+
+  if (href.startsWith('#') || href.startsWith('/') || href.startsWith('./') || href.startsWith('../')) {
+    return true;
+  }
+
+  try {
+    return ['http:', 'https:', 'mailto:'].includes(new URL(href).protocol);
+  } catch {
+    return false;
+  }
+};
+
 const createMarkdownComponents = (
   onPreviewImage: (image: { src: string; alt?: string }) => void,
   mermaidRenderer: MermaidRenderer | null,
@@ -341,7 +357,9 @@ const createMarkdownComponents = (
 
   return {
     a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-      if (href && isImageUrl(href)) {
+      const safeHref = isSafeMarkdownHref(href) ? href : undefined;
+
+      if (safeHref && isImageUrl(safeHref)) {
         const imgAlt = React.Children.toArray(children)
           .map((child) => {
             if (React.isValidElement(child) && (child.props as Record<string, unknown>).alt) {
@@ -353,7 +371,7 @@ const createMarkdownComponents = (
         return (
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); onPreviewImage({ src: href, alt: imgAlt || undefined }); }}
+            onClick={(e) => { e.preventDefault(); onPreviewImage({ src: safeHref, alt: imgAlt || undefined }); }}
             className="block w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
             aria-label={imgAlt ? `预览图片：${imgAlt}` : '预览图片'}
           >
@@ -361,7 +379,12 @@ const createMarkdownComponents = (
           </button>
         );
       }
-      return <a href={href} target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
+
+      if (!safeHref) {
+        return <>{children}</>;
+      }
+
+      return <a href={safeHref} target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
     },
     img: ({ title, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
       <figure className="my-8 md:my-12">
