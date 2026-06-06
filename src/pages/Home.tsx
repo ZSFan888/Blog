@@ -141,7 +141,8 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
               </h2>
             </Link>
             <p className="mb-5 font-sans text-xs leading-relaxed text-zinc-500 line-clamp-3 dark:text-zinc-400 md:mb-6 md:text-sm">{post.excerpt}</p>
-            <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-semibold tracking-wide text-zinc-400 dark:text-zinc-500 md:flex-nowrap md:text-xs">
+            <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-semibold tracking-wide text-zinc-600 dark:text-zinc-300 md:flex-nowrap md:text-xs">
+
               <div className="flex items-center gap-1.5">
                 <Calendar size={12} />
                 <span>{post.date}</span>
@@ -483,7 +484,7 @@ export const Home = () => {
             <p className="text-sm text-zinc-600 dark:text-zinc-400">{loadError}</p>
           </motion.div>
         ) : (
-          <div className="space-y-8 md:space-y-10">
+          <div id="posts-panel" role="tabpanel" aria-labelledby={`category-tab-${selectedCategory}`} className="space-y-8 md:space-y-10">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`${selectedCategory}-${sortOrder}-${currentPage}-${searchQuery}`}
@@ -492,6 +493,7 @@ export const Home = () => {
                 initial="hidden"
                 animate="visible"
               >
+
                 {featuredPost && <PostCard key={featuredPost.id} post={featuredPost} index={0} featured onShare={setSharePost} />}
                 {remainingPosts.length > 0 ? (
                   remainingPosts.map((post, index) => <PostCard key={post.id} post={post} index={index + (featuredPost ? 1 : 0)} onShare={setSharePost} />)
