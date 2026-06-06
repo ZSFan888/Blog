@@ -127,8 +127,8 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
           </Link>
           <div className="relative flex w-full flex-col justify-center bg-white px-4 py-5 dark:bg-zinc-900 sm:px-5 md:w-2/5 md:p-10">
             {post.top !== undefined && (
-              <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 md:right-6 md:top-6">
-                <Pin size={10} fill="currentColor" />
+              <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-zinc-900 bg-white px-2.5 py-1 text-[10px] font-bold text-black shadow-sm dark:border-zinc-100 dark:bg-white dark:text-black md:right-6 md:top-6">
+                <Pin size={10} color="#000" fill="#000" stroke="#000" />
                 <span>置顶</span>
               </div>
             )}
@@ -193,8 +193,8 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
           </div>
           <div className="absolute right-3 top-3 z-10">
             {post.top !== undefined ? (
-              <div className="flex items-center gap-1 rounded-full bg-ink/90 px-2 py-0.5 text-[9px] font-bold text-white dark:bg-white/90 dark:text-ink">
-                <Pin size={9} fill="currentColor" />
+              <div className="flex items-center gap-1 rounded-full border border-zinc-900 bg-white px-2 py-0.5 text-[9px] font-bold text-black dark:border-zinc-100 dark:bg-white dark:text-black">
+                <Pin size={9} color="#000" fill="#000" stroke="#000" />
                 <span>置顶</span>
               </div>
             ) : (
