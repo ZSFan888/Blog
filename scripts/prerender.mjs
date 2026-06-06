@@ -2,13 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadSiteConfig, toAbsoluteUrl } from './site-config-loader.mjs';
+import { createBuildLogger } from './build-logger.mjs';
+
+const logger = createBuildLogger('prerender');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DIST_DIR = path.join(__dirname, '../dist');
 const POSTS_FILE = path.join(__dirname, '../generated/posts.json');
-const siteConfig = loadSiteConfig();
+const siteConfig = loadSiteConfig({ logger });
 const siteTitle = siteConfig.title;
 const authorName = siteConfig.author.name;
 const SITE_URL = siteConfig.url;
@@ -17,21 +20,21 @@ const SITE_SUFFIX = siteTitle;
 
 // Check if dist exists
 if (!fs.existsSync(DIST_DIR)) {
-  console.error('❌ Error: dist directory not found. Please run "npm run build" first.');
+  logger.error('dist directory not found', 'Run "vite build" before prerender.');
   process.exit(1);
 }
 
 // Read template
 const indexHtmlPath = path.join(DIST_DIR, 'index.html');
 if (!fs.existsSync(indexHtmlPath)) {
-  console.error('❌ Error: dist/index.html not found.');
+  logger.error('dist/index.html not found');
   process.exit(1);
 }
 const template = fs.readFileSync(indexHtmlPath, 'utf-8');
 
 // Read posts
 if (!fs.existsSync(POSTS_FILE)) {
-  console.error('❌ Error: generated/posts.json not found. Please run "npm run gen:data" first.');
+  logger.error('generated/posts.json not found', 'Run "npm run gen:data" before prerender.');
   process.exit(1);
 }
 const posts = JSON.parse(fs.readFileSync(POSTS_FILE, 'utf-8'));
@@ -70,7 +73,6 @@ const writeHtml = (relativePath, title, description, extraMeta = '') => {
   const html = injectSeoMeta(template, title, description, extraMeta);
 
   fs.writeFileSync(filePath, html);
-  console.log(`✅ Generated: ${relativePath}/index.html`);
 };
 
 const writeStandaloneHtml = (filename, title, description, extraMeta = '') => {
@@ -78,10 +80,9 @@ const writeStandaloneHtml = (filename, title, description, extraMeta = '') => {
   const html = injectSeoMeta(template, title, description, extraMeta);
 
   fs.writeFileSync(filePath, html);
-  console.log(`✅ Generated: ${filename}`);
 };
 
-console.log('🚀 Starting Pre-rendering...');
+logger.start('Pre-render static routes');
 
 // 1. Process Blog Posts
 
@@ -157,4 +158,12 @@ staticPages.forEach(page => {
 
 writeStandaloneHtml('404.html', `页面不存在 - ${SITE_SUFFIX}`, '你访问的页面不存在，可能已经移动、重命名或链接已失效。');
 
-console.log(`✨ Prerendering complete! Generated ${posts.length + staticPages.length + 1} pages.`);
+logger.step('Generated post pages', `count=${posts.length}`);
+logger.step('Generated static pages', `count=${staticPages.length + 1}`);
+logger.summary({
+  pages: posts.length + staticPages.length + 1,
+  posts: posts.length,
+  static: staticPages.length,
+  standalone: 1,
+  siteUrl: SITE_URL
+});

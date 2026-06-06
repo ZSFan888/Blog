@@ -4,8 +4,12 @@ import path from 'path';
 import matter from 'gray-matter';
 import { fileURLToPath } from 'url';
 import { loadSiteConfig } from './site-config-loader.mjs';
+import { createBuildLogger } from './build-logger.mjs';
 
-const siteConfig = loadSiteConfig();
+const logger = createBuildLogger('gen:data');
+logger.start('Generate site data');
+
+const siteConfig = loadSiteConfig({ logger });
 const SITE_URL = siteConfig.url;
 const SITE_TITLE = siteConfig.title;
 const SITE_DESCRIPTION = siteConfig.description;
@@ -105,7 +109,7 @@ const generateSiteStats = (postsWithSearch) => {
     )
   );
 
-  console.log('JSON generated: site stats');
+  logger.step('Generated site-stats.json', `posts=${totalPosts} words=${totalWords} categories=${totalCategories} tags=${totalTags} images=${totalImages}`);
 };
 
 const calculateReadTime = (markdown) => {
@@ -282,7 +286,7 @@ generateSiteStats(postsWithSearch);
 
 fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts.json'), JSON.stringify(posts, null, 2));
 fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'posts-search.json'), JSON.stringify(postsWithSearch.map(({ content, ...rest }) => rest), null, 2));
-console.log(`JSON generated: ${posts.length} posts`);
+logger.step('Generated posts data', `posts=${posts.length} sourceFiles=${files.length}`);
 
 const requiredFriendFields = ['name', 'description', 'avatar', 'url'];
 const friendFiles = fs.existsSync(FRIENDS_DIR)
@@ -301,7 +305,7 @@ const friends = friendFiles.flatMap((filename) => {
     );
 
     if (missingFields.length > 0) {
-      console.warn(`Skip invalid friend file ${filename}: missing ${missingFields.join(', ')}`);
+      logger.warn('Skip invalid friend file', `${filename}: missing ${missingFields.join(', ')}`);
       return [];
     }
 
@@ -309,7 +313,7 @@ const friends = friendFiles.flatMap((filename) => {
     assertValidUrl(friendUrl, `friend ${filename} url`);
 
     if (seenFriendUrls.has(friendUrl)) {
-      console.warn(`Skip duplicate friend file ${filename}: url ${friendUrl}`);
+      logger.warn('Skip duplicate friend file', `${filename}: url ${friendUrl}`);
       return [];
     }
     seenFriendUrls.add(friendUrl);
@@ -323,13 +327,13 @@ const friends = friendFiles.flatMap((filename) => {
       }
     ];
   } catch (error) {
-    console.warn(`Skip invalid friend file ${filename}: ${error.message}`);
+    logger.warn('Skip invalid friend file', `${filename}: ${error.message}`);
     return [];
   }
 });
 
 fs.writeFileSync(path.join(OUTPUT_JSON_DIR, 'friends.json'), JSON.stringify(friends, null, 2));
-console.log(`JSON generated: ${friends.length} friends`);
+logger.step('Generated friends.json', `friends=${friends.length} sourceFiles=${friendFiles.length}`);
 
 const generateSitemap = () => {
   const today = new Date().toISOString().split('T')[0];
@@ -372,7 +376,7 @@ const generateSitemap = () => {
 </urlset>`;
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemapContent);
-  console.log('Sitemap generated');
+  logger.step('Generated sitemap.xml', `urls=${staticPages.length + posts.length}`);
 };
 
 const generateRss = () => {
@@ -433,8 +437,15 @@ const generateRss = () => {
 </rss>`;
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'feed.xml'), rssContent);
-  console.log('RSS feed generated');
+  logger.step('Generated feed.xml', `items=${postsWithSearch.length}`);
 };
 
 generateSitemap();
 generateRss();
+
+logger.summary({
+  posts: posts.length,
+  friends: friends.length,
+  outputs: 5,
+  siteUrl: SITE_URL
+});

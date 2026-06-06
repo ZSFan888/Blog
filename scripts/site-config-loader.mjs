@@ -31,18 +31,18 @@ const extractBlock = (content, key) => {
   return match?.[1] || '';
 };
 
-const normalizeBaseUrl = (value) => {
+const normalizeBaseUrl = (value, logger) => {
   const rawUrl = String(value || DEFAULT_SITE_CONFIG.url).trim().replace(/\/+$/, '');
 
   try {
     return new URL(rawUrl).toString().replace(/\/+$/, '');
   } catch {
-    console.warn(`Invalid site URL "${rawUrl}", fallback to ${DEFAULT_SITE_CONFIG.url}`);
+    logger?.warn('Invalid site URL, fallback to default', `${rawUrl} -> ${DEFAULT_SITE_CONFIG.url}`);
     return DEFAULT_SITE_CONFIG.url;
   }
 };
 
-export const loadSiteConfig = () => {
+export const loadSiteConfig = ({ logger } = {}) => {
   if (!fs.existsSync(SITE_CONFIG_FILE)) {
     return DEFAULT_SITE_CONFIG;
   }
@@ -55,7 +55,7 @@ export const loadSiteConfig = () => {
     title: extractString(content, 'title', DEFAULT_SITE_CONFIG.title),
     subtitle: extractString(content, 'subtitle', DEFAULT_SITE_CONFIG.subtitle),
     description: extractString(content, 'description', DEFAULT_SITE_CONFIG.description),
-    url: normalizeBaseUrl(configuredUrl),
+    url: normalizeBaseUrl(configuredUrl, logger),
     logo: extractString(content, 'logo', DEFAULT_SITE_CONFIG.logo),
     seoImage: extractString(content, 'seoImage', DEFAULT_SITE_CONFIG.seoImage),
     author: {
