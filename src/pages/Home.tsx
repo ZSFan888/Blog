@@ -21,6 +21,11 @@ const listSwapTransition = {
   ease: easeSmooth,
 } as const;
 
+const gridLayoutTransition = {
+  duration: 0.28,
+  ease: easeSmooth,
+} as const;
+
 const gridExitVariants = {
   hidden: {},
   visible: {
@@ -484,7 +489,7 @@ export const Home = () => {
             <p className="text-sm text-zinc-600 dark:text-zinc-400">{loadError}</p>
           </motion.div>
         ) : (
-          <div id="posts-panel" role="tabpanel" aria-labelledby={`category-tab-${selectedCategory}`} className="space-y-8 md:space-y-10">
+          <div id="posts-panel" role="tabpanel" className="space-y-8 md:space-y-10">
             <motion.div
               layout
               transition={gridLayoutTransition}
