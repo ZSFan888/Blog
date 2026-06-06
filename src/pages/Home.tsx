@@ -91,7 +91,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
 
 
   const CategoryBadge = ({ text }: { text: string }) => (
-    <span className="z-10 rounded-full liquid-glass backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-ink transition-transform group-hover:scale-105 dark:text-white">
+    <span className="z-10 rounded-full bg-white/80 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-ink transition-transform group-hover:scale-105 dark:text-white">
       {text}
     </span>
   );
@@ -112,7 +112,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
         className="col-span-full w-full"
         onMouseEnter={() => preloadPage(`/post/${post.id}`)}
       >
-        <div className="relative flex h-auto flex-col overflow-hidden rounded-2xl liquid-glass backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 dark:hover:border-zinc-700 md:h-[440px] md:flex-row md:rounded-3xl">
+        <div className="relative flex h-auto flex-col overflow-hidden rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 transition-all duration-500 hover:-translate-y-1 dark:hover:border-zinc-700 md:h-[440px] md:flex-row md:rounded-3xl">
           <Link to={`/post/${post.id}`} className="group relative block h-56 w-full overflow-hidden md:h-full md:w-3/5" aria-label={`阅读文章：${post.title}`}>
             <div className="absolute inset-0 animate-pulse bg-zinc-200 dark:bg-zinc-800" />
             {post.coverImage ? (
@@ -167,7 +167,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
 
   return (
     <motion.article layout variants={cardVariants} whileHover={hoverMotion} transition={{ duration: 0.3, ease: easeOut }} className="flex h-full flex-col min-w-0" onMouseEnter={() => preloadPage(`/post/${post.id}`)}>
-      <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl liquid-glass backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 dark:hover:border-zinc-700">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 transition-all duration-500 hover:-translate-y-1 dark:hover:border-zinc-700">
         <Link to={`/post/${post.id}`} className="group/image relative aspect-[16/9] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 md:aspect-[16/10]" aria-label={`阅读文章：${post.title}`}>
           {post.coverImage ? (
             <ProgressiveImage src={post.coverImage} alt={post.title} loading="lazy" width={1600} height={1000} aspectRatio="16/10" sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw" wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover/image:scale-105" />
@@ -232,7 +232,7 @@ interface FilterBarProps {
 
 const FilterBar: React.FC<FilterBarProps> = ({ categories, selected, onSelect, sortOrder, onToggleSort }) => {
   return (
-    <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="mb-8 flex items-center justify-between gap-3 rounded-xl liquid-glass backdrop-blur-xl px-3 py-2.5 md:mb-10 md:gap-4 md:rounded-2xl md:px-4 md:py-3 md:backdrop-blur-xl">
+    <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="mb-8 flex items-center justify-between gap-3 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 px-3 py-2.5 md:mb-10 md:gap-4 md:rounded-2xl md:px-4 md:py-3">
       <div className="-mx-2 w-full overflow-x-auto px-2 no-scrollbar md:mx-0 md:w-auto md:px-0">
         <div className="flex space-x-1.5 md:space-x-2" role="tablist" aria-label="文章分类筛选">
           {[ALL_CATEGORY, ...categories].map((category) => (
@@ -496,7 +496,7 @@ export const Home = () => {
             ))}
           </motion.div>
         ) : loadError ? (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={listSwapTransition} className="col-span-full rounded-[2rem] border border-dashed border-zinc-200 liquid-glass backdrop-blur-xl py-16 text-center dark:border-zinc-800">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={listSwapTransition} className="col-span-full rounded-[2rem] border border-dashed border-zinc-200 bg-white/90 dark:bg-zinc-900/90 py-16 text-center dark:border-zinc-800">
             <p className="mb-2 font-serif text-xl text-zinc-700 dark:text-zinc-300">加载失败</p>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">{loadError}</p>
           </motion.div>

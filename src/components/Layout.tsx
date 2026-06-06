@@ -8,7 +8,6 @@ import { siteConfig } from '@config/site.config';
 import { usePostSearch } from '@/hooks/usePostSearch';
 import { ProgressiveImage } from './ProgressiveImage';
 import { BackToTop } from './BackToTop';
-import { GlobalLiquidGlass } from './GlobalLiquidGlass';
 import type { PostSearchScope } from '@/services/posts';
 import { easeSmooth, routeTransition } from '@/utils/motion';
 
@@ -174,7 +173,7 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-16 sm:pt-24">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.26, ease: modalEase }} onClick={onClose} className="absolute inset-0 bg-void/60 backdrop-blur-sm md:backdrop-blur-sm" />
-          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.25, ease: modalEase }} className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl liquid-glass backdrop-blur-xl md:backdrop-blur-xl shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="site-search-title" aria-describedby="site-search-desc">
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.25, ease: modalEase }} className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="site-search-title" aria-describedby="site-search-desc">
             <div className="flex items-center border-b border-zinc-100 p-4 dark:border-zinc-800">
               <motion.div animate={searchQuery ? { opacity: 1 } : { opacity: 0.82 }} transition={{ duration: 0.2, ease: modalEase }}>
                 <Search className="mr-3 text-zinc-600 dark:text-zinc-300" size={20} />
@@ -665,7 +664,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
 
   return (
     <>
-      <nav className="fixed left-0 right-0 top-0 z-50 liquid-glass-nav backdrop-blur-xl md:backdrop-blur-xl transition-all duration-500">
+      <nav className="fixed left-0 right-0 top-0 z-50 bg-white/90 dark:bg-zinc-950/90 border-b border-zinc-200/80 dark:border-zinc-800/80 transition-all duration-500">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: easeSmooth }} className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:h-16 sm:px-6 md:h-20">
           <Link to="/" onMouseEnter={() => preloadPage('/')} className="group z-50 flex items-center space-x-2.5 sm:space-x-3">
             <div className="relative">
@@ -751,7 +750,7 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
             data-interaction-locked={isMobileNavAnimating}
             data-locked={isMobileNavAnimating}
             data-swiping="false"
-            className="mobile-nav-panel !fixed inset-x-0 bottom-0 z-[80] overflow-hidden rounded-t-[2rem] liquid-glass backdrop-blur-3xl md:backdrop-blur-3xl text-ink shadow-2xl dark:text-white"
+            className="mobile-nav-panel !fixed inset-x-0 bottom-0 z-[80] overflow-hidden rounded-t-[2rem] bg-white/98 dark:bg-zinc-900/98 border border-zinc-200 dark:border-zinc-800 text-ink shadow-2xl dark:text-white"
             style={mobileNavPanelStyle}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -895,7 +894,7 @@ const Footer = () => {
         </div>
 
         <div className="flex flex-col items-center justify-center gap-4 pb-6 pt-8 md:flex-row">
-          <a href="/cover" className="group relative inline-flex items-center gap-3 rounded-xl liquid-glass backdrop-blur-xl border-purple-200 dark:border-purple-900/60 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-purple-300 dark:hover:border-purple-700">
+          <a href="/cover" className="group relative inline-flex items-center gap-3 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-purple-200 dark:border-purple-900/60 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-purple-300 dark:hover:border-purple-700">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500 transition-transform duration-300 group-hover:scale-110">
               <Image size={18} className="text-white" />
             </div>
@@ -905,7 +904,7 @@ const Footer = () => {
             </div>
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400/0 via-purple-300/10 to-purple-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </a>
-          <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl liquid-glass backdrop-blur-xl border-orange-200 dark:border-orange-900/60 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-300 dark:hover:border-orange-700">
+          <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-orange-200 dark:border-orange-900/60 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-300 dark:hover:border-orange-700">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 transition-transform duration-300 group-hover:scale-110">
               <Rss size={18} className="text-white" />
             </div>
@@ -915,7 +914,7 @@ const Footer = () => {
             </div>
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-400/0 via-orange-300/10 to-orange-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </a>
-          <a href={siteConfig.friendsPage.repoUrl} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl liquid-glass backdrop-blur-xl border-zinc-200 dark:border-zinc-700 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-900/50 dark:hover:border-zinc-100/50">
+          <a href={siteConfig.friendsPage.repoUrl} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-700 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-900/50 dark:hover:border-zinc-100/50">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black transition-transform duration-300 group-hover:scale-110 dark:bg-white">
               <Github size={18} className="text-white dark:text-black" />
             </div>
@@ -1024,7 +1023,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, hasViewTransition }) =
   return (
     <div className="relative flex min-h-screen flex-col selection:bg-accent selection:text-white">
       <Background />
-      <GlobalLiquidGlass />
       <Navbar onSearchClick={openSearch} />
       <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
       <main className="relative flex-grow px-3 pt-20 sm:px-6 sm:pt-24 md:pt-32">
