@@ -811,10 +811,14 @@ export const Navbar = ({ onSearchClick }: { onSearchClick: () => void }) => {
   );
 };
 
-const Footer = () => {
+const Footer = ({ isPostPage = false }: { isPostPage?: boolean }) => {
   const [loadTime, setLoadTime] = useState<string>('');
 
   useEffect(() => {
+    if (isPostPage) {
+      return;
+    }
+
     const scheduleIdleWork =
       typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function'
         ? window.requestIdleCallback.bind(window)
@@ -837,7 +841,7 @@ const Footer = () => {
     });
 
     return () => cancelIdleWork(idleId);
-  }, []);
+  }, [isPostPage]);
 
   const technologies = [
     { name: 'React 19', icon: Code2 },
@@ -852,97 +856,108 @@ const Footer = () => {
     <footer className="relative mt-12 overflow-hidden border-t border-zinc-200/90 py-12 dark:border-zinc-800/90 md:mt-32">
       <div className="absolute left-1/2 top-0 h-px w-full -translate-x-1/2 bg-gradient-to-r from-transparent via-zinc-900/30 to-transparent opacity-30 dark:via-zinc-100/30" />
       <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.18 }} transition={{ duration: 0.35, ease: easeSmooth }} className="mx-auto max-w-7xl px-6">
-        <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-3">
-          <div className="flex flex-col items-center space-y-4 md:items-start">
-            <div>
-              <span className="font-serif text-xl font-bold tracking-tight text-ink dark:text-white">{siteConfig.title}</span>
-              <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">{siteConfig.subtitle}</p>
-            </div>
-            <p className="text-center text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 md:text-left">{siteConfig.description}</p>
-            <div className="flex items-center gap-4 pt-2">
-              <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" className="rounded-full bg-zinc-100 p-2 text-zinc-700 transition-all duration-200 hover:-translate-y-px hover:bg-black hover:text-white active:scale-95 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900" aria-label="打开 GitHub 主页">
-                <Github size={18} />
-              </a>
-              <a href={siteConfig.social.email} className="rounded-full bg-zinc-100 p-2 text-zinc-700 transition-all duration-200 hover:-translate-y-px hover:bg-black hover:text-white active:scale-95 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900" aria-label="发送邮件">
-                <Mail size={18} />
-              </a>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center md:items-start">
-            <h4 className="mb-6 text-sm font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">Tech Stack</h4>
-            <div className="flex max-w-xs flex-wrap justify-center gap-2 md:justify-start">
-              {technologies.map((tech, index) => (
-                <motion.div key={tech.name} initial={{ opacity: 0, y: 6 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.22, delay: index * 0.03, ease: easeSmooth }} className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1.5 text-xs font-bold text-zinc-700 transition-all duration-200 hover:-translate-y-px hover:border-zinc-900/30 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:border-zinc-100/30">
-                  <tech.icon size={12} className="text-zinc-700 dark:text-zinc-300" />
-                  {tech.name}
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center md:items-end">
-            <h4 className="mb-6 text-sm font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">Status</h4>
-            <div className="flex w-full flex-col gap-4">
-              <div className="flex items-center justify-center gap-2 text-xs font-bold text-zinc-700 dark:text-zinc-300 md:justify-end">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
-                </span>
-                <span>All Systems Normal</span>
+        {!isPostPage ? (
+          <>
+            <div className="mb-8 grid grid-cols-1 gap-8 md:mb-12 md:grid-cols-3 md:gap-12">
+              <div className="flex flex-col items-center space-y-4 md:items-start">
+                <div>
+                  <span className="font-serif text-xl font-bold tracking-tight text-ink dark:text-white">{siteConfig.title}</span>
+                  <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">{siteConfig.subtitle}</p>
+                </div>
+                <p className="text-center text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 md:text-left">{siteConfig.description}</p>
+                <div className="flex items-center gap-4 pt-2">
+                  <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" className="rounded-full bg-zinc-100 p-2 text-zinc-700 transition-all duration-200 hover:-translate-y-px hover:bg-black hover:text-white active:scale-95 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900" aria-label="打开 GitHub 主页">
+                    <Github size={18} />
+                  </a>
+                  <a href={siteConfig.social.email} className="rounded-full bg-zinc-100 p-2 text-zinc-700 transition-all duration-200 hover:-translate-y-px hover:bg-black hover:text-white active:scale-95 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900" aria-label="发送邮件">
+                    <Mail size={18} />
+                  </a>
+                </div>
               </div>
-              {loadTime && (
-                <motion.div initial={{ opacity: 0, x: 6 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.25, ease: easeSmooth }} className="flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-300 md:justify-end">
-                  <Zap size={14} className="text-yellow-500" />
-                  <span>
-                    Page loaded in <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{loadTime}</span>
-                  </span>
-                </motion.div>
-              )}
-              <motion.div initial={{ opacity: 0, x: 6 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.25, delay: 0.03, ease: easeSmooth }} className="flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-300 md:justify-end">
-                <Coffee size={14} className="text-amber-700 dark:text-amber-600" />
-                <span>Fueled by Coffee &amp; Code</span>
-              </motion.div>
+
+              <div className="flex flex-col items-center md:items-start">
+                <h4 className="mb-4 text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-700 dark:text-zinc-300 md:mb-6 md:text-sm md:tracking-widest">Tech Stack</h4>
+                <div className="grid w-full max-w-sm grid-cols-2 gap-2 sm:max-w-xs md:flex md:max-w-xs md:flex-wrap md:justify-start">
+                  {technologies.map((tech, index) => (
+                    <motion.div key={tech.name} initial={{ opacity: 0, y: 6 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.22, delay: index * 0.03, ease: easeSmooth }} className="flex items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-100 px-2.5 py-1.5 text-[11px] font-bold text-zinc-700 transition-all duration-200 hover:-translate-y-px hover:border-zinc-900/30 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:border-zinc-100/30 sm:px-3 sm:text-xs md:justify-start">
+                      <tech.icon size={12} className="text-zinc-700 dark:text-zinc-300" />
+                      <span className="truncate">{tech.name}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center md:items-end">
+                <h4 className="mb-4 text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-700 dark:text-zinc-300 md:mb-6 md:text-sm md:tracking-widest">Status</h4>
+                <div className="grid w-full max-w-sm grid-cols-1 gap-2.5 rounded-2xl border border-zinc-200/70 bg-white/70 p-3 text-center dark:border-zinc-800/80 dark:bg-zinc-900/40 md:max-w-none md:border-0 md:bg-transparent md:p-0 md:text-right">
+                  <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-300 md:justify-end md:text-xs">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+                    </span>
+                    <span>All Systems Normal</span>
+                  </div>
+                  {loadTime && (
+                    <motion.div initial={{ opacity: 0, x: 6 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.25, ease: easeSmooth }} className="flex items-center justify-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-300 md:justify-end md:text-xs">
+                      <Zap size={13} className="text-yellow-500" />
+                      <span>
+                        Page loaded in <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{loadTime}</span>
+                      </span>
+                    </motion.div>
+                  )}
+                  <motion.div initial={{ opacity: 0, x: 6 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.25, delay: 0.03, ease: easeSmooth }} className="flex items-center justify-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-300 md:justify-end md:text-xs">
+                    <Coffee size={13} className="text-amber-700 dark:text-amber-600" />
+                    <span>Fueled by Coffee &amp; Code</span>
+                  </motion.div>
+                </div>
+              </div>
             </div>
+
+            <div className="grid grid-cols-3 gap-3 pb-6 pt-6 md:flex md:flex-col md:items-center md:justify-center md:gap-4 md:pt-8 lg:flex-row">
+              <a href="/cover" className="group relative inline-flex items-center justify-center rounded-xl border border-purple-200 bg-white/90 px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-purple-300 dark:border-purple-900/60 dark:bg-zinc-900/90 dark:hover:border-purple-700 md:w-full md:max-w-md md:justify-start md:gap-3 md:px-6" aria-label="打开封面生成器">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500 transition-transform duration-300 group-hover:scale-110 md:h-8 md:w-8">
+                  <Image size={18} className="text-white" />
+                </div>
+                <div className="hidden md:flex md:flex-col">
+                  <span className="text-sm font-bold text-ink dark:text-white">封面生成器</span>
+                  <span className="text-xs text-zinc-600 dark:text-zinc-300">快速生成精美封面</span>
+                </div>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400/0 via-purple-300/10 to-purple-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </a>
+              <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center justify-center rounded-xl border border-orange-200 bg-white/90 px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-300 dark:border-orange-900/60 dark:bg-zinc-900/90 dark:hover:border-orange-700 md:w-full md:max-w-md md:justify-start md:gap-3 md:px-6" aria-label="查看 RSS 订阅">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500 transition-transform duration-300 group-hover:scale-110 md:h-8 md:w-8">
+                  <Rss size={18} className="text-white" />
+                </div>
+                <div className="hidden md:flex md:flex-col">
+                  <span className="text-sm font-bold text-ink dark:text-white">{TEXT.rssFeed}</span>
+                  <span className="text-xs text-zinc-600 dark:text-zinc-300">{TEXT.rssHint}</span>
+                </div>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-400/0 via-orange-300/10 to-orange-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </a>
+              <a href={siteConfig.friendsPage.repoUrl} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white/90 px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-900/50 dark:border-zinc-700 dark:bg-zinc-900/90 dark:hover:border-zinc-100/50 md:w-full md:max-w-md md:justify-start md:gap-3 md:px-6" aria-label="查看项目源码">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black transition-transform duration-300 group-hover:scale-110 dark:bg-white md:h-8 md:w-8">
+                  <Github size={18} className="text-white dark:text-black" />
+                </div>
+                <div className="hidden md:flex md:flex-col">
+                  <span className="text-sm font-bold text-ink dark:text-white">{TEXT.sourceCode}</span>
+                  <span className="text-xs text-zinc-600 dark:text-zinc-300">Open Source on GitHub</span>
+                </div>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </a>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-center pb-6 pt-2 md:pt-4">
+            <Link to="/" className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-5 py-3 text-sm font-semibold text-ink transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-white dark:hover:border-zinc-600 dark:hover:bg-zinc-900">
+              <BookOpen size={16} />
+              <span>返回首页</span>
+            </Link>
           </div>
-        </div>
+        )}
 
-        <div className="flex flex-col items-center justify-center gap-4 pb-6 pt-8 md:flex-row">
-          <a href="/cover" className="group relative inline-flex items-center gap-3 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-purple-200 dark:border-purple-900/60 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-purple-300 dark:hover:border-purple-700">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500 transition-transform duration-300 group-hover:scale-110">
-              <Image size={18} className="text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-ink dark:text-white">封面生成器</span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-300">快速生成精美封面</span>
-            </div>
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400/0 via-purple-300/10 to-purple-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          </a>
-          <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-orange-200 dark:border-orange-900/60 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-300 dark:hover:border-orange-700">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 transition-transform duration-300 group-hover:scale-110">
-              <Rss size={18} className="text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-ink dark:text-white">{TEXT.rssFeed}</span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-300">{TEXT.rssHint}</span>
-            </div>
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-400/0 via-orange-300/10 to-orange-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          </a>
-          <a href={siteConfig.friendsPage.repoUrl} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center gap-3 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-700 px-6 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-900/50 dark:hover:border-zinc-100/50">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black transition-transform duration-300 group-hover:scale-110 dark:bg-white">
-              <Github size={18} className="text-white dark:text-black" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-ink dark:text-white">{TEXT.sourceCode}</span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-300">Open Source on GitHub</span>
-            </div>
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          </a>
-        </div>
-
-        <div className="flex w-full flex-col items-center justify-between border-t border-zinc-200/50 pt-8 text-xs font-medium text-zinc-700 dark:text-zinc-300 dark:border-zinc-800/50 md:flex-row">
+        <div className="flex w-full flex-col items-center justify-between border-t border-zinc-200/50 pt-8 text-center text-xs font-medium text-zinc-700 dark:border-zinc-800/50 dark:text-zinc-300 md:flex-row md:text-left">
           <p>{siteConfig.footerText} · {siteConfig.author.name}</p>
-          <div className="mt-4 flex items-center gap-6 md:mt-0">
+          <div className="mt-4 flex flex-col items-center gap-3 md:mt-0 md:flex-row md:gap-6">
             <a href={siteConfig.beian.url} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-accent">
               {siteConfig.beian.text}
             </a>
@@ -986,6 +1001,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hasViewTransition }) =
   const closeSearch = useCallback(() => setIsSearchOpen(false), []);
   const scrollTimerRef = useRef<number | null>(null);
   const locationKey = `${location.pathname}${location.search}`;
+  const isPostPage = location.pathname.startsWith('/post/');
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1053,7 +1069,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hasViewTransition }) =
         )}
       </main>
       <BackToTop />
-      <Footer />
+      <Footer isPostPage={isPostPage} />
     </div>
   );
 };
