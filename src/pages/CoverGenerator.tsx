@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, RefreshCw, Type, Image as ImageIcon, Palette,
   Sparkles, Upload, X, Search, Copy, Check, Layout, Shuffle,
-  ChevronDown, ChevronUp, Frame, SplitSquareHorizontal, AlignLeft, AlignCenter, AlignRight
+  ChevronDown, ChevronUp, Frame, SplitSquareHorizontal, AlignLeft, AlignCenter, AlignRight, Wand2, ArrowLeftRight, RotateCcw
 } from 'lucide-react';
 import { Seo } from '../components/Seo';
 import { coverTemplates as templates, type CoverTemplate, type PatternType } from '../config/coverTemplates';
@@ -26,6 +26,10 @@ interface ShadowConfig {
 type IconPosition = 'center' | 'above' | 'below';
 type TextAlign = 'left' | 'center' | 'right';
 type LayoutMode = 'icon-split' | 'stacked' | 'icon-only' | 'text-only';
+
+const DEFAULT_TEXT_SHADOW: ShadowConfig = {
+  x: 2, y: 2, blur: 8, color: '#000000', opacity: 0.3
+};
 
 export const CoverGenerator: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -94,9 +98,7 @@ export const CoverGenerator: React.FC = () => {
   const [overlayColor, setOverlayColor] = useState('#000000');
 
   // 阴影状态
-  const [textShadow, setTextShadow] = useState<ShadowConfig>({
-    x: 2, y: 2, blur: 8, color: '#000000', opacity: 0.3
-  });
+  const [textShadow, setTextShadow] = useState<ShadowConfig>(DEFAULT_TEXT_SHADOW);
 
   // 装饰元素
   const [showCorners, setShowCorners] = useState(false);
@@ -118,6 +120,7 @@ export const CoverGenerator: React.FC = () => {
   const [exportFilename, setExportFilename] = useState('cover');
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'layout' | 'export'>('content');
   const [copied, setCopied] = useState(false);
+
 
   // 折叠面板
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
@@ -148,12 +151,91 @@ export const CoverGenerator: React.FC = () => {
       </div>
     );
 
+  const resetBackgroundImageControls = useCallback(() => {
+    setBgImageScale(1);
+    setBgImageX(0);
+    setBgImageY(0);
+    setBgBlur(0);
+    setBgOpacity(100);
+  }, []);
+
+  const swapMainTexts = useCallback(() => {
+    setLeftText(rightText);
+    setRightText(leftText);
+  }, [leftText, rightText]);
+
+  const resetStyleSettings = useCallback(() => {
+    setFontWeight(700);
+    setFontSize(72);
+    setSubFontSize(28);
+    setTextColor('#ffffff');
+    setSpacing(32);
+    setSubSpacing(16);
+    setAutoTextColor(true);
+    setTextStroke({ enabled: false, width: 2, color: '#000000' });
+    setOverlayEnabled(false);
+    setOverlayBlur(0);
+    setOverlayOpacity(50);
+    setOverlayColor('#000000');
+    setTextShadow(DEFAULT_TEXT_SHADOW);
+    setShowCorners(false);
+    setCornerColor('#ffffff');
+    setCornerOpacity(30);
+    setShowSeparator(false);
+    setSeparatorColor('#ffffff');
+    setSeparatorOpacity(30);
+    setIconSize(80);
+    setIconColor('#ffffff');
+    setIconBorderRadius(12);
+    setIconBgEnabled(true);
+    setTextAlign('center');
+    setLayoutMode(showIcon && customIcon ? 'icon-split' : 'text-only');
+    resetBackgroundImageControls();
+  }, [customIcon, resetBackgroundImageControls, showIcon]);
+
+  const resetAllSettings = useCallback(() => {
+    setLeftText('D-blog');
+    setRightText('跑路的duck');
+    setSubText('');
+    setSelectedTemplate(templates[0]);
+    setLayoutMode('icon-split');
+    setIconPosition('center');
+    setTextAlign('center');
+    setBgImage(null);
+    resetBackgroundImageControls();
+    setShowIcon(true);
+    setCustomIcon('https://blog.pldduck.com/logo.png');
+    setIconifySearch('');
+    setIconifyResults([]);
+    setSearchError(null);
+    setCustomFont(null);
+    setExportRatios([
+      { label: '16:9', w: 16, h: 9, active: true },
+      { label: '1:1', w: 1, h: 1, active: false },
+      { label: '4:3', w: 4, h: 3, active: false },
+      { label: '21:9', w: 21, h: 9, active: false }
+    ]);
+    setExportScale(1);
+    setExportFormat('png');
+    setExportFilename('cover');
+    resetStyleSettings();
+
   const activeRatio = exportRatios.find(r => r.active) || exportRatios[0];
   const canvasWidth = 1200;
   const canvasHeight = Math.round(canvasWidth / (activeRatio.w / activeRatio.h));
   const canvasSize = { width: canvasWidth, height: canvasHeight };
 
-  // ==================== 图案绘制 ====================
+  const quickStats = useMemo(() => {
+    const textCount = [leftText, rightText, subText].filter(Boolean).join('').length;
+    return [
+      { label: '模板', value: selectedTemplate.name },
+      { label: '布局', value: layoutMode === 'icon-split' ? '分列' : layoutMode === 'stacked' ? '堆叠' : layoutMode === 'text-only' ? '纯文字' : '图标' },
+      { label: '元素', value: `${showIcon && customIcon ? '图标' : '文字'} · ${textCount} 字` },
+      { label: '导出', value: `${activeRatio.label} · ${exportFormat.toUpperCase()}` },
+    ];
+  }, [activeRatio.label, customIcon, exportFormat, layoutMode, leftText, rightText, selectedTemplate.name, showIcon, subText]);
+
+
   const drawPattern = (ctx: CanvasRenderingContext2D, pattern: PatternType, width: number, height: number) => {
     ctx.save();
     ctx.globalAlpha = 0.08;
@@ -728,13 +810,25 @@ export const CoverGenerator: React.FC = () => {
   const downloadCover = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = Math.round(canvasSize.width * exportScale);
+    outputCanvas.height = Math.round(canvasSize.height * exportScale);
+    const outputCtx = outputCanvas.getContext('2d');
+    if (!outputCtx) return;
+
+    outputCtx.imageSmoothingEnabled = true;
+    outputCtx.imageSmoothingQuality = 'high';
+    outputCtx.drawImage(canvas, 0, 0, outputCanvas.width, outputCanvas.height);
+
     const mimeType = exportFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
     const ext = exportFormat === 'jpeg' ? 'jpg' : 'png';
-    canvas.toBlob((blob) => {
+
+    outputCanvas.toBlob((blob) => {
       if (!blob) { alert('生成图片失败，请重试'); return; }
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      const filename = exportFilename || 'cover';
+      const filename = exportFilename.trim() || 'cover';
       const scaleText = exportScale > 1 ? `@${exportScale}x` : '';
       link.download = `${filename}${scaleText}.${ext}`;
       link.href = url;
@@ -744,8 +838,8 @@ export const CoverGenerator: React.FC = () => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }, 100);
-    }, mimeType);
-  }, [exportScale, exportFilename, exportFormat, canvasSize]);
+    }, mimeType, exportFormat === 'jpeg' ? 0.92 : undefined);
+  }, [canvasSize.height, canvasSize.width, exportFilename, exportFormat, exportScale]);
 
   const copyToClipboard = useCallback(async () => {
     const canvas = canvasRef.current;
@@ -773,6 +867,7 @@ export const CoverGenerator: React.FC = () => {
     const iconSizes = [48, 56, 64, 72, 80, 96, 120];
     const spacings = [16, 24, 32, 40, 48, 60];
     const radii = [0, 4, 8, 12, 16, 24, 50];
+    const layouts: LayoutMode[] = showIcon && customIcon ? ['icon-split', 'stacked', 'text-only'] : ['stacked', 'text-only'];
 
     setFontSize(fontSizes[Math.floor(Math.random() * fontSizes.length)]);
     setFontWeight(weights[Math.floor(Math.random() * weights.length)]);
@@ -780,6 +875,7 @@ export const CoverGenerator: React.FC = () => {
     setSpacing(spacings[Math.floor(Math.random() * spacings.length)]);
     setIconBorderRadius(radii[Math.floor(Math.random() * radii.length)]);
     setSubFontSize([20, 24, 28, 32, 36][Math.floor(Math.random() * 5)]);
+    setAutoTextColor(true);
     setTextShadow({
       x: Math.floor(Math.random() * 8) - 2,
       y: Math.floor(Math.random() * 8) - 2,
@@ -789,41 +885,46 @@ export const CoverGenerator: React.FC = () => {
     });
     setShowCorners(Math.random() > 0.5);
     setShowSeparator(Math.random() > 0.6);
-    setLayoutMode(['icon-split', 'stacked', 'text-only'][Math.floor(Math.random() * 3)] as LayoutMode);
-  }, []);
+    setLayoutMode(layouts[Math.floor(Math.random() * layouts.length)]);
+  }, [customIcon, showIcon]);
+
 
   useEffect(() => {
     generateCover();
   }, [generateCover]);
 
   // ==================== UI 渲染 ====================
-  const inputClass = "w-full rounded-lg border border-zinc-200 bg-white px-4 py-2 text-ink outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-ink/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-white dark:focus:ring-white/20";
+  const inputClass = "w-full rounded-xl border border-zinc-200/80 bg-white/90 px-4 py-2.5 text-ink shadow-sm outline-none transition-all focus:border-ink focus:ring-4 focus:ring-ink/10 dark:border-zinc-700/80 dark:bg-zinc-800/90 dark:text-white dark:focus:border-white dark:focus:ring-white/10";
   const rangeClass = "w-full accent-ink dark:accent-white";
-  const colorClass = "h-10 w-full rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer";
-  const cardClass = "rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 overflow-hidden transition-all";
-  const dashedBtnClass = "flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-600 transition-colors hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-white dark:hover:bg-white/5";
+  const colorClass = "h-11 w-full cursor-pointer rounded-xl border border-zinc-200 dark:border-zinc-700";
+  const cardClass = "overflow-hidden rounded-3xl border border-zinc-200/70 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm transition-all dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:shadow-none";
+  const dashedBtnClass = "flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-700 transition-all hover:border-ink hover:bg-ink/5 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-white dark:hover:bg-white/5";
+  const chipClass = "inline-flex items-center rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs font-semibold text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300";
 
   return (
     <div className="pb-20">
       <Seo title="封面生成" description="在线生成精美博客文章封面图片，支持自定义文字、图标、渐变背景与多种导出比例。" />
 
-      <div className="mb-8 text-center">
-        <h1 className="mb-4 font-serif text-5xl font-bold text-ink dark:text-white md:text-6xl">封面生成器</h1>
-        <p className="mx-auto max-w-2xl text-lg text-zinc-500 dark:text-zinc-400">
-          快速生成精美的博客文章封面，支持自定义文字、图标和样式
+      <div className="mb-8 rounded-[2rem] border border-zinc-200/70 bg-gradient-to-br from-zinc-50 via-white to-zinc-100/70 px-6 py-8 text-center shadow-[0_20px_60px_rgba(15,23,42,0.05)] dark:border-zinc-800/80 dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-950 md:px-10 md:py-10">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-4 py-1.5 text-xs font-semibold tracking-[0.18em] text-zinc-500 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300">
+          <Wand2 size={14} />
+          COVER STUDIO
+        </div>
+        <h1 className="mb-4 font-serif text-4xl font-bold tracking-tight text-ink dark:text-white md:text-6xl">封面生成器</h1>
+        <p className="mx-auto max-w-3xl text-base leading-7 text-zinc-500 dark:text-zinc-400 md:text-lg">
+          聚焦博客封面生成体验，保留现有的 <strong>纯黑</strong> 与 <strong>纯白</strong> 两种背景模板，补足更顺手的编辑、预览与导出能力。
         </p>
       </div>
 
-      {/* 标签页切换 */}
-      <div className="mb-6 flex flex-wrap justify-center gap-2">
+      <div className="mb-6 flex flex-wrap justify-center gap-2 rounded-2xl border border-zinc-200/70 bg-white/75 p-2 shadow-sm backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-900/75">
         {(['content', 'style', 'layout', 'export'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`rounded-lg px-5 py-2 font-semibold text-sm transition-all ${
+            className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
               activeTab === tab
-                ? 'bg-ink text-white dark:bg-white dark:text-ink shadow-lg'
-                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
+                ? 'bg-ink text-white shadow-lg shadow-ink/20 dark:bg-white dark:text-ink dark:shadow-white/20'
+                : 'text-zinc-600 hover:bg-zinc-100 hover:text-ink dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white'
             }`}
           >
             {{ content: '内容', style: '样式', layout: '排版', export: '导出' }[tab]}
@@ -832,18 +933,23 @@ export const CoverGenerator: React.FC = () => {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* 左侧控制面板 */}
         <div className="space-y-4 lg:col-span-1">
-
-          {/* ===== 内容标签页 ===== */}
           {activeTab === 'content' && (
             <>
-              {/* 文字内容 */}
               <div className={cardClass}>
-                <div className="p-5">
-                  <SectionHeader icon={<Type size={18} className="text-ink dark:text-white" />} title="文字内容" sectionKey="text-content" />
+                <div className="p-5 md:p-6">
+                  <SectionHeader
+                    icon={<Type size={18} className="text-ink dark:text-white" />}
+                    title="文字内容"
+                    sectionKey="text-content"
+                    action={
+                      <button onClick={swapMainTexts} className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-ink dark:hover:bg-zinc-800 dark:hover:text-white" title="交换左右文字">
+                        <ArrowLeftRight size={16} />
+                      </button>
+                    }
+                  />
                   {!isCollapsed('text-content') && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">左侧/主要文字</label>
@@ -858,20 +964,24 @@ export const CoverGenerator: React.FC = () => {
                         <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">次要/描述文字</label>
                         <input type="text" value={subText} onChange={(e) => setSubText(e.target.value)} className={inputClass} placeholder="可选描述文字（如：技术博客）" />
                       </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className={chipClass}>主标题 {leftText.length} 字</span>
+                        <span className={chipClass}>右侧 {rightText.length} 字</span>
+                        <span className={chipClass}>描述 {subText.length} 字</span>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* 图标 */}
               <div className={cardClass}>
-                <div className="p-5">
+                <div className="p-5 md:p-6">
                   <SectionHeader
                     icon={<ImageIcon size={18} className="text-ink dark:text-white" />}
                     title="图标设置"
                     sectionKey="icon"
                     action={
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      <label className="flex cursor-pointer items-center gap-2">
                         <input type="checkbox" checked={showIcon} onChange={(e) => setShowIcon(e.target.checked)} className="rounded accent-ink dark:accent-white" />
                         <span className="text-xs text-zinc-500 dark:text-zinc-400">显示</span>
                       </label>
@@ -888,24 +998,24 @@ export const CoverGenerator: React.FC = () => {
                           <Upload size={14} />上传图标
                         </button>
                       </div>
+                      <p className="text-xs leading-6 text-zinc-500 dark:text-zinc-400">支持 Iconify 检索或自定义上传图片作为图标素材。</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* 背景模板 */}
               <div className={cardClass}>
-                <div className="p-5">
+                <div className="p-5 md:p-6">
                   <SectionHeader
                     icon={<Palette size={18} className="text-ink dark:text-white" />}
                     title="背景模板"
                     sectionKey="templates"
                     action={
                       <motion.button
-                        whileHover={{ scale: 1.1, rotate: 15 }}
-                        whileTap={{ scale: 0.9 }}
+                        whileHover={{ scale: 1.08, rotate: 8 }}
+                        whileTap={{ scale: 0.94 }}
                         onClick={randomizeStyle}
-                        className="rounded-lg p-1.5 text-zinc-400 hover:text-accent hover:bg-accent/10 transition-colors"
+                        className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-ink dark:hover:bg-zinc-800 dark:hover:text-white"
                         title="随机风格"
                       >
                         <Shuffle size={16} />
@@ -913,31 +1023,35 @@ export const CoverGenerator: React.FC = () => {
                     }
                   />
                   {!isCollapsed('templates') && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-3">
                         {templates.map((template) => (
                           <motion.button
                             key={template.id}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => setSelectedTemplate(template)}
-                            className={`relative h-20 overflow-hidden rounded-lg border-2 transition-all ${
+                            className={`group relative h-28 overflow-hidden rounded-2xl border transition-all ${
                               selectedTemplate.id === template.id
-                                ? 'border-ink shadow-lg shadow-ink/20 ring-2 ring-ink/20 dark:border-white dark:shadow-white/20 dark:ring-white/20'
-                                : 'border-zinc-200 dark:border-zinc-700 opacity-70 hover:opacity-100'
+                                ? 'border-ink shadow-lg shadow-ink/15 ring-4 ring-ink/10 dark:border-white dark:shadow-white/10 dark:ring-white/10'
+                                : 'border-zinc-200/80 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500'
                             }`}
                             style={{ background: template.gradient }}
                             title={template.description || template.name}
                           >
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                              <span className={`text-sm font-bold drop-shadow-md ${template.id === 'white' ? 'text-ink' : 'text-white'}`}>
-                                {template.name}
-                              </span>
+                            <div className={`absolute inset-0 ${template.id === 'white' ? 'bg-gradient-to-br from-black/0 via-black/0 to-black/5' : 'bg-gradient-to-br from-white/5 via-transparent to-white/10'}`} />
+                            <div className="absolute inset-x-0 bottom-0 p-4 text-left">
+                              <div className={`text-base font-bold ${template.id === 'white' ? 'text-ink' : 'text-white'}`}>{template.name}</div>
+                              <div className={`mt-1 text-xs ${template.id === 'white' ? 'text-zinc-600' : 'text-white/70'}`}>{template.description}</div>
                             </div>
+                            {selectedTemplate.id === template.id && (
+                              <div className="absolute right-3 top-3 rounded-full bg-white/80 px-2 py-1 text-[11px] font-bold text-ink shadow-sm dark:bg-zinc-800/80 dark:text-white">当前</div>
+                            )}
                           </motion.button>
                         ))}
                       </div>
-                      <div className="pt-2">
+                      <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/80 p-3 dark:border-zinc-700 dark:bg-zinc-800/60">
+                        <p className="mb-3 text-xs leading-6 text-zinc-500 dark:text-zinc-400">背景模板固定保留现有两种：<strong>纯黑</strong> 与 <strong>纯白</strong>。你仍可叠加自定义背景图片增强表现。</p>
                         <input ref={bgImageInputRef} type="file" accept="image/*" onChange={handleBgImageUpload} className="hidden" />
                         <button onClick={() => bgImageInputRef.current?.click()} className={dashedBtnClass + ' w-full'}>
                           <Upload size={14} />上传自定义背景图片
@@ -950,12 +1064,10 @@ export const CoverGenerator: React.FC = () => {
             </>
           )}
 
-          {/* ===== 样式标签页 ===== */}
           {activeTab === 'style' && (
             <>
-              {/* 快捷预设 */}
               <div className={cardClass}>
-                <div className="p-5">
+                <div className="p-5 md:p-6">
                   <div className="mb-3 flex items-center gap-2">
                     <Sparkles size={18} className="text-accent" />
                     <h2 className="font-bold text-ink dark:text-white">快捷预设</h2>
@@ -974,14 +1086,18 @@ export const CoverGenerator: React.FC = () => {
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
                         onClick={preset.action}
-                        className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-xs font-semibold text-zinc-700 transition-all hover:border-zinc-400 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:bg-zinc-700"
+                        className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 text-xs font-semibold text-zinc-700 transition-all hover:border-zinc-400 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:bg-zinc-700"
                       >
                         {preset.name}
                       </motion.button>
                     ))}
                   </div>
+                  <button onClick={resetStyleSettings} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-600 transition-all hover:border-ink hover:text-ink dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-white dark:hover:text-white">
+                    <RotateCcw size={14} />重置样式参数
+                  </button>
                 </div>
               </div>
+
 
               {/* 文字样式 */}
               <div className={cardClass}>
@@ -1341,7 +1457,7 @@ export const CoverGenerator: React.FC = () => {
           {activeTab === 'export' && (
             <>
               <div className={cardClass}>
-                <div className="p-5">
+                <div className="p-5 md:p-6">
                   <div className="mb-3 flex items-center gap-2">
                     <Download size={18} className="text-ink dark:text-white" />
                     <h2 className="font-bold text-ink dark:text-white">导出设置</h2>
@@ -1354,7 +1470,7 @@ export const CoverGenerator: React.FC = () => {
                           <button
                             key={ratio.label}
                             onClick={() => setExportRatios(exportRatios.map(r => ({ ...r, active: r.label === ratio.label })))}
-                            className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all ${
+                            className={`rounded-xl border-2 px-3 py-2 text-sm font-semibold transition-all ${
                               ratio.active
                                 ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-ink'
                                 : 'border-zinc-200 text-zinc-600 hover:border-ink dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-white'
@@ -1372,7 +1488,7 @@ export const CoverGenerator: React.FC = () => {
                           <button
                             key={f}
                             onClick={() => setExportFormat(f)}
-                            className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold uppercase transition-all ${
+                            className={`rounded-xl border-2 px-3 py-2 text-sm font-semibold uppercase transition-all ${
                               exportFormat === f
                                 ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-ink'
                                 : 'border-zinc-200 text-zinc-600 hover:border-ink dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-white'
@@ -1389,6 +1505,7 @@ export const CoverGenerator: React.FC = () => {
                         <span className="tabular-nums text-ink dark:text-white">{exportScale}x</span>
                       </label>
                       <input type="range" min="1" max="3" step="0.5" value={exportScale} onChange={(e) => setExportScale(Number(e.target.value))} className={rangeClass} />
+                      <p className="mt-1 text-xs text-zinc-400">下载时将输出为 {Math.round(canvasSize.width * exportScale)} × {Math.round(canvasSize.height * exportScale)} px</p>
                     </div>
                     <div>
                       <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">文件名</label>
@@ -1404,7 +1521,7 @@ export const CoverGenerator: React.FC = () => {
                   whileTap={{ scale: 0.98 }}
                   onClick={generateCover}
                   disabled={isGenerating}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-100 px-4 py-3 font-semibold text-ink transition-all hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-zinc-100 px-4 py-3 font-semibold text-ink transition-all hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                 >
                   <RefreshCw size={18} className={isGenerating ? 'animate-spin' : ''} />
                   重新生成
@@ -1414,7 +1531,7 @@ export const CoverGenerator: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={downloadCover}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-ink to-zinc-800 px-4 py-3 font-semibold text-white shadow-lg shadow-ink/25 transition-all hover:shadow-xl hover:shadow-ink/30 dark:from-white dark:to-zinc-200 dark:text-ink dark:shadow-white/25 dark:hover:shadow-white/30"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-ink to-zinc-800 px-4 py-3 font-semibold text-white shadow-lg shadow-ink/25 transition-all hover:shadow-xl hover:shadow-ink/30 dark:from-white dark:to-zinc-200 dark:text-ink dark:shadow-white/25 dark:hover:shadow-white/30"
                 >
                   <Download size={18} />
                   下载封面
@@ -1424,7 +1541,7 @@ export const CoverGenerator: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={copyToClipboard}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 font-semibold transition-all ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 font-semibold transition-all ${
                     copied
                       ? 'border-green-500 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                       : 'border-zinc-200 text-zinc-600 hover:border-ink dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-white'
@@ -1433,6 +1550,10 @@ export const CoverGenerator: React.FC = () => {
                   {copied ? <Check size={18} /> : <Copy size={18} />}
                   {copied ? '已复制' : '复制到剪贴板'}
                 </motion.button>
+
+                <button onClick={resetAllSettings} className="flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-500 transition-all hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-red-500/40 dark:hover:bg-red-900/10 dark:hover:text-red-400">
+                  <RotateCcw size={16} />重置全部设置
+                </button>
               </div>
             </>
           )}
@@ -1440,51 +1561,83 @@ export const CoverGenerator: React.FC = () => {
 
         {/* 右侧预览区域 */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900 sticky top-24">
-            <div className="mb-4 flex items-center gap-2">
-              <ImageIcon className="text-ink dark:text-white" size={20} />
-              <h2 className="font-bold text-ink dark:text-white">实时预览</h2>
-              <span className="ml-auto text-xs text-zinc-400 tabular-nums">
-                {canvasSize.width} × {canvasSize.height} px
-              </span>
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 15 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={randomizeStyle}
-                className="ml-2 rounded-lg p-1.5 text-zinc-400 hover:text-accent hover:bg-accent/10 transition-colors"
-                title="随机风格"
-              >
-                <Shuffle size={16} />
+          <div className="sticky top-24 rounded-[2rem] border border-zinc-200/70 bg-white/90 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-900/90 md:p-6">
+            <div className="mb-4 flex flex-col gap-4 border-b border-zinc-200/70 pb-4 dark:border-zinc-800/80 md:flex-row md:items-start md:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="text-ink dark:text-white" size={20} />
+                  <h2 className="font-bold text-ink dark:text-white">实时预览</h2>
+                  {isGenerating && <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-300">生成中</span>}
+                </div>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">当前画布：{canvasSize.width} × {canvasSize.height} px，可直接预览黑白模板与图片叠加效果。</p>
+              </div>
+              <div className="flex flex-wrap gap-2 md:max-w-[50%] md:justify-end">
+                {quickStats.map((item) => (
+                  <span key={item.label} className={chipClass}>
+                    <strong className="mr-1 text-zinc-900 dark:text-white">{item.label}</strong>{item.value}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-4 flex flex-wrap gap-2">
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={randomizeStyle} className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition-all hover:border-ink hover:text-ink dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-white dark:hover:text-white">
+                <Shuffle size={16} />随机样式
               </motion.button>
+              <button onClick={generateCover} className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition-all hover:border-ink hover:text-ink dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-white dark:hover:text-white">
+                <RefreshCw size={16} className={isGenerating ? 'animate-spin' : ''} />刷新预览
+              </button>
+              {bgImage && (
+                <button onClick={resetBackgroundImageControls} className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition-all hover:border-ink hover:text-ink dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-white dark:hover:text-white">
+                  <RotateCcw size={16} />重置背景位置
+                </button>
+              )}
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800">
-              <canvas
-                ref={canvasRef}
-                width={canvasSize.width}
-                height={canvasSize.height}
-                className="w-full cursor-move"
-                style={{ aspectRatio: `${activeRatio.w}/${activeRatio.h}` }}
-                onMouseDown={handleCanvasMouseDown}
-                onMouseMove={handleCanvasMouseMove}
-                onMouseUp={handleCanvasMouseUp}
-                onMouseLeave={handleCanvasMouseUp}
-                onWheel={handleCanvasWheel}
-              />
+            <div className="overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.7),rgba(244,244,245,0.9))] p-3 dark:border-zinc-700 dark:bg-[radial-gradient(circle_at_top,rgba(39,39,42,0.8),rgba(24,24,27,0.95))] md:p-4">
+              <div className="overflow-hidden rounded-[1.15rem] border border-zinc-200/70 bg-zinc-50 shadow-inner dark:border-zinc-700 dark:bg-zinc-800">
+                <canvas
+                  ref={canvasRef}
+                  width={canvasSize.width}
+                  height={canvasSize.height}
+                  className={`w-full ${bgImage ? 'cursor-move' : 'cursor-default'}`}
+                  style={{ aspectRatio: `${activeRatio.w}/${activeRatio.h}` }}
+                  onMouseDown={handleCanvasMouseDown}
+                  onMouseMove={handleCanvasMouseMove}
+                  onMouseUp={handleCanvasMouseUp}
+                  onMouseLeave={handleCanvasMouseUp}
+                  onWheel={handleCanvasWheel}
+                />
+              </div>
             </div>
 
-            <div className="mt-4 rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-800/80">
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-400">当前模板</div>
+                <div className="mt-2 text-lg font-bold text-ink dark:text-white">{selectedTemplate.name}</div>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">只保留现有黑白模板，避免风格面板过度分散。</p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-800/80">
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-400">预览提示</div>
+                <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{bgImage ? '已启用背景图：可拖拽移动，滚轮缩放。' : '当前为纯模板预览：上传背景图可增加层次感。'}</p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-800/80">
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-400">导出结果</div>
+                <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">文件将以 <strong>{exportFilename.trim() || 'cover'}</strong> 导出，格式为 <strong>{exportFormat.toUpperCase()}</strong>。</p>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-2xl bg-zinc-50 p-4 dark:bg-zinc-800">
               <div className="flex items-start gap-2">
                 <Sparkles className="mt-0.5 shrink-0 text-ink dark:text-white" size={16} />
                 <div className="text-sm text-zinc-600 dark:text-zinc-400">
                   <p className="font-semibold">使用提示：</p>
-                  <ul className="mt-2 space-y-1 text-xs">
-                    <li>• <strong>内容</strong>标签页 - 输入文字、选择图标和背景模板</li>
-                    <li>• <strong>样式</strong>标签页 - 调整字体、颜色、阴影、描边等效果</li>
-                    <li>• <strong>排版</strong>标签页 - 切换布局模式、对齐方式、装饰元素</li>
-                    <li>• <strong>导出</strong>标签页 - 设置宽高比、格式、导出倍率</li>
-                    <li>• 上传背景图片后可拖拽移动、滚轮缩放调整位置</li>
-                    <li>• 点击 <Shuffle className="inline" size={12} /> 随机按钮可快速探索不同风格</li>
+                  <ul className="mt-2 space-y-1.5 text-xs leading-6">
+                    <li>- <strong>内容</strong>：编辑主标题、副标题、图标与黑白模板。</li>
+                    <li>- <strong>样式</strong>：调节字体、颜色、阴影、描边，并支持一键重置样式。</li>
+                    <li>- <strong>排版</strong>：切换布局模式、文字对齐与装饰元素。</li>
+                    <li>- <strong>导出</strong>：支持比例、格式、倍率与文件名配置，倍率现在会真正影响下载尺寸。</li>
+                    <li>- 上传背景图片后可拖拽移动、滚轮缩放，并用“重置背景位置”快速归位。</li>
                   </ul>
                 </div>
               </div>
