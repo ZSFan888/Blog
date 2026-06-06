@@ -175,6 +175,7 @@ const PreBlock = ({ children, ...props }: React.DetailedHTMLProps<React.HTMLAttr
 
       {/* Copy button */}
       <button
+        type="button"
         onClick={handleCopy}
         className={`absolute z-10 rounded-lg p-2 backdrop-blur-sm transition-all ${
           lang ? 'right-3 top-3' : 'right-3 top-3'
@@ -211,6 +212,7 @@ const PreBlock = ({ children, ...props }: React.DetailedHTMLProps<React.HTMLAttr
         )}
         {needsExpand && isExpanded && (
           <button
+            type="button"
             onClick={() => setIsExpanded(false)}
             className="absolute bottom-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-zinc-700/80 px-3 py-1 text-xs text-zinc-300 backdrop-blur-sm hover:bg-zinc-600/80 hover:text-white"
             aria-label="折叠代码"
@@ -302,10 +304,17 @@ const createMarkdownComponents = (
   };
 
   const handleHeadingClick = (id: string) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const url = new URL(window.location.href);
     url.hash = id;
     window.history.replaceState({}, '', url.toString());
-    navigator.clipboard.writeText(url.toString()).catch(() => {});
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url.toString()).catch(() => {});
+    }
   };
 
   const renderHeading = (level: number, Tag: string, { children, ...props }: Record<string, unknown>) => {
