@@ -815,14 +815,28 @@ const Footer = () => {
   const [loadTime, setLoadTime] = useState<string>('');
 
   useEffect(() => {
-    // 使用requestIdleCallback避免阻塞主线程
-    const idleId = requestIdleCallback(() => {
+    const scheduleIdleWork =
+      typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function'
+        ? window.requestIdleCallback.bind(window)
+        : ((callback: IdleRequestCallback) =>
+            window.setTimeout(
+              () => callback({ didTimeout: false, timeRemaining: () => 0 } as IdleDeadline),
+              1
+            ));
+
+    const cancelIdleWork =
+      typeof window !== 'undefined' && typeof window.cancelIdleCallback === 'function'
+        ? window.cancelIdleCallback.bind(window)
+        : window.clearTimeout;
+
+    const idleId = scheduleIdleWork(() => {
       if (typeof window !== 'undefined' && window.performance) {
         const timing = window.performance.now();
         setLoadTime(`${(timing / 1000).toFixed(2)}s`);
       }
     });
-    return () => cancelIdleCallback(idleId);
+
+    return () => cancelIdleWork(idleId);
   }, []);
 
   const technologies = [

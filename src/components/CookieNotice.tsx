@@ -8,9 +8,12 @@ export const CookieNotice: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // 检查用户是否已经同意过
-    const hasConsented = localStorage.getItem(COOKIE_CONSENT_KEY);
-    if (!hasConsented) {
+    try {
+      const hasConsented = localStorage.getItem(COOKIE_CONSENT_KEY);
+      if (!hasConsented) {
+        setIsVisible(true);
+      }
+    } catch {
       setIsVisible(true);
     }
   }, []);

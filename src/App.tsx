@@ -190,7 +190,11 @@ const App: React.FC = () => {
       return false;
     }
 
-    return sessionStorage.getItem('hasVisited') !== 'true';
+    try {
+      return sessionStorage.getItem('hasVisited') !== 'true';
+    } catch {
+      return false;
+    }
   });
   const [cookieNoticeReady, setCookieNoticeReady] = useState(false);
   const [showCookieNotice, setShowCookieNotice] = useState(false);
@@ -207,7 +211,11 @@ const App: React.FC = () => {
     }
 
     timer = window.setTimeout(() => {
-      sessionStorage.setItem('hasVisited', 'true');
+      try {
+        sessionStorage.setItem('hasVisited', 'true');
+      } catch {
+        // ignore storage errors
+      }
       setShowLoadingScreen(false);
       setCookieNoticeReady(true);
       setShowCookieNotice(true);
