@@ -750,7 +750,7 @@ export const Post = () => {
                 <Clock size={14} className="mr-2" /> {post.readTime}
               </span>
               <span className="hidden h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700 md:block" />
-              <button onClick={() => setShareModalOpen(true)} className="flex items-center transition-colors hover:text-zinc-900 dark:hover:text-zinc-100" aria-label={`分享文章：${post.title}`}>
+              <button type="button" onClick={() => setShareModalOpen(true)} className="flex items-center transition-colors hover:text-zinc-900 dark:hover:text-zinc-100" aria-label={`分享文章：${post.title}`}>
                 <Share2 size={14} className="mr-1.5" /> 分享
               </button>
             </div>

@@ -156,6 +156,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             {copiedType === 'all' ? '已复制全部' : '复制完整分享'}
           </button>
           <button
+            type="button"
             onClick={() => handleCopy('link')}
             className="flex items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
             aria-label="仅复制文章链接"

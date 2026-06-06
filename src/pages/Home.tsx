@@ -214,7 +214,7 @@ const PostCard: React.FC<{ post: PostMetadata; index: number; featured?: boolean
                 <span>{post.readTime}</span>
               </div>
             </div>
-            <button onClick={handleShareClick} className="rounded-md p-1 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100" aria-label={`分享文章：${post.title}`}>
+            <button type="button" onClick={handleShareClick} className="rounded-md p-1 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100" aria-label={`分享文章：${post.title}`}>
               <Share2 size={11} />
             </button>
           </div>
