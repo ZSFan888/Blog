@@ -420,6 +420,46 @@ export const adsConfig: AdItem[] = [
 | `npm run gen:data` | 仅运行数据生成脚本，从 Markdown 生成 JSON 索引、RSS 和 Sitemap |
 | `npm run prerender` | 仅运行预渲染脚本，生成静态 HTML（需先 `npm run build`） |
 
+## Cloudflare Pages 部署
+
+本分支已针对 Cloudflare Pages 做了以下适配：
+
+- `public/_redirects` — SPA 路由回退，解决刷新 404
+- `public/_headers` — 缓存策略与安全头配置  
+- `vite.config.ts` — `base` 从 `./` 改为 `/`，修复子路由资源加载
+- `.github/workflows/deploy.yml` — GitHub Actions 自动部署
+
+### CF Pages 控制台配置
+
+| 字段 | 值 |
+|---|---|
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Node.js version | `20` |
+
+**Environment variables（必须设置）：**
+
+| 变量名 | 说明 |
+|---|---|
+| `VITE_SITE_URL` | 你的博客完整 URL，如 `https://blog.pages.dev` |
+
+### GitHub Actions Secrets
+
+| Secret | 说明 |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | CF API Token（需 Cloudflare Pages:Edit 权限） |
+| `CLOUDFLARE_ACCOUNT_ID` | CF 控制台右侧的 Account ID |
+| `VITE_SITE_URL` | 博客完整 URL |
+
+### 本地预览
+
+```bash
+npm run build
+npx wrangler pages dev dist
+```
+
+---
+
 ## 部署指南
 
 ### Cloudflare Pages（推荐）

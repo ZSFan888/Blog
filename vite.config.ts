@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-const appBase = process.env.VITE_BASE_PATH?.trim() || './';
+const appBase = process.env.VITE_BASE_PATH?.trim() || '/';
 
 const SKIP_MODULE_PRELOAD_PATTERNS = [
   /(?:^|\/)assets\/(?:mermaid|katex|markdown|syntax|dompurify)-/,
