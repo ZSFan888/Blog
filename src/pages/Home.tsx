@@ -304,7 +304,7 @@ const Hero = () => {
         </span>
         <div className="h-px w-8 bg-zinc-400 dark:bg-zinc-600" />
       </motion.div>
-      <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04, duration: 0.4, ease: easeOut }} className="mb-4 bg-gradient-to-br from-ink via-zinc-800 to-zinc-600 bg-clip-text font-serif text-6xl font-black leading-[0.95] tracking-tighter text-transparent sm:text-7xl md:mb-5 md:text-8xl lg:text-9xl dark:from-white dark:via-zinc-100 dark:to-zinc-400">
+      <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04, duration: 0.4, ease: easeOut }} style={{ fontSize: "clamp(1.8rem, 6vw, 6rem)" }} className="mb-4 whitespace-nowrap bg-gradient-to-br from-ink via-zinc-800 to-zinc-600 bg-clip-text font-serif font-black leading-[1.05] tracking-tighter text-transparent md:mb-5 dark:from-white dark:via-zinc-100 dark:to-zinc-400">
         {siteConfig.title}
       </motion.h1>
       <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.35, ease: easeOut }} className="mx-auto max-w-lg font-sans text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 md:max-w-xl md:text-base">
