@@ -161,8 +161,8 @@ const App: React.FC = () => {
     if (typeof window === 'undefined') {
       return false;
     }
-
-    return sessionStorage.getItem('hasVisited') !== 'true';
+    // 每次访问都显示启动动画
+    return true;
   });
 
   const [showCookieNotice, setShowCookieNotice] = useState(false);
@@ -176,7 +176,6 @@ const App: React.FC = () => {
     }
 
     const timer = window.setTimeout(() => {
-      sessionStorage.setItem('hasVisited', 'true');
       setShowLoadingScreen(false);
       setShowCookieNotice(true);
     }, 900);
