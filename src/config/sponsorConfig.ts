@@ -22,7 +22,7 @@ export const sponsorOptions: SponsorOption[] = [
   {
     id: 'code',
     title: '赞助代码',
-    description: '帮助我们改进 D-blog',
+    description: '帮助我们改进 ZSFan 的博客',
     icon: 'Code',
     buttonLabel: '前往 GitHub',
     url: siteConfig.social.github

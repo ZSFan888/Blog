@@ -70,7 +70,7 @@ export const DBlogLoader: React.FC<DBlogLoaderProps> = React.memo(({
           fill={`url(#${fillId})`}
           opacity="0.9"
         >
-          D-blog
+          ZSFan 的博客
         </text>
         <text
           x="50%"
@@ -88,7 +88,7 @@ export const DBlogLoader: React.FC<DBlogLoaderProps> = React.memo(({
           strokeDasharray="680"
           strokeDashoffset="680"
         >
-          D-blog
+          ZSFan 的博客
           <animate attributeName="stroke-dashoffset" values="680;0;0" dur="1.9s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="0.38;1;0.65;0.38" dur="1.9s" repeatCount="indefinite" />
         </text>

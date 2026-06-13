@@ -43,8 +43,8 @@ export const CoverGenerator: React.FC = () => {
   const fontInputRef = useRef<HTMLInputElement>(null);
 
   // 基础文本状态
-  const [leftText, setLeftText] = useState('D-blog');
-  const [rightText, setRightText] = useState('跑路的duck');
+  const [leftText, setLeftText] = useState('ZSFan 的博客');
+  const [rightText, setRightText] = useState('ZSFan');
   const [subText, setSubText] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<CoverTemplate>(templates[0]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -199,8 +199,8 @@ export const CoverGenerator: React.FC = () => {
   }, [customIcon, resetBackgroundImageControls, showIcon]);
 
   const resetAllSettings = useCallback(() => {
-    setLeftText('D-blog');
-    setRightText('跑路的duck');
+    setLeftText('ZSFan 的博客');
+    setRightText('ZSFan');
     setSubText('');
     setSelectedTemplate(templates[0]);
     setLayoutMode('icon-split');

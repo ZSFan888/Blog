@@ -49,10 +49,10 @@ const sponsorOptions: SponsorOption[] = [
 export const Sponsor: React.FC = () => {
   return (
     <div className="mx-auto max-w-5xl pb-16 pt-8 md:pb-24 md:pt-12">
-      <Seo title="赞助" description="支持 D-blog 的多种方式：贡献代码、撰写文章或通过赞助商链接帮助博客持续成长。" />
+      <Seo title="赞助" description="支持 ZSFan 的博客 的多种方式：贡献代码、撰写文章或通过赞助商链接帮助博客持续成长。" />
 
       <header className="mb-8 rounded-2xl border border-zinc-200 bg-white px-5 py-8 text-center dark:border-zinc-800 dark:bg-zinc-900 md:mb-10 md:px-8 md:py-10">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-500 dark:text-zinc-400">Support D-blog</p>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-500 dark:text-zinc-400">Support ZSFan 的博客</p>
         <h1 className="mb-4 font-serif text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 md:text-5xl">
           没有收款码的赞助
         </h1>
